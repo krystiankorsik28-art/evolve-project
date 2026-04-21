@@ -109,7 +109,7 @@ export default function TeacherExamEditor() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-questions", {
-        body: { exam_id: id, topic: aiTopic.trim(), count: aiCount },
+        body: { exam_id: id, topic: aiTopic.trim(), count: aiCount, question_type: aiType, types: [aiType] },
       });
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error ?? "Błąd AI");

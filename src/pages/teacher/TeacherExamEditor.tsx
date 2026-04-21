@@ -18,7 +18,7 @@ import { QuestionTypeEditor, QUESTION_TYPE_LABELS, QUESTION_TYPE_ICONS, QType } 
 
 interface Question {
   id: string; question_type: QType; prompt: string;
-  options: string[]; correct_answer: unknown; points: number;
+  options: unknown; correct_answer: unknown; points: number;
   difficulty: "easy" | "medium" | "hard"; order_index: number;
 }
 

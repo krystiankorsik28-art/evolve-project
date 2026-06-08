@@ -1,0 +1,8 @@
+{
+  "rootDirectory": "evolve-project-shine-main",
+  "buildCommand": "bun run build",
+  "installCommand": "bun install",
+  "outputDirectory": "public",
+  "framework": null,
+  "nodeVersion": "24.x"
+}

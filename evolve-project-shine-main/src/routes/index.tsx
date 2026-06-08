@@ -306,7 +306,7 @@ function Hero() {
             <ShieldCheck className="w-3.5 h-3.5 text-red-400"/>
           </div>
           {/* Headline */}
-          <h1 className="mt-6 font-display text-5xl sm:text-6xl lg:text-7xl font-semibold leading-[0.95] tracking-tight animate-fadeIn" style={{ animationDelay: "0.1s" }}>
+          <h1 className="mt-6 font-display text-5xl sm:text-6xl lg:text-7xl font-semibold leading-[0.95] tracking-tight text-white animate-fadeIn" style={{ animationDelay: "0.1s" }}>
             Egzaminy bez tarcia.{" "}
             <span className="block bg-gradient-to-r from-red-400 via-white to-red-400 bg-clip-text text-transparent">
               <span className={`inline-block transition-all duration-300 ${typing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}>

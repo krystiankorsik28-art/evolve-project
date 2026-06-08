@@ -3,6 +3,5 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "outputDirectory": "public",
-  "framework": null,
-  "nodeVersion": "24.x"
+  "framework": null
 }

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ExternalLink, Globe, ArrowLeft, ArrowRight, RotateCw, Bookmark, Monitor, Smartphone, Info, ExternalLink as LinkIcon } from "lucide-react";
+import { ExternalLink, Globe, ArrowLeft, ArrowRight, RotateCw, Bookmark, Monitor, Smartphone, Info, ExternalLink as LinkIcon, ShieldAlert, WifiOff, Zap } from "lucide-react";
 import { Eksport } from "./Eksport";
 
 const PRESETS = [
@@ -10,27 +10,46 @@ const PRESETS = [
   { name: "Google Classroom", url: "https://classroom.google.com/", color: "bg-green-500" },
 ];
 
+const BLOCKED_DOMAINS = ["librus.pl", "vulcan.net.pl", "uonetplus.vulcan.net.pl", "synergia.librus.pl", "dzienniczek.librus.pl", "portal.librus.pl"];
+
+function needsProxy(u: string) {
+  try {
+    const hostname = new URL(u).hostname;
+    return BLOCKED_DOMAINS.some((d) => hostname.endsWith(d) || hostname === d);
+  } catch { return false; }
+}
+
 export function EDziennik() {
   const [url, setUrl] = useState("https://uonetplus.vulcan.net.pl/");
-  const [iframeUrl, setIframeUrl] = useState("");
+  const [rawUrl, setRawUrl] = useState(""); // the real URL the user wants to visit
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
   const [activeSubTab, setActiveSubTab] = useState<"browser" | "export">("browser");
+  const [proxyMode, setProxyMode] = useState(true);
+  const [iframeError, setIframeError] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const buildIframeSrc = (targetUrl: string) => {
+    if (!targetUrl) return "";
+    if (proxyMode) return `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+    return targetUrl;
+  };
 
   const navigate = (u: string) => {
     const normalized = u.startsWith("http") ? u : `https://${u}`;
     setUrl(normalized);
-    setIframeUrl("");
+    setRawUrl(normalized);
     setLoading(true);
+    setIframeError(false);
+    setIframeLoaded(false);
     setTimeout(() => {
-      setIframeUrl(normalized);
       setLoading(false);
     }, 300);
   };
 
   const go = () => navigate(url);
-  const reload = () => { if (iframeUrl) navigate(iframeUrl); };
+  const reload = () => { if (rawUrl) navigate(rawUrl); };
 
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -38,18 +57,19 @@ export function EDziennik() {
   const historyIdxRef = useRef(-1);
 
   useEffect(() => {
-    historyRef.current.push(iframeUrl);
+    if (!rawUrl) return;
+    historyRef.current.push(rawUrl);
     historyIdxRef.current = historyRef.current.length - 1;
     setCanGoBack(historyIdxRef.current > 0);
     setCanGoForward(false);
-  }, [iframeUrl]);
+  }, [rawUrl]);
 
   const goBack = () => {
     if (historyIdxRef.current > 0) {
       historyIdxRef.current--;
       const u = historyRef.current[historyIdxRef.current];
       setUrl(u);
-      setIframeUrl(u);
+      setRawUrl(u);
       setCanGoBack(historyIdxRef.current > 0);
       setCanGoForward(true);
     }
@@ -59,11 +79,28 @@ export function EDziennik() {
       historyIdxRef.current++;
       const u = historyRef.current[historyIdxRef.current];
       setUrl(u);
-      setIframeUrl(u);
+      setRawUrl(u);
       setCanGoBack(true);
       setCanGoForward(historyIdxRef.current < historyRef.current.length - 1);
     }
   };
+
+  const openInNewTab = (u: string) => {
+    window.open(u, "_blank", "noopener");
+  };
+
+  const handleIframeError = () => {
+    setIframeError(true);
+    setIframeLoaded(false);
+  };
+
+  const handleIframeLoad = () => {
+    setIframeLoaded(true);
+    setIframeError(false);
+  };
+
+  const isBlocked = proxyMode && needsProxy(url);
+  const iframeSrc = buildIframeSrc(rawUrl);
 
   return (
     <div className="space-y-5">
@@ -99,7 +136,7 @@ export function EDziennik() {
           {/* Presets */}
           <div className="flex flex-wrap gap-1.5">
             {PRESETS.map((p) => (
-              <button key={p.name} onClick={() => navigate(p.url)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${url.startsWith(p.url) ? "bg-cyan-500/20 text-cyan-300 border border-cyan-400/30" : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] border border-white/10"}`}>
+              <button key={p.name} onClick={() => navigate(p.url)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${rawUrl.startsWith(p.url) ? "bg-cyan-500/20 text-cyan-300 border border-cyan-400/30" : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] border border-white/10"}`}>
                 <span className={`w-2 h-2 rounded-full ${p.color}`} />{p.name}
               </button>
             ))}
@@ -131,30 +168,93 @@ export function EDziennik() {
             </button>
           </div>
 
-          {/* Info box */}
-          <div className="rounded-lg border border-amber-400/20 bg-amber-500/5 p-3 text-xs text-amber-100/70 flex gap-2">
-            <Info className="w-4 h-4 shrink-0 text-amber-300 mt-0.5" />
-            <div>Niektóre dzienniki (Vulcan, Librus) mogą blokować wyświetlanie w iframe. W takim przypadku otwórz je w nowej karcie, klikając ikonkę <ExternalLink className="w-3 h-3 inline" /> poniżej, lub użyj widoku mobilnego.</div>
+          {/* Proxy mode toggle + status bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative">
+                  <input type="checkbox" checked={proxyMode} onChange={() => setProxyMode(!proxyMode)} className="sr-only peer" />
+                  <div className="w-9 h-5 rounded-full bg-white/10 peer-checked:bg-cyan-500 transition after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4" />
+                </div>
+                <span className="text-xs text-white/60 font-mono"><Zap className="w-3 h-3 inline mr-0.5" />Proxy</span>
+              </label>
+              {proxyMode && (
+                <span className="text-[10px] text-emerald-400/70 font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />Aktywny
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-mono text-white/30">
+              <span className={`inline-block w-2 h-2 rounded-full ${iframeLoaded ? "bg-emerald-400" : "bg-white/20"}`} />
+              {iframeLoaded ? "Połączono" : iframeError ? "Błąd" : "Gotowy"}
+            </div>
           </div>
+
+          {/* Info box */}
+          {!proxyMode && needsProxy(url) && (
+            <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-xs text-red-200/80 flex gap-2">
+              <ShieldAlert className="w-4 h-4 shrink-0 text-red-300 mt-0.5" />
+              <div><b className="text-red-200">Ta strona blokuje iframe.</b> Włącz Proxy powyżej lub otwórz w nowej karcie.</div>
+            </div>
+          )}
+          {proxyMode && (
+            <div className="rounded-lg border border-amber-400/20 bg-amber-500/5 p-3 text-xs text-amber-100/70 flex gap-2">
+              <Info className="w-4 h-4 shrink-0 text-amber-300 mt-0.5" />
+              <div>Proxy omija blokadę iframe, ale niektóre funkcje (logowanie, redirecty) mogą nie działać idealnie. <b className="text-amber-200">Jeśli strona się nie ładuje, otwórz ją w nowej karcie</b>.</div>
+            </div>
+          )}
 
           {/* Iframe */}
           <div className={`rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden ${viewMode === "mobile" ? "max-w-[375px] mx-auto" : ""}`}>
             <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 bg-white/[0.03]">
-              <span className="text-[10px] font-mono text-white/30 truncate max-w-[80%]">{iframeUrl || "gotowy"}</span>
-              {iframeUrl && (
-                <a href={iframeUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 transition" title="Otwórz w nowej karcie">
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              )}
+              <span className="text-[10px] font-mono text-white/30 truncate max-w-[80%]">{rawUrl || "gotowy"}</span>
+              <div className="flex items-center gap-2">
+                {proxyMode && rawUrl && <span className="text-[9px] font-mono text-cyan-400/60">PROXY</span>}
+                {rawUrl && (
+                  <a onClick={() => openInNewTab(rawUrl)} className="text-cyan-300 hover:text-cyan-200 transition cursor-pointer" title="Otwórz w nowej karcie (bez proxy)">
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
             </div>
-            {iframeUrl ? (
-              <iframe
-                ref={iframeRef}
-                src={iframeUrl}
-                className="w-full h-[600px] bg-white"
-                sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
-                title="e-Dziennik"
-              />
+            {rawUrl ? (
+              <div className="relative">
+                {loading && (
+                  <div className="absolute inset-0 z-10 bg-[#070b17]/80 grid place-items-center">
+                    <div className="flex items-center gap-2 text-white/60 text-sm font-mono">
+                      <RotateCw className="w-5 h-5 animate-spin" /> Ładowanie...
+                    </div>
+                  </div>
+                )}
+                {iframeError && (
+                  <div className="absolute inset-0 z-10 bg-[#070b17]/90 grid place-items-center">
+                    <div className="text-center p-8 max-w-md">
+                      <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/20 border border-red-400/30 grid place-items-center mb-4">
+                        <WifiOff className="w-6 h-6 text-red-300" />
+                      </div>
+                      <p className="text-white/80 text-sm font-semibold mb-1">Nie można załadować strony</p>
+                      <p className="text-white/40 text-xs mb-4">Serwer odrzucił połączenie (ERR_BLOCKED_BY_RESPONSE). Strona blokuje wyświetlanie w ramce.</p>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        <button onClick={() => openInNewTab(rawUrl)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-900 text-xs font-semibold transition">
+                          <ExternalLink className="w-3.5 h-3.5" />Otwórz w nowej karcie
+                        </button>
+                        <button onClick={reload} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-xs transition border border-white/10">
+                          <RotateCw className="w-3.5 h-3.5" />Spróbuj ponownie
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <iframe
+                  ref={iframeRef}
+                  src={iframeSrc}
+                  className={`w-full h-[600px] ${proxyMode ? "bg-white" : "bg-white"}`}
+                  sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+                  title="e-Dziennik"
+                  onError={handleIframeError}
+                  onLoad={handleIframeLoad}
+                />
+              </div>
             ) : (
               <div className="h-[400px] grid place-items-center text-center p-8">
                 <div className="space-y-3">
@@ -170,9 +270,9 @@ export function EDziennik() {
           <div className="flex flex-wrap gap-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-white/30 self-center mr-1"><Bookmark className="w-3 h-3 inline mr-1" />Szybkie linki:</span>
             {PRESETS.map((p) => (
-              <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-xs text-white/50 hover:text-white transition border border-white/10">
+              <button key={p.name} onClick={() => openInNewTab(p.url)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-xs text-white/50 hover:text-white transition border border-white/10">
                 <ExternalLink className="w-3 h-3" />{p.name}
-              </a>
+              </button>
             ))}
           </div>
         </>

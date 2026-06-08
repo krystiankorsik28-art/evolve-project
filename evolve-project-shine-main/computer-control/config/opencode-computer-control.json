@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "computer-control": {
+      "type": "local",
+      "command": ["node", "C:\\Users\\Wychowanek\\evolve-project-shine\\computer-control\\dist\\index.js"],
+      "enabled": true
+    }
+  }
+}

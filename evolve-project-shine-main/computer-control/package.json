@@ -1,0 +1,21 @@
+{
+  "name": "computer-control-mcp",
+  "version": "1.0.0",
+  "description": "Full AI computer control system for Windows — Playwright + PyAutoGUI fallback, MCP-compatible",
+  "type": "module",
+  "bin": {
+    "computer-control": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "setup": "node scripts/setup.js"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "typescript": "^5.8.3"
+  }
+}

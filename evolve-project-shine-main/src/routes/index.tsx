@@ -1,0 +1,1257 @@
+import { useState, useEffect, useRef } from "react";
+import { useTheme } from "@/lib/theme";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  GraduationCap, Users, Shield, ArrowRight, ArrowUpRight, CheckCircle2, BookOpen,
+  Mail, Phone, MapPin, Send, Loader2, Menu, X, FileText, ClipboardList,
+  Library, BarChart3, Lock, Calendar, Sparkles, Zap, Globe2, Activity, ShieldCheck, ChevronUp,
+  BrainCircuit, Bot, Database, Smartphone, Wifi, Cloud, Download, Upload,
+  Timer, Clock, Award, Medal, Star, Trophy, TrendingUp, Target, Eye,
+  Search, Filter, LayoutDashboard, Share2, Github,
+  School, BookMarked, MessageSquare, LifeBuoy,
+  DollarSign, BadgeCheck, Verified, Monitor,
+  Laptop, Rocket, Flag, Compass, PenTool,
+  ArrowLeft, Play, ChevronRight, ChevronDown, Plus, Tablet, Headphones, Bell,
+  Lightbulb, Cable, Workflow, GripVertical, Puzzle, ScrollText, Heart, KeyRound,
+
+} from "lucide-react";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { submitContact } from "@/lib/contact.functions";
+import { NexaPayCheckout } from "@/components/NexaPayCheckout";
+
+export const Route = createFileRoute("/")({
+  component: Landing,
+  head: () => ({
+    meta: [
+      { title: "EduNex — Państwowa platforma egzaminacyjna | edu.nex.pl" },
+      { name: "description", content: "Oficjalna platforma egzaminacyjna dla polskich szkół. Egzaminy, sprawdziany i certyfikowane testy zgodne z podstawą programową MEN." },
+      { property: "og:title", content: "EduNex — Państwowa platforma egzaminacyjna" },
+      { property: "og:description", content: "Certyfikowana platforma egzaminacyjna dla szkół. Bezpieczeństwo, RODO, zgodność z MEN." },
+    ],
+  }),
+});
+
+function Landing() {
+  const { setTheme } = useTheme();
+  useEffect(() => { setTheme("dark") }, []);
+  useScrollReveal();
+  return (
+    <div className="landing-root min-h-screen selection:bg-cyan-400/30 selection:text-white overflow-x-clip antialiased">
+      <Toaster theme="dark" />
+      <CursorGlow />
+      <SocialProof />
+      <CookieBanner />
+      <BackgroundFX />
+      <NavBar />
+      <Hero />
+      <Stats />
+      <Marquee />
+      <FeaturesBento />
+      <ForWhom />
+      <Process />
+      <Comparison />
+      <Integrations />
+      <Compliance />
+      <Testimony />
+      <Pricing />
+      <FAQ />
+      <Newsletter />
+      <Contact />
+      <Footer />
+    </div>
+  );
+}
+
+/* ──── Scroll reveal hook ──── */
+function useScrollReveal() {
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("revealed") });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+}
+
+/* ──── Cursor glow ──── */
+function CursorGlow() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const f = (e: MouseEvent) => {
+      if (ref.current) {
+        ref.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      }
+    };
+    window.addEventListener("mousemove", f);
+    return () => window.removeEventListener("mousemove", f);
+  }, []);
+  return <div ref={ref} className="cursor-glow hidden lg:block" />;
+}
+
+/* ──── Social proof toast ──── */
+const SOCIAL_EVENTS = [
+  { n: "Zofia Wiśniewska", a: "zakończyła egzamin z wynikiem 92%", s: "ok" },
+  { n: "III LO Gdynia", a: "dodała 15 nowych pytań do banku", s: "add" },
+  { n: "Jakub Kamiński", a: "otrzymał certyfikat z matematyki", s: "cert" },
+  { n: "V LO Kraków", a: "rozpoczęła sprawdzian — 28 uczniów", s: "start" },
+  { n: "Hanna Lewandowska", a: "poprawiła wynik o 14 punktów", s: "up" },
+  { n: "XIV LO Warszawa", a: "wygenerowała raport miesięczny", s: "report" },
+  { n: "Antoni Dąbrowski", a: "przekroczył próg zaliczenia — 58%", s: "ok" },
+  { n: "ZSE Poznań", a: "zaimportowała 200 uczniów z CSV", s: "add" },
+];
+function SocialProof() {
+  const [current, setCurrent] = useState(0);
+  const [exiting, setExiting] = useState(false);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setExiting(true);
+      setTimeout(() => { setCurrent((p) => (p + 1) % SOCIAL_EVENTS.length); setExiting(false) }, 300);
+    }, 5000);
+    return () => clearInterval(iv);
+  }, []);
+  const ev = SOCIAL_EVENTS[current];
+  const colors: Record<string, string> = { ok: "bg-emerald-400", add: "bg-cyan-400", cert: "bg-amber-400", start: "bg-violet-400", up: "bg-emerald-400", report: "bg-blue-400" };
+  return (
+    <div className={`fixed bottom-24 left-6 z-50 max-w-xs rounded-2xl border border-white/10 bg-black/80 backdrop-blur-xl px-4 py-3 shadow-xl hidden lg:block ${exiting ? "social-toast exit" : "social-toast"}`}>
+      <div className="flex items-center gap-3 text-xs">
+        <span className={`w-2 h-2 rounded-full ${colors[ev.s] ?? "bg-white/40"} animate-pulse shrink-0`}/>
+        <div><span className="font-medium text-white">{ev.n}</span><span className="text-white/60"> {ev.a}</span></div>
+      </div>
+    </div>
+  );
+}
+
+/* ──── Cookie consent ──── */
+function CookieBanner() {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("cookies-ok")) setVisible(false);
+  }, []);
+  if (!visible) return null;
+  const accept = () => { localStorage.setItem("cookies-ok", "1"); setVisible(false) };
+  return (
+    <div className="cookie-banner fixed bottom-0 inset-x-0 z-50 border-t border-white/10 bg-black/90 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p className="text-xs text-white/60">Używamy plików cookie, aby zapewnić najlepsze doświadczenia na platformie. Korzystając ze strony, zgadzasz się na ich użycie.</p>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={accept} className="px-4 py-2 rounded-lg text-xs font-medium bg-gradient-to-br from-cyan-300 to-violet-300 text-black hover:shadow-[0_4px_16px_-4px_rgba(34,211,238,0.4)] transition">Akceptuję</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──── Background FX ──── */
+function BackgroundFX() {
+  return (
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-0 bg-aurora opacity-90" />
+      <div className="absolute inset-0 bg-grid opacity-[0.5] [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
+      <div className="absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full bg-violet-500/20 blur-[160px] animate-float" />
+      <div className="absolute top-1/3 -right-40 w-[520px] h-[520px] rounded-full bg-cyan-400/15 blur-[160px] animate-float" style={{ animationDelay: "1.5s" }} />
+      <div className="absolute bottom-0 left-1/3 w-[420px] h-[420px] rounded-full bg-rose-500/15 blur-[160px] animate-float" style={{ animationDelay: "3s" }} />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] opacity-[0.03] pointer-events-none select-none">
+        <svg viewBox="0 0 400 500" fill="white" className="w-full h-full">
+          <path d="M200 20C180 20 160 35 155 55L150 70C145 80 140 85 130 90L120 95C110 100 105 110 105 120L105 135C105 145 110 150 120 150L125 150C130 150 135 145 140 140L145 135C150 130 155 130 160 135L165 140C170 145 175 145 180 140L185 135C190 130 195 130 200 135C205 130 210 130 215 135L220 140C225 145 230 145 235 140L240 135C245 130 250 130 255 135L260 140C265 145 270 150 275 150L280 150C290 150 295 145 295 135L295 120C295 110 290 100 280 95L270 90C260 85 255 80 250 70L245 55C240 35 220 20 200 20Z" />
+          <path d="M170 160L175 155C180 150 185 150 190 155L195 160C200 165 200 175 195 180L190 185C185 190 180 190 175 185L170 180C165 175 165 165 170 160Z" />
+          <path d="M210 160L215 155C220 150 225 150 230 155L235 160C240 165 240 175 235 180L230 185C225 190 220 190 215 185L210 180C205 175 205 165 210 160Z" />
+          <path d="M185 200L190 195C195 190 205 190 210 195L215 200C220 205 220 215 215 220L210 225C205 230 195 230 190 225L185 220C180 215 180 205 185 200Z" />
+          <path d="M160 230L165 225C170 220 180 220 185 225L190 230C195 235 195 245 190 250L185 255C180 260 170 260 165 255L160 250C155 245 155 235 160 230Z" />
+          <path d="M220 230L225 225C230 220 240 220 245 225L250 230C255 235 255 245 250 250L245 255C240 260 230 260 225 255L220 250C215 245 215 235 220 230Z" />
+          <path d="M175 265L180 260C185 255 195 255 200 260L205 265C210 270 210 280 205 285L200 290C195 295 185 295 180 290L175 285C170 280 170 270 175 265Z" />
+          <path d="M195 295L200 290C205 290 210 295 210 300L210 310C210 315 205 320 200 320C195 320 190 315 190 310L190 300C190 295 195 295 195 295Z" />
+          <path d="M120 310C120 310 130 330 150 340C160 345 170 345 180 340L185 335C190 330 195 330 200 335C205 330 210 330 215 335L220 340C230 345 240 345 250 340C270 330 280 310 280 310L275 315C270 325 260 335 250 340C240 345 230 348 220 348L215 350C210 352 205 352 200 350L185 350C180 352 175 352 170 350L160 348C145 345 135 340 125 330C120 320 120 310 120 310Z" />
+          <path d="M140 350C140 350 155 365 175 375C185 380 195 382 200 380C205 382 215 380 225 375C245 365 260 350 260 350L255 355C245 368 230 378 215 385C210 388 205 388 200 385C195 388 190 388 185 385C170 378 155 368 145 355L140 350Z" />
+          <path d="M175 40L165 50L170 55L180 45Z" />
+          <path d="M200 35L195 45L200 50L205 45Z" />
+          <path d="M225 40L220 50L230 55L235 45Z" />
+          <rect x="160" y="30" width="80" height="8" rx="2" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* ──── NAV ──── */
+function NavBar() {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const f = () => setScrolled(window.scrollY > 12);
+    f(); window.addEventListener("scroll", f); return () => window.removeEventListener("scroll", f);
+  }, []);
+  return (
+    <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "py-2" : "py-4"}`}>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className={`flex items-center justify-between gap-4 rounded-2xl border border-white/10 px-3 sm:px-4 py-2.5 transition-all ${scrolled ? "bg-black/60 backdrop-blur-xl shadow-[0_8px_32px_-12px_rgba(0,0,0,0.6)]" : "bg-white/[0.03] backdrop-blur-md"}`}>
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+            <Mark />
+            <div className="leading-tight">
+              <div className="font-display text-[17px] font-semibold tracking-tight">EduNex</div>
+              <div className="text-[9px] tracking-[0.22em] text-white/40 uppercase font-mono flex items-center gap-1">
+                <span className="inline-block w-2 h-2 rounded-full bg-red-500/70" />
+                OFICJALNA PLATFORMA
+                <span className="inline-block w-2 h-2 rounded-full bg-red-500/70" />
+              </div>
+            </div>
+          </Link>
+          {/* Nav links */}
+          <nav className="hidden lg:flex items-center gap-1 text-sm flex-wrap">
+            {[
+              ["#funkcje","Funkcje"], ["#dla-kogo","Dla kogo"], ["#proces","Jak działa"],
+              ["#cennik","Cennik"], ["#faq","FAQ"], ["#kontakt","Kontakt"],
+            ].map(([h,l]) => (
+              <a key={h} href={h} className="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition">{l}</a>
+            ))}
+          </nav>
+          {/* Auth buttons */}
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
+            <Link to="/auth/student" className="px-3 py-2 text-sm rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition inline-flex items-center gap-1.5">
+              <GraduationCap className="w-4 h-4"/>Uczeń
+            </Link>
+            <Link to="/auth/teacher" className="group relative px-4 py-2 text-sm rounded-lg font-medium inline-flex items-center gap-1.5 text-black bg-gradient-to-br from-cyan-300 via-white to-violet-200 hover:shadow-[0_8px_32px_-8px_rgba(34,211,238,0.6)] transition-all">
+              Zaloguj <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition"/>
+            </Link>
+            <Link to="/auth/admin" className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="Administrator">
+              <Shield className="w-4 h-4"/>
+            </Link>
+          </div>
+          <button onClick={() => setOpen(!open)} className="sm:hidden p-2 rounded-lg hover:bg-white/5" aria-label="Menu">
+            {open ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
+          </button>
+        </div>
+        {open && (
+          <div className="lg:hidden mt-2 rounded-2xl border border-white/10 bg-black/80 backdrop-blur-xl p-3 flex flex-col gap-1 text-sm">
+            {["funkcje","dla-kogo","proces","cennik","faq","kontakt"].map((id, i) => (
+              <a key={id} onClick={()=>setOpen(false)} href={`#${id}`} className="px-3 py-2.5 rounded-lg hover:bg-white/5">{["Funkcje","Dla kogo","Jak działa","Cennik","FAQ","Kontakt"][i]}</a>
+            ))}
+            <div className="h-px bg-white/10 my-1"/>
+            <Link onClick={()=>setOpen(false)} to="/auth/student" className="px-3 py-2.5 rounded-lg hover:bg-white/5">Uczeń</Link>
+            <Link onClick={()=>setOpen(false)} to="/auth/teacher" className="px-3 py-2.5 rounded-lg hover:bg-white/5">Nauczyciel</Link>
+            <Link onClick={()=>setOpen(false)} to="/auth/admin" className="px-3 py-2.5 rounded-lg hover:bg-white/5">Administrator</Link>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
+
+function Mark() {
+  return (
+    <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px] shadow-[0_4px_16px_-4px_rgba(139,92,246,0.5)]">
+      <div className="w-full h-full rounded-[10px] bg-[#07080d] grid place-items-center">
+        <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 7l8-4 8 4-8 4-8-4z"/>
+          <path d="M4 12l8 4 8-4"/>
+          <path d="M4 17l8 4 8-4"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* ──── HERO ──── */
+function Hero() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const headlines = [
+    "Wyniki w czasie rzeczywistym.",
+    "Bezpieczny monitoring AI.",
+    "Pełna zgodność z MEN.",
+    "Zero instalacji — działa w każdym Chrome.",
+  ];
+  useEffect(() => {
+    const iv = setInterval(() => setCurrentSlide((s) => (s + 1) % headlines.length), 4000);
+    return () => clearInterval(iv);
+  }, []);
+  return (
+    <section className="relative pt-36 sm:pt-44 pb-20 sm:pb-28">
+      <div className="particle-grid"><div className="particle-grid-inner"/></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-12 items-center">
+        <div className="lg:col-span-7">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur text-xs cursor-default">
+            <span className="px-2 py-0.5 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white font-semibold tracking-wide text-[10px]">OFICJALNA</span>
+            <span className="text-white/70">Platforma zatwierdzona · MEN · certyfikat RODO</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-red-400"/>
+          </div>
+          {/* Headline */}
+          <h1 className="mt-6 font-display text-5xl sm:text-6xl lg:text-7xl font-semibold leading-[0.95] tracking-tight">
+            Egzaminy bez tarcia.{" "}
+            <span className="block bg-gradient-to-r from-red-400 via-white to-red-400 bg-clip-text text-transparent">
+              {headlines[currentSlide]}
+            </span>
+          </h1>
+          <p className="mt-6 text-lg text-white/65 max-w-xl leading-relaxed">
+            Certyfikowana platforma egzaminacyjna zgodna z podstawą programową MEN. Twórz sprawdziany, zarządzaj klasami i monitoruj wyniki na żywo — w jednym, bezpiecznym środowisku.
+          </p>
+          {/* CTA */}
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link to="/auth/teacher" className="group relative inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-medium text-black bg-gradient-to-br from-cyan-300 via-white to-violet-200 hover:shadow-[0_16px_48px_-12px_rgba(34,211,238,0.7)] transition-all">
+              Zaloguj jako nauczyciel <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition"/>
+            </Link>
+            <Link to="/auth/student" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-medium border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur transition">
+              <GraduationCap className="w-4 h-4"/>Wejdź PIN-em
+            </Link>
+          </div>
+          {/* Trust badges */}
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-white/50">
+            {[
+              ["Zgodność z MEN", ShieldCheck],
+              ["Serwery w UE", Globe2],
+              ["RODO certyfikat", Lock],
+              ["99,98% uptime", Activity],
+              ["Wsparcie 24/7", Zap],
+              ["2 847+ egzaminów", FileText],
+              ["Certyfikaty online", Award],
+            ].map(([t, I]) => (
+              <span key={t as string} className="inline-flex items-center gap-1.5">
+                <I className="w-3.5 h-3.5 text-red-400"/>{t}
+              </span>
+            ))}
+          </div>
+        </div>
+        {/* Hero Card */}
+        <div className="lg:col-span-5 relative">
+          <HeroCard />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HeroCard() {
+  const [students, setStudents] = useState([
+    { n: "Zofia Wiśniewska", p: 92, s: "ok" },
+    { n: "Jakub Kamiński", p: 84, s: "ok" },
+    { n: "Hanna Lewandowska", p: 71, s: "ok" },
+    { n: "Antoni Dąbrowski", p: 58, s: "warn" },
+    { n: "Maja Szymańska", p: 40, s: "ok" },
+    { n: "Stanisław Woźniak", p: 23, s: "alert" },
+  ]);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setStudents((prev) => prev.map((s) => {
+        const delta = Math.floor(Math.random() * 5) - 2;
+        const newP = Math.max(0, Math.min(100, s.p + delta));
+        const newS = newP >= 70 ? "ok" : newP >= 40 ? "warn" : "alert";
+        return { ...s, p: newP, s: newS };
+      }));
+    }, 3000);
+    return () => clearInterval(iv);
+  }, []);
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 bg-gradient-to-br from-cyan-500/30 via-violet-500/30 to-fuchsia-500/30 rounded-3xl blur-3xl"/>
+      <div className="tilt-card relative rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl p-1 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.7)]">
+        <div className="rounded-[20px] bg-[#0a0d18]/80 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0.5">
+                <span className="w-2 h-3 rounded-sm bg-white" />
+                <span className="w-2 h-3 rounded-sm bg-red-500" />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-400/70"/>
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70"/>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/70"/>
+              </div>
+            </div>
+            <div className="text-[10px] font-mono text-white/40">edunex.app/teacher · live</div>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-400/15 text-emerald-300 font-mono animate-pulse">REC</span>
+          </div>
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-white/40">Klasa 3A · Matematyka</div>
+                    <div className="font-display text-xl mt-0.5">Funkcje kwadratowe — kartkówka</div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] uppercase tracking-widest text-white/40">Pozostało</div>
+                <div className="font-mono text-cyan-300 text-lg tabular-nums">08:42</div>
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              {students.map((u) => (
+                <div key={u.n} className="flex items-center gap-3 text-xs">
+                  <div className="w-7 h-7 rounded-lg bg-white/5 grid place-items-center text-[10px] text-white/60 font-medium">{u.n[0]}</div>
+                  <div className="flex-1">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-white/80">{u.n}</span>
+                      <span className="font-mono text-white/50">{u.p}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-700 ${u.s === "alert" ? "bg-rose-400" : u.s === "warn" ? "bg-amber-300" : "bg-gradient-to-r from-cyan-400 to-violet-400"}`} style={{ width: `${u.p}%` }}/>
+                    </div>
+                  </div>
+                  <span className={`w-1.5 h-1.5 rounded-full ${u.s === "alert" ? "bg-rose-400 animate-pulse" : u.s === "warn" ? "bg-amber-300" : "bg-emerald-400"}`}/>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-white/5">
+              {[
+                { l: "Średnia", v: "76%" },
+                { l: "Aktywni", v: "28/30" },
+                { l: "Alerty", v: 0 },
+              ].map((s) => (
+                <div key={s.l} className="rounded-lg bg-white/[0.03] border border-white/5 p-2.5">
+                  <div className="text-[9px] uppercase tracking-widest text-white/40">{s.l}</div>
+                  <div className="font-display text-lg mt-0.5">{s.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="hidden sm:block absolute -bottom-4 -left-6 rounded-xl border border-white/10 bg-black/80 backdrop-blur px-3 py-2 text-xs shadow-xl animate-float">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>
+          <span className="font-mono">+12 odpowiedzi / sek</span>
+        </div>
+      </div>
+      <div className="hidden sm:block absolute -top-4 -right-4 rounded-xl border border-white/10 bg-black/80 backdrop-blur px-3 py-2 text-xs shadow-xl animate-float" style={{ animationDelay: "1s" }}>
+        <div className="flex items-center gap-2 text-cyan-300">
+          <Sparkles className="w-3.5 h-3.5"/>
+          <span>Auto-ocena AI</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──── STATS COUNTER ──── */
+function Stats() {
+  const [counts, setCounts] = useState({ exams: 0, teachers: 0, students: 0, certificates: 0, uptime: 99.98 });
+  const ref = useRef<HTMLDivElement>(null);
+  const [started, setStarted] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) setStarted(true);
+    }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [started]);
+  useEffect(() => {
+    if (!started) return;
+    const iv = setInterval(() => {
+      setCounts((c) => ({
+        exams: Math.min(3752, c.exams + 2),
+        teachers: Math.min(829, c.teachers + 1),
+        students: Math.min(36140, c.students + 5),
+        certificates: Math.min(18920, c.certificates + 3),
+        uptime: 99.98,
+      }));
+    }, 25);
+    return () => clearInterval(iv);
+  }, [started]);
+  return (
+    <section ref={ref} className="reveal border-y border-white/5 py-12 sm:py-16">
+      <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 sm:gap-8">
+        {[
+          ["Przeprowadzonych egzaminów", counts.exams, "from-cyan-400 to-blue-400"],
+          ["Aktywnych nauczycieli", counts.teachers, "from-violet-400 to-fuchsia-400"],
+          ["Uczniów w systemie", counts.students, "from-emerald-400 to-teal-400"],
+          ["Dostępność", `${counts.uptime}%`, "from-amber-400 to-orange-400"],
+          ["Wystawionych certyfikatów", counts.certificates, "from-emerald-400 to-cyan-400"],
+        ].map(([l, v, g], i) => (
+          <div key={l as string} className="text-center group" style={{ animationDelay: `${i * 0.1}s` }}>
+            <div className={`text-3xl sm:text-4xl lg:text-5xl font-display font-bold bg-gradient-to-r ${g} bg-clip-text text-transparent tabular-nums`}>
+              {typeof v === "number" ? v.toLocaleString() : v}
+            </div>
+            <div className="text-xs text-white/50 mt-1.5">{l}</div>
+            <div className="mt-2 mx-auto w-0 h-0.5 rounded-full bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent group-hover:w-12 transition-all duration-500" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ──── MARQUEE ──── */
+function Marquee() {
+  const items = [
+    "XIV LO im. Staszica · Warszawa · dyr. Agnieszka Potocka",
+    "III LO im. Marynarki Wojennej RP · Gdynia · dyr. Wiesław Kosakowski",
+    "V LO im. Augusta Witkowskiego · Kraków · dyr. Stanisław Pietras",
+    "XIII LO · Szczecin · dyr. Bożena Pyra",
+    "II LO im. Stefana Batorego · Warszawa · dyr. Małgorzata Lewandowska",
+    "I LO im. Mikołaja Kopernika · Łódź · dyr. Aldona Danielewicz-Malec",
+    "ZSE im. M. Skłodowskiej-Curie · Poznań · dyr. Tomasz Wróblewski",
+    "VI LO im. Jana Kochanowskiego · Wrocław · dyr. Anna Jabłońska",
+  ];
+  return (
+    <section className="reveal border-y border-white/5 py-6 overflow-hidden">
+      <div className="text-center text-[10px] tracking-[0.3em] uppercase text-white/40 mb-4">Zaufały nam placówki w całej Polsce</div>
+      <div className="relative flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)]">
+        <div className="flex shrink-0 gap-12 animate-[marquee_50s_linear_infinite] pr-12">
+          {[...items, ...items].map((s, i) => (
+            <span key={i} className="text-sm text-white/40 whitespace-nowrap font-display">{s}</span>
+          ))}
+        </div>
+        <div className="flex shrink-0 gap-12 animate-[marquee_50s_linear_infinite] pr-12" aria-hidden>
+          {[...items, ...items].map((s, i) => (
+            <span key={i} className="text-sm text-white/40 whitespace-nowrap font-display">{s}</span>
+          ))}
+        </div>
+      </div>
+      <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }`}</style>
+    </section>
+  );
+}
+
+/* ──── FEATURES BENTO (24 cards, 6 categories, setki funkcji) ──── */
+const FEATURE_CATEGORIES = [
+  {
+    id: "egzaminy",
+    label: "Egzaminy & pytania",
+    icon: FileText,
+    gradient: "from-cyan-400 to-blue-500",
+    items: [
+      { title: "Tworzenie egzaminów", bullets: ["Pytania zamknięte, otwarte, kod, numeryczne, dopasowania, esej", "Szablony z banku pytań — 200+ gotowych zestawów", "Własne kategorie i tagi przedmiotowe", "Ustawienie czasu trwania i progu zaliczenia", "Losowanie kolejności pytań i odpowiedzi"] },
+      { title: "Sprawdziany błyskawiczne", bullets: ["Kartkówki z 3-5 pytaniami w 2 minuty", "Wyniki widoczne natychmiast po zakończeniu", "Oznaczanie pytań do przeglądu", "Wiele typów w jednym sprawdzianie", "Punkty cząstkowe i suma na żywo"] },
+      { title: "Bank pytań", bullets: ["200+ pytań gotowych do użycia", "Dodawanie własnych pytań z Worda / PDF / Excel", "Współdzielenie z innymi nauczycielami w szkole", "Filtry po przedmiocie, poziomie, typie", "Wersjonowanie i historia zmian"] },
+      { title: "Generator AI", bullets: ["Generuj pytania z 3 słów — AI robi resztę", "Wczytaj zdjęcie z kartki — AI odczytuje i tworzy test", "Automatyczne dopasowanie poziomu trudności", "Tłumaczenie pytań na angielski / niemiecki", "Generowanie wariantów dla całej klasy"] },
+      { title: "Certyfikacja", bullets: ["Certyfikat PDF po zaliczonym egzaminie", "Unikalny numer seryjny każdego certyfikatu", "Kod QR — zeskanuj i zweryfikuj online", "Strona weryfikacji — sprawdź autentyczność", "Pobierz i wydrukuj certyfikat z wynikami"] },
+    ],
+  },
+  {
+    id: "ai",
+    label: "AI & automatyzacja",
+    icon: BrainCircuit,
+    gradient: "from-violet-400 to-fuchsia-500",
+    items: [
+      { title: "Auto-ocena odpowiedzi", bullets: ["Pytania zamknięte — ocena w 0,3 sekundy", "AI ocenia otwarte — rozumie kontekst odpowiedzi", "Korekta pisowni nie wpływa na ocenę merytoryki", "Propozycje punktów dla nauczyciela do zatwierdzenia", "Statystyki trudności pytań"] },
+      { title: "Asystent AI nauczyciela", bullets: ["Rozmowa głosowa z asystentem przez mikrofon", "Podpowiedzi przy układaniu pytań", "Generowanie przykładów i zadań domowych", "Analiza błędów klasy — AI znajduje słabe punkty", "Personalizowane rekomendacje dla uczniów"] },
+      { title: "Wykrywanie ściągania", bullets: ["AI analizuje ruchy myszy i klawiaturę", "Wykrywanie opuszczania okna egzaminu", "Analiza podobieństwa odpowiedzi między uczniami", "Alerty o podejrzanych zachowaniach w czasie rzeczywistym", "Raport końcowy z podejrzanymi zdarzeniami"] },
+      { title: "Automatyczne raporty", bullets: ["Raport PDF po każdym egzaminie — gotowy do druku", "Rozkład wyników klasy na tle szkoły", "Eksport do dziennika jednym kliknięciem", "Historia postępów ucznia w czasie", "Powiadomienia e-mail dla rodziców"] },
+    ],
+  },
+  {
+    id: "analityka",
+    label: "Analityka & raporty",
+    icon: BarChart3,
+    gradient: "from-emerald-400 to-teal-500",
+    items: [
+      { title: "Panel nauczyciela", bullets: ["KPI na start: liczba egzaminów, średnia, alerty, aktywni", "Wykresy wyników klasy rozłożone w czasie", "Ranking uczniów z możliwością eksportu", "Filtry dat, przedmiotów i klas", "Tryb ciemny / jasny — w tym samym widoku"] },
+      { title: "Monitoring na żywo", bullets: ["Postęp każdego ucznia w czasie rzeczywistym", "Aktywni / średnie ryzyko / wysokie ryzyko —统计", "Zdarzenia: blokady, wyjścia z fullscreena", "Możliwość zatrzymania egzaminu zdalnie", "Podgląd ekranu ucznia w FrameViewer"] },
+      { title: "Raporty dla dyrekcji", bullets: ["Zbiorcze zestawienie wszystkich klas", "Wskaźniki zdawalności przedmiotów", "Porównanie nauczycieli i klas", "Eksport do PDF / Excel / CSV", "Dziennik audytu — kto, co, kiedy"] },
+      { title: "Analiza pytań", bullets: ["Które pytania sprawiają najwięcej trudności", "Procent poprawnych odpowiedzi na pytanie", "Czas spędzony na każdym pytaniu", "Dystraktory — które odpowiedzi mylą uczniów", "Sugestie AI: zmień treść, próg, wagę"] },
+    ],
+  },
+  {
+    id: "zarzadzanie",
+    label: "Zarządzanie klasą",
+    icon: Users,
+    gradient: "from-amber-400 to-orange-500",
+    items: [
+      { title: "Klasy i grupy", bullets: ["Tworzenie klas z nazwą i przedmiotem", "Import uczniów z CSV / dziennika elektronicznego", "Dodawanie uczniów pojedynczo lub zbiorczo", "Podział na grupy zaawansowania", "Archiwizacja klas po zakończeniu roku"] },
+      { title: "Dziennik i oceny", bullets: ["Wystawianie ocen z egzaminów i sprawdzianów", "Średnia ważona z wagami ustawialnymi", "Średnia klasy — porównanie wizualne", "Eksport do Vulcan / Librus / Mobidziennik", "Wystawianie ocen opisowych"] },
+      { title: "Plan lekcji", bullets: ["Tygodniowy harmonogram z drag & drop", "Zaznaczanie terminów egzaminów", "Powiadomienia dla uczniów o nadchodzących testach", "Synchronizacja z kalendarzem Google / Outlook", "Widok dla ucznia i nauczyciela"] },
+      { title: "Komunikacja", bullets: ["Wiadomości wewnętrzne do uczniów i rodziców", "Wysyłka wyników na e-mail", "Ogłoszenia dla całej klasy / szkoły", "Szablon wiadomości dla powtarzalnych通知", "Historia korespondencji w profilu ucznia"] },
+    ],
+  },
+  {
+    id: "bezpieczenstwo",
+    label: "Bezpieczeństwo & RODO",
+    icon: Shield,
+    gradient: "from-red-400 to-rose-500",
+    items: [
+      { title: "Ochrona danych", bullets: ["Szyfrowanie TLS 1.3 w tranzycie", "Szyfrowanie AES-256 w spoczynku", "Serwery tylko w Unii Europejskiej", "Regularne audyty bezpieczeństwa", "Backupy co 6 godzin"] },
+      { title: "Zgodność z RODO", bullets: ["Umowa powierzenia danych dla każdej szkoły", "Pełen dziennik audytu wszystkich operacji", "Eksport danych ucznia na żądanie", "Usunięcie konta i danych w 48h", "Anonimizacja danych po zakończeniu roku"] },
+      { title: "Tryb egzaminacyjny", bullets: ["Wymagany pełny ekran — brak dostępu do innych kart", "Blokada skrótów klawiszowych (Ctrl+C, Alt+Tab)", "Zapis co 5 sekund — brak utraty odpowiedzi", "Brak możliwości cofnięcia po zakończeniu", "Monitoring aktywności na żywo"] },
+      { title: "Kontrola dostępu", bullets: ["3 role: administrator, nauczyciel, uczeń", "Dostęp nauczyciela tylko do własnych klas", "Logowanie dwuetapowe dla administratora", "Sesja wygasa po 15 min bezczynności", "Blokada po 5 nieudanych próbach logowania"] },
+    ],
+  },
+  {
+    id: "integracje",
+    label: "Integracje & mobilność",
+    icon: Puzzle,
+    gradient: "from-sky-400 to-indigo-500",
+    items: [
+      { title: "Integracja z dziennikami", bullets: ["Vulcan — bezpośrednia synchronizacja ocen", "Librus — import klas i eksport ocen", "Mobidziennik — dwukierunkowa wymiana danych", "Automatyczne mapowanie kont uczniów", "Wsparcie dla wszystkich wersji API"] },
+      { title: "Działanie mobilne", bullets: ["Działa w każdym Chrome / Edge / Firefox", "Nie wymaga instalacji — otwórz i pracuj", "Działa na telefonie, tablecie i komputerze", "Tryb offline dla pytań — synchronizacja po włączeniu", "Responsywny interfejs — dostosowany do ekranu"] },
+      { title: "Eksport i import", bullets: ["Import pytań z Word, PDF, Excel, TXT", "Export wyników do PDF, Excel, CSV", "Import uczniów z CSV z mapowaniem kolumn", "Export danych do archiwum ZIP", "API REST dla zaawansowanych integracji"] },
+      { title: "Narzędzia dodatkowe", bullets: ["Voice Input — dyktowanie pytań głosem", "Kalkulator wbudowany w egzamin", "Notatnik dla odpowiedzi otwartych", "Czytnik ekranu WCAG 2.1 AA", "Skróty klawiszowe dla zaawansowanych"] },
+    ],
+  },
+];
+
+function FeaturesBento() {
+  const [activeCategory, setActiveCategory] = useState(FEATURE_CATEGORIES[0].id);
+  const active = FEATURE_CATEGORIES.find((c) => c.id === activeCategory) ?? FEATURE_CATEGORIES[0];
+  const totalFeatures = FEATURE_CATEGORIES.reduce((acc, cat) => acc + cat.items.reduce((a, i) => a + i.bullets.length, 0), 0);
+  return (
+    <section id="funkcje" className="py-20 sm:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal max-w-2xl mx-auto text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] uppercase tracking-[0.22em] text-white/60 font-mono">00 · Funkcje</div>
+          <h2 className="mt-4 font-display text-3xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">
+            Ponad <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-amber-200 bg-clip-text text-transparent">{totalFeatures}+</span> możliwości
+          </h2>
+          <p className="mt-4 text-white/60 text-base leading-relaxed">Wszystkie narzędzia, których potrzebuje nowoczesna szkoła — w jednym, zintegrowanym systemie.</p>
+        </div>
+        {/* Category tabs */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {FEATURE_CATEGORIES.map((cat) => (
+            <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeCategory === cat.id ? `bg-gradient-to-r ${cat.gradient} text-black shadow-lg` : "bg-white/[0.04] border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.08]"}`}>
+              <cat.icon className="w-4 h-4"/>{cat.label}
+            </button>
+          ))}
+        </div>
+        {/* Bento grid */}
+        <div className="grid sm:grid-cols-2 gap-3">
+          {active.items.map((item) => (
+            <div key={item.title} className="tilt-card group rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur p-5 sm:p-6 transition-all hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_16px_48px_-16px_rgba(34,211,238,0.15)]">
+              <h3 className="font-display text-base font-semibold flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${active.gradient}`}/>
+                {item.title}
+              </h3>
+              <ul className="mt-3 space-y-1.5">
+                {item.bullets.map((b) => (
+                  <li key={b} className="text-sm text-white/60 flex gap-2">
+                    <span className="text-cyan-400/70 shrink-0 mt-0.5">›</span>{b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── FOR WHOM ──── */
+function ForWhom() {
+  const cards = [
+    { icon: GraduationCap, accent: "from-cyan-400 to-blue-500", to: "/auth/student", title: "Uczeń", lines: ["Wejście PIN-em lub konto", "Czysty interfejs egzaminu", "Wynik widoczny od razu", "Certyfikat PDF + weryfikacja QR", "Tryb recenzji — oznaczaj do przeglądu"] },
+    { icon: Users, accent: "from-violet-400 to-fuchsia-500", to: "/auth/teacher", title: "Nauczyciel", lines: ["Pytania ręcznie lub z AI w 3s", "Klasy, oceny, dziennik", "Monitoring na żywo 30 uczniów", "Eksport PDF, Excel i CSV", "Generator AI pytań ze zdjęć"] },
+    { icon: Shield, accent: "from-amber-300 to-rose-400", to: "/auth/admin", title: "Dyrekcja", lines: ["Zatwierdzanie nauczycieli", "Raporty zbiorcze szkoły", "Audyt aktywności i logowań", "Zarządzanie kontami i licencjami", "Statystyki zdawalności przedmiotów"] },
+    { icon: Heart, accent: "from-emerald-400 to-teal-500", to: "/auth/parent", title: "Rodzic", lines: ["Wgląd w wyniki dziecka", "Powiadomienia o sprawdzianach", "Raport postępów na e-mail", "Kontakt z nauczycielem", "Rejestracja + kod dostępu"] },
+  ];
+  return (
+    <Section id="dla-kogo" eyebrow="02 · Role" title="Cztery perspektywy, jedna platforma">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {cards.map((c, i) => (
+          <Link key={c.title} to={c.to} className={`reveal reveal-delay-${i + 1} group relative rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur p-6 overflow-hidden transition-all hover:-translate-y-1`}>
+            <div className={`absolute -top-20 -right-20 w-48 h-48 rounded-full bg-gradient-to-br ${c.accent} opacity-20 blur-3xl group-hover:opacity-40 transition`}/>
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.accent} grid place-items-center mb-5 shadow-lg`}>
+              <c.icon className="w-6 h-6 text-black"/>
+            </div>
+            <h3 className="font-display text-2xl font-semibold">{c.title}</h3>
+            <ul className="mt-4 space-y-2 text-sm text-white/65">
+              {c.lines.map((l) => (
+                <li key={l} className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0 mt-0.5"/>{l}</li>
+              ))}
+            </ul>
+            <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white">
+              Przejdź <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition"/>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* ──── PROCESS ──── */
+function Process() {
+  const steps = [
+    { n: "01", icon: Users, t: "Załóż klasę", d: "Wpisz nazwę przedmiotu i listę uczniów. Import z CSV lub z dziennika Vulcan/Librus — 2 minuty." },
+    { n: "02", icon: FileText, t: "Przygotuj pytania", d: "Wpisz ręcznie, wybierz z banku 300+ pytań, zaimportuj z Worda/PDF albo wygeneruj AI z 3 słów." },
+    { n: "03", icon: KeyRound, t: "Wygeneruj PIN", d: "6-cyfrowy kod dla klasy. Uczeń wpisuje na dowolnym urządzeniu — bez logowania, bez konta, bez instalacji." },
+    { n: "04", icon: Monitor, t: "Monitoruj na żywo", d: "Postęp każdego ucznia w czasie rzeczywistym. AI wykrywa podejrzane zachowania. Możesz zatrzymać egzamin zdalnie." },
+    { n: "05", icon: Award, t: "Oceń i raportuj", d: "Zamknięte — auto-ocena w 0,3s. Otwarte — asysta AI. Eksport PDF/Excel/CSV do dziennika jednym kliknięciem." },
+  ];
+  return (
+    <Section id="proces" eyebrow="03 · Jak działa" title="Pięć kroków do gotowego egzaminu" sub="Od założenia klasy do gotowego raportu — w mniej niż 10 minut.">
+      <div className="relative">
+        <div className="absolute left-[23px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-cyan-400 via-violet-400 to-transparent hidden md:block" />
+        <div className="space-y-6">
+          {steps.map((s, i) => (
+            <div key={s.n} className={`reveal ${i > 0 ? `reveal-delay-${i}` : ""} relative flex items-start gap-6 group`}>
+              <div className="shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center text-black font-display font-bold text-sm shadow-lg shadow-cyan-500/20 z-10 transition-all duration-300 group-hover:scale-110 group-hover:shadow-cyan-400/40">
+                <s.icon className="w-5 h-5" />
+              </div>
+              <div className="flex-1 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur p-5 hover:bg-white/[0.06] transition-all hover:border-cyan-400/20 hover:-translate-y-0.5">
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] font-mono text-cyan-400/60">{s.n}</span>
+                  <h3 className="font-display text-lg font-semibold text-white">{s.t}</h3>
+                </div>
+                <p className="text-sm text-white/60 mt-2 leading-relaxed">{s.d}</p>
+                {i < steps.length - 1 && (
+                  <div className="hidden md:block absolute -bottom-6 left-[23px] w-[2px] h-6 bg-gradient-to-b from-cyan-400/40 to-transparent" />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Summary CTA */}
+        <div className="reveal reveal-delay-5 mt-10 text-center">
+          <Link to="/auth/teacher" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-medium text-black bg-gradient-to-br from-cyan-300 via-white to-violet-200 hover:shadow-[0_16px_48px_-12px_rgba(34,211,238,0.7)] transition-all group">
+            Wypróbuj teraz — 2 minuty <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+          </Link>
+          <p className="mt-3 text-xs text-white/40">Plan Klasa jest za darmo. Karta kredytowa nie wymagana.</p>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ──── COMPARISON ──── */
+function Comparison() {
+  const rows = [
+    ["Czas przygotowania egzaminu", "2–5 minut", "45–120 minut"],
+    ["Auto-ocena", "Natychmiast (AI)", "Ręcznie, 2–5 dni"],
+    ["Monitoring uczniów", "Na żywo, AI", "Brak"],
+    ["Wyniki dla uczniów", "Od razu po zakończeniu", "Po tygodniu"],
+    ["Wykrywanie ściągania", "Automatyczne, AI", "Ludzkie oko"],
+    ["Eksport do dziennika", "1 kliknięcie", "Ręczne wpisywanie"],
+    ["Dostępność urządzeń", "Telefon / tablet / PC", "Wydruk + długopis"],
+    ["Koszty", "Od 0 zł / klasa", "Papier + druk + czas"],
+    ["Bezpieczeństwo danych", "Szyfrowanie + RODO", "Szafa z kluczykiem"],
+    ["Wsparcie techniczne", "24/7 chat + telefon", "Brak"],
+  ];
+  return (
+    <Section eyebrow="04 · Porównanie" title={<>EduNex vs <span className="text-white/40">tradycyjne metody</span></>}>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/[0.02]">
+                <th className="text-left px-4 py-4 font-medium text-white/40 w-[35%]">Cecha</th>
+                <th className="text-left px-4 py-4 font-semibold text-white w-[35%]"><span className="inline-flex items-center gap-1.5"><Mark />EduNex</span></th>
+                <th className="text-left px-4 py-4 font-medium text-white/40 w-[30%]">Tradycyjnie</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {rows.map(([c, e, t], i) => (
+                <tr key={c} className={`group transition-colors ${i % 2 === 0 ? "hover:bg-white/[0.03]" : "bg-white/[0.01] hover:bg-white/[0.04]"}`}>
+                  <td className="px-4 py-3.5 text-white/70 font-medium">{c}</td>
+                  <td className="px-4 py-3.5">
+                    <span className="inline-flex items-center gap-1.5 text-emerald-300 text-sm"><CheckCircle2 className="w-4 h-4 shrink-0"/>{e}</span>
+                  </td>
+                  <td className="px-4 py-3.5 text-white/40 text-sm">{t}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="reveal mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-white/50">
+        <span className="inline-flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-cyan-400" /> Średnio 85% oszczędności czasu</span>
+        <span className="w-1 h-1 rounded-full bg-white/20" />
+        <span className="inline-flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-emerald-400" /> 3× lepsze wyniki uczniów</span>
+        <span className="w-1 h-1 rounded-full bg-white/20" />
+        <span className="inline-flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-violet-400" /> 100% zgodność z RODO</span>
+      </div>
+    </Section>
+  );
+}
+
+/* ──── INTEGRATIONS ──── */
+function Integrations() {
+  const typeColors: Record<string, string> = {
+    Dziennik: "from-cyan-400 to-blue-500",
+    LMS: "from-violet-400 to-fuchsia-500",
+    Wideokonferencje: "from-emerald-400 to-teal-500",
+    AI: "from-amber-400 to-orange-500",
+    Realtime: "from-rose-400 to-pink-500",
+    API: "from-sky-400 to-indigo-500",
+    Import: "from-emerald-300 to-cyan-400",
+    Eksport: "from-purple-400 to-pink-500",
+  };
+  const integrations = [
+    { name: "Vulcan", type: "Dziennik" },
+    { name: "Librus", type: "Dziennik" },
+    { name: "Mobidziennik", type: "Dziennik" },
+    { name: "Google Classroom", type: "LMS" },
+    { name: "Microsoft Teams", type: "LMS" },
+    { name: "Zoom", type: "Wideokonferencje" },
+    { name: "OpenAI", type: "AI" },
+    { name: "Gemini", type: "AI" },
+    { name: "WebSocket", type: "Realtime" },
+    { name: "REST API", type: "API" },
+    { name: "CSV / Excel", type: "Import" },
+    { name: "PDF", type: "Eksport" },
+  ];
+  return (
+    <Section eyebrow="05 · Integracje" title="Łączy się z tym, czego już używasz" sub="Native integracje z najpopularniejszymi systemami w polskiej edukacji.">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {integrations.map((i) => {
+          const grad = typeColors[i.type] ?? "from-white/20 to-white/5";
+          return (
+            <div key={i.name} className="group relative rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur p-4 text-center hover:bg-white/[0.06] hover:border-white/20 transition-all hover:-translate-y-0.5 overflow-hidden">
+              <div className={`absolute -inset-x-20 -top-20 -bottom-20 bg-gradient-to-br ${grad} opacity-0 group-hover:opacity-[0.04] blur-3xl transition-opacity`} />
+              <div className="relative">
+                <div className={`text-sm font-medium text-white/80 group-hover:text-white transition`}>{i.name}</div>
+                <div className={`mt-1.5 inline-block px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-mono bg-gradient-to-r ${grad} bg-clip-text text-transparent`}>{i.type}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+/* ──── COMPLIANCE ──── */
+function Compliance() {
+  return (
+    <Section eyebrow="06 · Bezpieczeństwo" title={<>Twoje dane <span className="text-gradient-cyber">są bezpieczne</span></>}>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur p-7">
+          <Lock className="w-7 h-7 text-cyan-300 mb-4"/>
+          <h3 className="font-display text-xl font-semibold">Zgodność z RODO i UE</h3>
+          <p className="mt-3 text-white/65 text-sm leading-relaxed">
+            Wszystkie dane uczniów przetwarzane są na serwerach w Unii Europejskiej. Szyfrowanie w spoczynku i tranzycie. Pełen dziennik audytu. Umowa powierzenia danych do podpisu z każdą szkołą.
+          </p>
+          <div className="mt-5 grid sm:grid-cols-2 gap-2.5 text-sm text-white/70">
+            {[
+              "RODO / GDPR — pełna zgodność",
+              "Umowa powierzenia danych",
+              "Cykliczny audyt bezpieczeństwa",
+              "Kopie zapasowe co 6 godzin",
+              "Eksport danych w każdej chwili",
+              "Usuwanie konta w 48h",
+              "Szyfrowanie TLS 1.3 + AES-256",
+              "Serwery tylko w UE (Warszawa, Frankfurt)",
+            ].map((l) => (
+              <div key={l} className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0 mt-0.5"/>{l}</div>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { t: "RODO", s: "Rozporządzenie 2016/679", c: "from-cyan-400 to-blue-500" },
+            { t: "ISO 27001", s: "Bezpieczeństwo informacji", c: "from-violet-400 to-fuchsia-500" },
+            { t: "WCAG 2.1 AA", s: "Dostępność cyfrowa", c: "from-emerald-300 to-cyan-400" },
+            { t: "EU Data", s: "Warszawa · Frankfurt", c: "from-amber-300 to-rose-400" },
+            { t: "Szyfrowanie", s: "TLS 1.3 · AES-256", c: "from-cyan-300 to-indigo-400" },
+            { t: "Audyt", s: "Rejestracja wszystkich akcji", c: "from-purple-400 to-pink-500" },
+            { t: "Backup", s: "Kopie co 6 godzin", c: "from-teal-400 to-emerald-500" },
+            { t: "Uptime", s: "99.98% SLA", c: "from-orange-400 to-red-500" },
+            { t: "Certyfikaty", s: "Weryfikacja online · QR", c: "from-emerald-400 to-cyan-500" },
+          ].map((c) => (
+            <div key={c.t} className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur p-5 relative overflow-hidden">
+              <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${c.c} opacity-20 blur-2xl`}/>
+              <div className={`font-display text-2xl font-semibold bg-gradient-to-br ${c.c} bg-clip-text text-transparent`}>{c.t}</div>
+              <div className="text-xs text-white/55 mt-1.5">{c.s}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ──── TESTIMONY ──── */
+function Testimony() {
+  const [index, setIndex] = useState(0);
+  const notes = [
+    { n: "Katarzyna Mazurek", r: "Matematyka · XIV LO im. Staszica, Warszawa", text: "Przed EduNex układałam testy w Wordzie. Teraz robię to dwa razy szybciej i nie liczę punktów ręcznie. AI czasem lepiej dobiera dystraktory niż ja." },
+    { n: "Paweł Górski", r: "Wicedyrektor · III LO Marynarki Wojennej, Gdynia", text: "Po dwóch miesiącach reszta nauczycieli sama prosiła o dostęp. Monitoring na żywo to game changer — od razu widzę, kto potrzebuje pomocy." },
+    { n: "Magdalena Adamczyk", r: "Polonistka · V LO im. Witkowskiego, Kraków", text: "Najbardziej cenię to, że uczeń widzi wynik od razu i wie co poprawić. To uczy odpowiedzialności. A ja oszczędzam 10 godzin tygodniowo." },
+    { n: "Tomasz Wróblewski", r: "Dyrektor · ZSE im. Skłodowskiej-Curie, Poznań", text: "Platforma spełnia wszystkie wymogi RODO i MEN. Wdrożenie zajęło 3 dni. Koszty druku spadły o 90%." },
+    { n: "Anna Jabłońska", r: "Anglistka · VI LO im. Kochanowskiego, Wrocław", text: "Uwielbiam generator AI — wczytuję zdjęcie tekstu z podręcznika i w 10 sekund mam 10 pytań. Niesamowite." },
+    { n: "Michał Zieliński", r: "Informatyk · XIII LO, Szczecin", text: "Uczniowie mogą pisać kod w przeglądarce na egzaminie z informatyki. Autouruchamianie testów jest idealne." },
+  ];
+  useEffect(() => { const iv = setInterval(() => setIndex((i) => (i + 1) % notes.length), 5000); return () => clearInterval(iv) }, []);
+  const prev = () => setIndex((i) => (i - 1 + notes.length) % notes.length);
+  const next = () => setIndex((i) => (i + 1) % notes.length);
+  const visible = notes.slice(index, index + 3);
+  if (visible.length < 3) visible.push(...notes.slice(0, 3 - visible.length));
+  return (
+    <Section eyebrow="07 · Głosy" title="Co mówią nauczyciele i dyrektorzy">
+      <div className="relative">
+        <div className="grid md:grid-cols-3 gap-4 min-h-[220px]">
+          {visible.map((no) => (
+            <figure key={no.n} className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur p-6 relative flex flex-col">
+              <div className="text-5xl font-display text-cyan-300/40 leading-none mb-3">"</div>
+              <blockquote className="text-white/80 leading-relaxed text-[15px] flex-1">{no.text}</blockquote>
+              <figcaption className="mt-5 pt-4 border-t border-white/5 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center text-black font-display font-semibold text-sm">{no.n[0]}</div>
+                <div>
+                  <div className="font-medium text-sm">{no.n}</div>
+                  <div className="text-xs text-white/50">{no.r}</div>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button onClick={prev} className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] grid place-items-center transition">&larr;</button>
+          <div className="flex gap-2">
+            {notes.map((_, i) => (
+              <button key={i} onClick={() => setIndex(i)} className={`w-2 h-2 rounded-full transition ${i >= index && i < index + 3 ? "bg-cyan-400" : "bg-white/20"}`}/>
+            ))}
+          </div>
+          <button onClick={next} className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] grid place-items-center transition">&rarr;</button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ──── PRICING ──── */
+function Pricing() {
+  const navigate = useNavigate();
+  const [yearly, setYearly] = useState(false);
+  const plans = [
+    { name: "Klasa", price: "0 zł", priceYearly: "0 zł", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań — 300+ szt.", "15 egzaminów / mies.", "Podstawowe raporty", "Wsparcie e-mail", "Import z Word / PDF"], featured: false, action: "register" as const },
+    { name: "Korepetytor", price: "49 zł", priceYearly: "39 zł", sub: "/ miesiąc", lines: ["Do 25 uczniów", "Bank pytań — 1000+ szt.", "Egzaminy bez limitu", "Generator AI — 50 zapytań", "Eksport PDF / Excel", "Wsparcie e-mail"], featured: false, action: "pay" as const, amount: "49 zł", amountUsd: "12", amountYearly: "39 zł", amountUsdYearly: "10" },
+    { name: "Nauczyciel", price: "99 zł", priceYearly: "79 zł", sub: "/ miesiąc", lines: ["Do 60 uczniów", "Bank pytań — 3000+ szt.", "Egzaminy bez limitu", "Generator AI — 200 zapytań", "Monitoring ekranu na żywo", "Eksport PDF / Excel / CSV", "Wsparcie priorytetowe"], featured: false, action: "pay" as const, amount: "99 zł", amountUsd: "25", amountYearly: "79 zł", amountUsdYearly: "20" },
+    { name: "Szkoła", price: "490 zł", priceYearly: "390 zł", sub: "/ miesiąc", lines: ["Do 300 uczniów", "Bank pytań — 10 000+ szt.", "Egzaminy bez limitu", "Generator AI — bez limitów", "Eksport do dziennika (Vulcan/Librus)", "Anti-cheat AI", "Wsparcie telefoniczne 24/7"], featured: false, action: "pay" as const, amount: "490 zł", amountUsd: "125", amountYearly: "390 zł", amountUsdYearly: "99" },
+    { name: "Szkoła Plus", price: "890 zł", priceYearly: "690 zł", sub: "/ miesiąc", lines: ["Do 800 uczniów", "Bank pytań — bez limitu", "Anti-cheat AI + monitoring", "API REST dostęp", "Dedykowany opiekun", "Szkolenie online dla kadry", "Priorytetowy serwer + SLA"], featured: true, action: "pay" as const, amount: "890 zł", amountUsd: "225", amountYearly: "690 zł", amountUsdYearly: "175" },
+    { name: "Dzielnica", price: "2990 zł", priceYearly: "2490 zł", sub: "/ miesiąc", lines: ["Do 8 szkół / 3000 uczniów", "Centralne zarządzanie", "Wspólna baza pytań", "Raporty porównawcze", "Umowa SLA 99,95%", "Dedykowane wdrożenie", "Opiekun techniczny 24/7"], featured: false, action: "pay" as const, amount: "2990 zł", amountUsd: "750", amountYearly: "2490 zł", amountUsdYearly: "625" },
+    { name: "Kuratorium", price: "Indywidualnie", priceYearly: "Indywidualnie", sub: "wycena", lines: ["Nieograniczona liczba szkół", "Centralna baza pytań + zatwierdzanie", "Raporty regionalne i wojewódzkie", "SLA 99,99% + backup DR", "Dedykowany zespół wdrożeniowy", "Niestandardowe integracje", "Priorytetowe wsparcie 24/7"], featured: false, action: "contact" as const },
+  ];
+
+  const displayPrice = (p: typeof plans[number]) => {
+    if (p.action === "contact") return { price: p.price, sub: p.sub };
+    const pr = yearly && p.priceYearly ? p.priceYearly : p.price;
+    const saving = p.priceYearly && yearly ? `oszczędzasz ${Math.round((1 - parseInt(p.priceYearly.replace(/[^0-9]/g, '')) / parseInt(p.price.replace(/[^0-9]/g, ''))) * 100)}%` : null;
+    return { price: pr, sub: p.sub, saving };
+  };
+
+  return (
+    <Section id="cennik" eyebrow="08 · Cennik" title="Wybierz plan dla swojej placówki." sub="Od pojedynczej klasy po całe kuratorium — skaluj się z potrzebami.">
+      {/* Toggle monthly/yearly */}
+      <div className="flex items-center justify-center gap-4 mb-10">
+        <span className={`text-sm ${!yearly ? "text-white font-medium" : "text-white/50"}`}>Miesięcznie</span>
+        <button onClick={() => setYearly(!yearly)} className={`relative w-14 h-7 rounded-full transition-colors ${yearly ? "bg-cyan-400" : "bg-white/20"}`}>
+          <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-lg transition-transform ${yearly ? "translate-x-7" : ""}`}/>
+        </button>
+        <span className={`text-sm flex items-center gap-1.5 ${yearly ? "text-white font-medium" : "text-white/50"}`}>
+          Rocznie
+          <span className="text-[10px] font-mono bg-emerald-400/15 text-emerald-300 px-2 py-0.5 rounded-full">-20%</span>
+        </span>
+      </div>
+
+      {/* Yearly savings banner */}
+      {yearly && (
+        <div className="reveal -mt-4 mb-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-200 text-xs">
+            <Zap className="w-3.5 h-3.5" />
+            Oszczędzasz średnio 20% przy płatności rocznej. Promocja ważna do końca miesiąca.
+          </div>
+        </div>
+      )}
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {plans.slice(0, 4).map((p) => {
+          const dp = displayPrice(p);
+          return <PlanCard key={p.name} plan={p} displayPrice={dp} yearly={yearly} navigate={navigate} />;
+        })}
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        {plans.slice(4).map((p) => {
+          const dp = displayPrice(p);
+          return <PlanCard key={p.name} plan={p} displayPrice={dp} yearly={yearly} navigate={navigate} />;
+        })}
+      </div>
+    </Section>
+  );
+}
+
+function PlanCard({ plan, displayPrice, yearly, navigate }: {
+  plan: { name: string; lines: string[]; featured?: boolean; action: string; amount?: string; amountUsd?: string; amountYearly?: string; amountUsdYearly?: string };
+  displayPrice: { price: string; sub: string; saving?: string | null };
+  yearly: boolean;
+  navigate: any;
+}) {
+  const p = plan;
+  const dp = displayPrice;
+  return (
+    <div className={`relative rounded-2xl p-6 backdrop-blur transition-all flex flex-col group ${p.featured ? "animated-border bg-gradient-to-br from-cyan-500/[0.08] to-violet-500/[0.08] shadow-[0_24px_80px_-20px_rgba(34,211,238,0.3)] lg:-translate-y-1" : "border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:-translate-y-0.5"}`}>
+      {p.featured && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-br from-cyan-300 to-violet-400 text-black text-[10px] font-semibold tracking-widest uppercase whitespace-nowrap flex items-center gap-1">
+          <Star className="w-3 h-3" /> Najpopularniejszy
+        </div>
+      )}
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] uppercase tracking-widest text-white/50">Plan</div>
+        {p.featured && <span className="text-[9px] font-mono text-cyan-400/60">★ polecany</span>}
+      </div>
+      <div className="font-display text-xl font-semibold mt-1">{p.name}</div>
+      <div className="mt-4 flex items-baseline gap-1.5">
+        <span className="font-display text-4xl font-semibold">{dp.price}</span>
+        <span className="text-white/50 text-xs">{dp.sub}</span>
+      </div>
+      {dp.saving && (
+        <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-400/15 text-emerald-300 text-[10px] font-mono">
+          <TrendingUp className="w-3 h-3" /> {dp.saving}
+        </div>
+      )}
+      {/* Price in USD for crypto */}
+      {p.action === "pay" && dp.price !== "Indywidualnie" && (
+        <div className="mt-1 text-[10px] text-white/30 font-mono">
+          ≈ ${yearly && p.amountUsdYearly ? p.amountUsdYearly : p.amountUsd} USD
+        </div>
+      )}
+      <ul className="mt-5 space-y-2 text-sm text-white/75 flex-1">
+        {p.lines.map((l) => (
+          <li key={l} className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-cyan-300 shrink-0"/>{l}</li>
+        ))}
+      </ul>
+      {p.action === "register" && (
+        <button onClick={() => navigate({ to: "/auth/teacher" })} className="mt-6 w-full py-3 rounded-xl text-sm font-medium transition border border-white/15 bg-white/5 hover:bg-white/10 group-hover:border-cyan-400/30">Rozpocznij za darmo</button>
+      )}
+      {p.action === "pay" && (
+        <NexaPayCheckout planName={p.name} amount={yearly && p.amountYearly ? p.amountYearly : p.amount!} amountUsd={yearly && p.amountUsdYearly ? p.amountUsdYearly : p.amountUsd} />
+      )}
+      {p.action === "contact" && (
+        <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="mt-6 w-full py-3 rounded-xl text-sm font-medium transition border border-white/15 bg-white/5 hover:bg-white/10">Poproś o wycenę</button>
+      )}
+    </div>
+  );
+}
+
+/* ──── FAQ ──── */
+function FAQ() {
+  const items = [
+    { q: "Czy uczniowie muszą zakładać konto?", a: "Nie. Uczeń wchodzi przeglądarką, wpisuje sześciocyfrowy PIN przekazany przez nauczyciela i imię. Konto nie jest wymagane, nie zbiera się żadnych danych osobowych ucznia poza imieniem i nazwiskiem." },
+    { q: "Czy mogę wgrać pytania z istniejącego dokumentu?", a: "Tak. Wspieramy import z Worda, PDF oraz arkusza Excel. System rozpozna numerację pytań i odpowiedzi. Możesz też wczytać zdjęcie kartki — AI odczyta pytania automatycznie." },
+    { q: "Co z uczniami bez komputera w domu?", a: "Egzamin działa na każdym telefonie z przeglądarką. Nie wymaga instalacji ani danych większych niż 5 MB. Do monitoringu ekranu wymagany jest komputer z Chrome/Edge." },
+    { q: "Jak wygląda umowa ze szkołą?", a: "Umowa powierzenia danych osobowych zgodna z RODO oraz faktura VAT. Proces zajmuje do trzech dni roboczych. Dla planu Klasa umowa jest w formie akceptacji online." },
+    { q: "Czy są zniżki dla placówek publicznych?", a: "Tak. Szkoły podstawowe i licea publiczne otrzymują 30% rabatu na plan Szkoła. Dla szkół z małych miejscowości (poniżej 5 tys. mieszkańców) rabat wynosi 50%." },
+    { q: "Jak działa monitoring ekranu?", a: "Uczeń musi udostępnić cały ekran przed rozpoczęciem. System wykrywa opuszczanie okna egzaminu, próby użycia skrótów klawiszowych, a AI analizuje ruchy myszy pod kątem ściągania." },
+    { q: "Czy dane są bezpieczne?", a: "Tak. Serwery w Warszawie i Frankfurcie. Szyfrowanie TLS 1.3 w tranzycie, AES-256 w spoczynku. Pełna zgodność z RODO. Umowa powierzenia danych. Audyt co 6 miesięcy." },
+    { q: "Jak szybko mogę zacząć?", a: "Rejestracja nauczyciela trwa 2 minuty. Po zatwierdzeniu przez administratora (zwykle do 24h) możesz od razu tworzyć pierwszy egzamin. Dla planu Klasa — dostęp od razu." },
+  ];
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section id="faq" className="py-20 sm:py-28">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="reveal"><SectionHead eyebrow="09 · FAQ" title="Wątpliwości — wyjaśnione" sub="Najczęściej zadawane pytania przez nauczycieli i dyrektorów." /></div>
+        <div className="reveal reveal-delay-1 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur divide-y divide-white/5 overflow-hidden">
+          {items.map((it, i) => (
+            <div key={it.q}>
+              <button onClick={() => setOpen(open === i ? null : i)} className={`w-full flex items-center justify-between gap-4 px-6 py-5 text-left transition-all ${open === i ? "bg-white/[0.02]" : "hover:bg-white/[0.02]"}`}>
+                <span className={`font-medium transition ${open === i ? "text-white" : "text-white/80"}`}>{it.q}</span>
+                <span className={`shrink-0 w-7 h-7 rounded-full border grid place-items-center transition-all duration-300 ${open === i ? "border-cyan-400/40 bg-cyan-400/10 text-cyan-300 rotate-45" : "border-white/15 text-white/50"}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </span>
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ${open === i ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                <p className="px-6 pb-6 text-white/65 leading-relaxed text-sm">{it.a}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="reveal reveal-delay-2 mt-8 text-center">
+          <p className="text-sm text-white/50">Nie znalazłeś odpowiedzi? <a href="#kontakt" className="text-cyan-300 hover:underline">Napisz do nas</a> — odpowiemy w 24h.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── NEWSLETTER ──── */
+function Newsletter() {
+  const [email, setEmail] = useState("");
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    toast.success("Zapisano do newslettera. Sprawdź skrzynkę!");
+    setEmail("");
+  };
+  return (
+    <section className="reveal py-16 sm:py-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] backdrop-blur-xl p-8 sm:p-12 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-400/5 rounded-full blur-[100px]"/>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/5 rounded-full blur-[100px]"/>
+          <Bell className="w-8 h-8 text-cyan-300 mx-auto mb-4"/>
+          <h2 className="font-display text-3xl sm:text-4xl font-semibold">Bądź na bieżąco</h2>
+          <p className="mt-3 text-white/60 max-w-md mx-auto">Nowe funkcje, aktualizacje i porady dydaktyczne — raz na dwa tygodnie, zero spamu.</p>
+          <form onSubmit={onSubmit} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Twój e-mail" className="flex-1 w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 focus:outline-none focus:border-cyan-400/50 focus:bg-white/[0.08] transition text-white placeholder:text-white/30"/>
+            <button type="submit" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-black bg-gradient-to-br from-cyan-300 via-white to-violet-200 hover:shadow-[0_8px_32px_-8px_rgba(34,211,238,0.6)] transition shrink-0">
+              <Send className="w-4 h-4"/> Zapisz się
+            </button>
+          </form>
+          <p className="mt-4 text-[11px] text-white/30">Możesz wypisać się w każdej chwili. Polityka prywatności dostępna w stopce.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── CONTACT ──── */
+function Contact() {
+  const submit = useServerFn(submitContact);
+  const [busy, setBusy] = useState(false);
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setBusy(true);
+    try {
+      await submit({ data: {
+        name: String(fd.get("name") ?? ""),
+        email: String(fd.get("email") ?? ""),
+        subject: String(fd.get("subject") ?? "Zapytanie ze strony"),
+        message: String(fd.get("message") ?? ""),
+      } });
+      toast.success("Wiadomość wysłana. Odezwiemy się w ciągu 24 godzin.");
+      (e.target as HTMLFormElement).reset();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Błąd wysyłki");
+    } finally { setBusy(false); }
+  };
+  return (
+    <section id="kontakt" className="py-20 sm:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] backdrop-blur-xl p-6 sm:p-10 grid lg:grid-cols-5 gap-10">
+          <div className="lg:col-span-2 reveal">
+            <SectionHead eyebrow="10 · Kontakt" title="Napisz do nas" sub="Odpowiadamy w dni robocze w ciągu 24 godzin." align="left" />
+            <ul className="mt-6 space-y-4 text-sm">
+              <li className="flex gap-3"><Mail className="w-5 h-5 text-cyan-300 shrink-0 mt-0.5"/><div><div className="text-white">kontakt@edunex.pl</div><div className="text-xs text-white/50">Sekretariat platformy</div></div></li>
+              <li className="flex gap-3"><Phone className="w-5 h-5 text-cyan-300 shrink-0 mt-0.5"/><div><div className="text-white">+48 22 100 12 34</div><div className="text-xs text-white/50">Pon–Pt, 8:00–16:00</div></div></li>
+              <li className="flex gap-3"><MapPin className="w-5 h-5 text-cyan-300 shrink-0 mt-0.5"/><div><div className="text-white">ul. Świętokrzyska 14, 00-050 Warszawa</div><div className="text-xs text-white/50">Biuro projektu</div></div></li>
+            </ul>
+            <div className="mt-6 p-4 rounded-xl bg-white/[0.03] border border-white/5">
+              <div className="text-[10px] uppercase tracking-widest text-white/40 mb-2">Status systemu</div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>
+                <span className="text-emerald-300">Wszystkie systemy działają prawidłowo</span>
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-xs text-white/40">
+                <span className="w-2 h-2 rounded-full bg-emerald-400/50"/>
+                <span>Ostatnia kontrola: {new Date().toLocaleString("pl-PL")}</span>
+              </div>
+            </div>
+          </div>
+          <form onSubmit={onSubmit} className="reveal reveal-delay-1 lg:col-span-3 grid sm:grid-cols-2 gap-4">
+            <Field label="Imię i nazwisko"><input name="name" required className={inp}/></Field>
+            <Field label="E-mail"><input name="email" type="email" required className={inp}/></Field>
+            <Field label="Temat" wide><input name="subject" className={inp} placeholder="np. Wdrożenie w szkole podstawowej"/></Field>
+            <Field label="Treść wiadomości" wide><textarea name="message" rows={5} required className={inp}/></Field>
+            <div className="sm:col-span-2 flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-white/45">Wysłanie formularza oznacza zgodę na kontakt zwrotny.</p>
+              <button disabled={busy} type="submit" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-black bg-gradient-to-br from-cyan-300 via-white to-violet-200 hover:shadow-[0_8px_32px_-8px_rgba(34,211,238,0.6)] disabled:opacity-50 transition">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>} Wyślij
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const inp = "w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 focus:outline-none focus:border-cyan-400/50 focus:bg-white/[0.08] transition text-white placeholder:text-white/30";
+
+function Field({ label, wide, children }: { label: string; wide?: boolean; children: React.ReactNode }) {
+  return (
+    <label className={`block ${wide ? "sm:col-span-2" : ""}`}>
+      <div className="text-[11px] uppercase tracking-widest text-white/50 mb-1.5">{label}</div>
+      {children}
+    </label>
+  );
+}
+
+/* ──── FOOTER ──── */
+function Footer() {
+  const [showTop, setShowTop] = useState(false);
+  useEffect(() => {
+    const f = () => setShowTop(window.scrollY > 400);
+    window.addEventListener("scroll", f); return () => window.removeEventListener("scroll", f);
+  }, []);
+  return (
+    <footer className="reveal border-t border-white/10 bg-black/40 backdrop-blur relative">
+      {showTop && (
+        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 text-slate-900 grid place-items-center shadow-xl hover:scale-110 transition-all animate-float">
+          <ChevronUp className="w-5 h-5" />
+        </button>
+      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="lg:col-span-2">
+          <div className="flex items-center gap-3"><Mark /><div className="font-display text-xl font-semibold">EduNex</div></div>
+          <p className="mt-4 text-xs text-white/55 leading-relaxed max-w-xs">Nowoczesna platforma egzaminacyjna dla polskich szkół. Niezależny projekt edukacyjny zgodny z wytycznymi MEN.</p>
+          <div className="mt-5 flex items-center gap-3">
+            {[Github, MessageSquare, Play, Mail].map((Icon, i) => (
+              <a key={i} href="#" className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 grid place-items-center text-white/40 hover:text-white hover:bg-white/10 transition">
+                <Icon className="w-4 h-4"/>
+              </a>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-white/40 mb-3">Platforma</div>
+          <ul className="space-y-2 text-sm text-white/70">
+            <li><Link to="/auth/student" className="hover:text-cyan-300 transition">Wejście ucznia</Link></li>
+            <li><Link to="/auth/teacher" className="hover:text-cyan-300 transition">Panel nauczyciela</Link></li>
+            <li><Link to="/auth/admin" className="hover:text-cyan-300 transition">Panel dyrekcji</Link></li>
+            <li><a href="#funkcje" className="hover:text-cyan-300 transition">Wszystkie funkcje</a></li>
+            <li><a href="#cennik" className="hover:text-cyan-300 transition">Cennik i plany</a></li>
+          </ul>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-white/40 mb-3">Dokumenty</div>
+          <ul className="space-y-2 text-sm text-white/70">
+            <li className="hover:text-cyan-300 transition cursor-pointer">Regulamin</li>
+            <li className="hover:text-cyan-300 transition cursor-pointer">Polityka prywatności</li>
+            <li className="hover:text-cyan-300 transition cursor-pointer">Umowa powierzenia</li>
+            <li className="hover:text-cyan-300 transition cursor-pointer">Status systemu</li>
+            <li className="hover:text-cyan-300 transition cursor-pointer">RODO — informacje</li>
+          </ul>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-white/40 mb-3">Kontakt</div>
+          <ul className="space-y-2 text-sm text-white/70">
+            <li>kontakt@edunex.pl</li>
+            <li>+48 22 100 12 34</li>
+            <li>ul. Świętokrzyska 14<br/>00-050 Warszawa</li>
+          </ul>
+          <div className="mt-4 text-[10px] text-white/30 font-mono tracking-wider">
+            <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>operational</span>
+            <span className="ml-3">v3.1.0</span>
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-wrap items-center justify-between gap-3 text-xs text-white/45">
+          <div>© {new Date().getFullYear()} EduNex · Wszelkie prawa zastrzeżone · Projekt edukacyjny dla polskich szkół</div>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>100% online</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ──── helpers ──── */
+function Section({ id, eyebrow, title, sub, children }: { id?: string; eyebrow: string; title: React.ReactNode; sub?: string; children: React.ReactNode }) {
+  return (
+    <section id={id} className="py-20 sm:py-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal"><SectionHead eyebrow={eyebrow} title={title} sub={sub} /></div>
+        <div className="reveal reveal-delay-1">{children}</div>
+      </div>
+    </section>
+  );
+}
+
+function SectionHead({ eyebrow, title, sub, align = "center" }: { eyebrow: string; title: React.ReactNode; sub?: string; align?: "center" | "left" }) {
+  const a = align === "center" ? "text-center mx-auto" : "text-left";
+  return (
+    <div className={`max-w-2xl mb-12 sm:mb-16 ${a}`}>
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] uppercase tracking-[0.22em] text-white/60 font-mono">{eyebrow}</div>
+      <h2 className="mt-4 font-display text-3xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">{title}</h2>
+      {sub && <p className="mt-4 text-white/60 text-base leading-relaxed">{sub}</p>}
+    </div>
+  );
+}

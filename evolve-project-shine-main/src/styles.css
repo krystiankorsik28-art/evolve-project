@@ -440,3 +440,234 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* ──── Scroll progress bar ──── */
+@keyframes progressGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.scroll-progress {
+  transform-origin: left;
+  animation: progressGrow 0.5s ease-out forwards;
+}
+
+/* ──── 3D tilt card ──── */
+.tilt-3d {
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
+.tilt-3d:hover {
+  transform: perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+}
+
+/* ──── Number roll animation ──── */
+@keyframes numberRoll {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.number-roll {
+  animation: numberRoll 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ──── Pulse ring ──── */
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.pulse-ring {
+  position: relative;
+}
+.pulse-ring::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid rgba(34,211,238,0.3);
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* ──── Section separator glow ──── */
+.section-glow {
+  position: relative;
+}
+.section-glow::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(34,211,238,0.3), rgba(139,92,246,0.3), transparent);
+}
+
+/* ──── Gradient border ──── */
+.gradient-border {
+  position: relative;
+  background-clip: padding-box;
+  border: 1.5px solid transparent;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(34,211,238,0.4), rgba(139,92,246,0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ──── Page entry animation ──── */
+@keyframes pageEnter {
+  from { opacity: 0; filter: blur(4px); }
+  to { opacity: 1; filter: blur(0); }
+}
+.page-enter {
+  animation: pageEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ──── Glow ring for interactive elements ──── */
+@keyframes glowRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.glow-ring {
+  position: relative;
+  overflow: hidden;
+}
+.glow-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, transparent, rgba(34,211,238,0.3), transparent, rgba(139,92,246,0.3), transparent);
+  animation: glowRotate 3s linear infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.glow-ring:hover::after {
+  opacity: 1;
+}
+
+/* ──── Mobile nav slide ──── */
+@keyframes mobileNavIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mobile-nav-enter {
+  animation: mobileNavIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ──── Active nav dot ──── */
+.nav-dot-active {
+  position: relative;
+}
+.nav-dot-active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #22d3ee;
+}
+
+/* ──── Shimmer loading placeholder ──── */
+@keyframes shimmerLoad {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer-load {
+  background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 75%);
+  background-size: 200% 100%;
+  animation: shimmerLoad 1.5s ease-in-out infinite;
+  border-radius: inherit;
+}
+
+/* ──── Floating badge pulse ──── */
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,211,238,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(34,211,238,0); }
+}
+.float-badge {
+  animation: float-slow 5s ease-in-out infinite, badgePulse 3s ease-in-out infinite;
+}
+
+/* ──── Process line animation ──── */
+@keyframes lineDraw {
+  from { height: 0; }
+  to { height: 100%; }
+}
+.process-line-anim {
+  animation: lineDraw 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ──── Feature tab slide ──── */
+@keyframes tabSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.tab-slide-in {
+  animation: tabSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ──── Testimonial fade ──── */
+@keyframes testimonialFade {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.testimonial-enter {
+  animation: testimonialFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ──── Smooth scroll offset ──── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+/* ──── Star rating ──── */
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+}
+.star-rating .star {
+  width: 14px;
+  height: 14px;
+  color: #fbbf24;
+  fill: #fbbf24;
+}
+
+/* ──── Feature tooltip ──── */
+.feature-tooltip {
+  position: relative;
+}
+.feature-tooltip:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.1);
+  z-index: 20;
+  pointer-events: none;
+}

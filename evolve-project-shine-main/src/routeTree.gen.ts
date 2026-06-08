@@ -11,16 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VerifySerialRouteImport } from './routes/verify.$serial'
+import { Route as StudentDashboardRouteImport } from './routes/student.dashboard'
 import { Route as AuthTeacherRouteImport } from './routes/auth.teacher'
 import { Route as AuthStudentRouteImport } from './routes/auth.student'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthParentRouteImport } from './routes/auth.parent'
 import { Route as AuthAdminRouteImport } from './routes/auth.admin'
 import { Route as ApiAiTutorStreamRouteImport } from './routes/api/ai-tutor-stream'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated.teacher'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as StudentExamAttemptIdRouteImport } from './routes/student.exam.$attemptId'
-import { Route as StudentDashboardRouteImport } from './routes/student.dashboard'
-import { Route as VerifySerialRouteImport } from './routes/verify.$serial'
+import { Route as ApiAdminFixAuthRouteImport } from './routes/api/admin/fix-auth'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -29,6 +31,16 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifySerialRoute = VerifySerialRouteImport.update({
+  id: '/verify/$serial',
+  path: '/verify/$serial',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentDashboardRoute = StudentDashboardRouteImport.update({
+  id: '/student/dashboard',
+  path: '/student/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthTeacherRoute = AuthTeacherRouteImport.update({
@@ -41,14 +53,19 @@ const AuthStudentRoute = AuthStudentRouteImport.update({
   path: '/auth/student',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthAdminRoute = AuthAdminRouteImport.update({
-  id: '/auth/admin',
-  path: '/auth/admin',
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthParentRoute = AuthParentRouteImport.update({
   id: '/auth/parent',
   path: '/auth/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthAdminRoute = AuthAdminRouteImport.update({
+  id: '/auth/admin',
+  path: '/auth/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiTutorStreamRoute = ApiAiTutorStreamRouteImport.update({
@@ -71,14 +88,9 @@ const StudentExamAttemptIdRoute = StudentExamAttemptIdRouteImport.update({
   path: '/student/exam/$attemptId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StudentDashboardRoute = StudentDashboardRouteImport.update({
-  id: '/student/dashboard',
-  path: '/student/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VerifySerialRoute = VerifySerialRouteImport.update({
-  id: '/verify/$serial',
-  path: '/verify/$serial',
+const ApiAdminFixAuthRoute = ApiAdminFixAuthRouteImport.update({
+  id: '/api/admin/fix-auth',
+  path: '/api/admin/fix-auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -89,11 +101,13 @@ export interface FileRoutesByFullPath {
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/parent': typeof AuthParentRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/student': typeof AuthStudentRoute
   '/auth/teacher': typeof AuthTeacherRoute
-  '/student/exam/$attemptId': typeof StudentExamAttemptIdRoute
   '/student/dashboard': typeof StudentDashboardRoute
   '/verify/$serial': typeof VerifySerialRoute
+  '/api/admin/fix-auth': typeof ApiAdminFixAuthRoute
+  '/student/exam/$attemptId': typeof StudentExamAttemptIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,11 +116,13 @@ export interface FileRoutesByTo {
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/parent': typeof AuthParentRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/student': typeof AuthStudentRoute
   '/auth/teacher': typeof AuthTeacherRoute
-  '/student/exam/$attemptId': typeof StudentExamAttemptIdRoute
   '/student/dashboard': typeof StudentDashboardRoute
   '/verify/$serial': typeof VerifySerialRoute
+  '/api/admin/fix-auth': typeof ApiAdminFixAuthRoute
+  '/student/exam/$attemptId': typeof StudentExamAttemptIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -117,11 +133,13 @@ export interface FileRoutesById {
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/parent': typeof AuthParentRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/student': typeof AuthStudentRoute
   '/auth/teacher': typeof AuthTeacherRoute
-  '/student/exam/$attemptId': typeof StudentExamAttemptIdRoute
   '/student/dashboard': typeof StudentDashboardRoute
   '/verify/$serial': typeof VerifySerialRoute
+  '/api/admin/fix-auth': typeof ApiAdminFixAuthRoute
+  '/student/exam/$attemptId': typeof StudentExamAttemptIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -132,11 +150,13 @@ export interface FileRouteTypes {
     | '/api/ai-tutor-stream'
     | '/auth/admin'
     | '/auth/parent'
+    | '/auth/reset-password'
     | '/auth/student'
     | '/auth/teacher'
-    | '/student/exam/$attemptId'
     | '/student/dashboard'
     | '/verify/$serial'
+    | '/api/admin/fix-auth'
+    | '/student/exam/$attemptId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -145,11 +165,13 @@ export interface FileRouteTypes {
     | '/api/ai-tutor-stream'
     | '/auth/admin'
     | '/auth/parent'
+    | '/auth/reset-password'
     | '/auth/student'
     | '/auth/teacher'
-    | '/student/exam/$attemptId'
     | '/student/dashboard'
     | '/verify/$serial'
+    | '/api/admin/fix-auth'
+    | '/student/exam/$attemptId'
   id:
     | '__root__'
     | '/'
@@ -159,11 +181,13 @@ export interface FileRouteTypes {
     | '/api/ai-tutor-stream'
     | '/auth/admin'
     | '/auth/parent'
+    | '/auth/reset-password'
     | '/auth/student'
     | '/auth/teacher'
-    | '/student/exam/$attemptId'
     | '/student/dashboard'
     | '/verify/$serial'
+    | '/api/admin/fix-auth'
+    | '/student/exam/$attemptId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -172,11 +196,13 @@ export interface RootRouteChildren {
   ApiAiTutorStreamRoute: typeof ApiAiTutorStreamRoute
   AuthAdminRoute: typeof AuthAdminRoute
   AuthParentRoute: typeof AuthParentRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthStudentRoute: typeof AuthStudentRoute
   AuthTeacherRoute: typeof AuthTeacherRoute
-  StudentExamAttemptIdRoute: typeof StudentExamAttemptIdRoute
   StudentDashboardRoute: typeof StudentDashboardRoute
   VerifySerialRoute: typeof VerifySerialRoute
+  ApiAdminFixAuthRoute: typeof ApiAdminFixAuthRoute
+  StudentExamAttemptIdRoute: typeof StudentExamAttemptIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -195,6 +221,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify/$serial': {
+      id: '/verify/$serial'
+      path: '/verify/$serial'
+      fullPath: '/verify/$serial'
+      preLoaderRoute: typeof VerifySerialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student/dashboard': {
+      id: '/student/dashboard'
+      path: '/student/dashboard'
+      fullPath: '/student/dashboard'
+      preLoaderRoute: typeof StudentDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/teacher': {
       id: '/auth/teacher'
       path: '/auth/teacher'
@@ -209,11 +249,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthStudentRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/admin': {
-      id: '/auth/admin'
-      path: '/auth/admin'
-      fullPath: '/auth/admin'
-      preLoaderRoute: typeof AuthAdminRouteImport
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/parent': {
@@ -221,6 +261,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/parent'
       fullPath: '/auth/parent'
       preLoaderRoute: typeof AuthParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/admin': {
+      id: '/auth/admin'
+      path: '/auth/admin'
+      fullPath: '/auth/admin'
+      preLoaderRoute: typeof AuthAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai-tutor-stream': {
@@ -251,18 +298,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentExamAttemptIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/student/dashboard': {
-      id: '/student/dashboard'
-      path: '/student/dashboard'
-      fullPath: '/student/dashboard'
-      preLoaderRoute: typeof StudentDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/verify/$serial': {
-      id: '/verify/$serial'
-      path: '/verify/$serial'
-      fullPath: '/verify/$serial'
-      preLoaderRoute: typeof VerifySerialRouteImport
+    '/api/admin/fix-auth': {
+      id: '/api/admin/fix-auth'
+      path: '/api/admin/fix-auth'
+      fullPath: '/api/admin/fix-auth'
+      preLoaderRoute: typeof ApiAdminFixAuthRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -288,12 +328,24 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiTutorStreamRoute: ApiAiTutorStreamRoute,
   AuthAdminRoute: AuthAdminRoute,
   AuthParentRoute: AuthParentRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthStudentRoute: AuthStudentRoute,
   AuthTeacherRoute: AuthTeacherRoute,
-  StudentExamAttemptIdRoute: StudentExamAttemptIdRoute,
   StudentDashboardRoute: StudentDashboardRoute,
   VerifySerialRoute: VerifySerialRoute,
+  ApiAdminFixAuthRoute: ApiAdminFixAuthRoute,
+  StudentExamAttemptIdRoute: StudentExamAttemptIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

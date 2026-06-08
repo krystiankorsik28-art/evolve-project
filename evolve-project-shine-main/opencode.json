@@ -9,7 +9,7 @@
     },
     "computer-control": {
       "type": "local",
-      "command": ["node", "C:\\Users\\Wychowanek\\evolve-project-shine\\computer-control\\dist\\index.js"],
+      "command": ["node", "C:\\Users\\Wychowanek.St8\\Downloads\\evolve-project-shine-main\\evolve-project-shine-main\\computer-control\\dist\\index.js"],
       "enabled": true
     }
   }

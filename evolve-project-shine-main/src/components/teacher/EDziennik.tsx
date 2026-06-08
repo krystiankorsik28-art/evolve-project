@@ -1,6 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import { ExternalLink, Globe, ArrowLeft, ArrowRight, RotateCw, Bookmark, Monitor, Smartphone, Info, ExternalLink as LinkIcon, ShieldAlert, WifiOff, Zap } from "lucide-react";
+import { ExternalLink, Globe, ArrowLeft, ArrowRight, RotateCw, Bookmark, Monitor, Smartphone, Info, ExternalLink as LinkIcon, ShieldAlert, WifiOff, Zap, Settings as SettingsIcon, Save, X } from "lucide-react";
 import { Eksport } from "./Eksport";
+
+const PROXY_URL_KEY = "edunex-proxy-url";
+const DEFAULT_PROXY_URL = "/api/proxy";
+
+function getStoredProxyUrl(): string {
+  try { return localStorage.getItem(PROXY_URL_KEY) || DEFAULT_PROXY_URL; } catch { return DEFAULT_PROXY_URL; }
+}
+
+function storeProxyUrl(url: string) {
+  try { localStorage.setItem(PROXY_URL_KEY, url); } catch { /* noop */ }
+}
 
 const PRESETS = [
   { name: "Vulcan UONET+", url: "https://uonetplus.vulcan.net.pl/", color: "bg-emerald-500" },
@@ -28,12 +39,21 @@ export function EDziennik() {
   const [proxyMode, setProxyMode] = useState(true);
   const [iframeError, setIframeError] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [proxyUrl, setProxyUrl] = useState(getStoredProxyUrl);
+  const [showSettings, setShowSettings] = useState(false);
+  const [editingProxyUrl, setEditingProxyUrl] = useState(getStoredProxyUrl);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const buildIframeSrc = (targetUrl: string) => {
     if (!targetUrl) return "";
-    if (proxyMode) return `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+    if (proxyMode) return `${proxyUrl}?url=${encodeURIComponent(targetUrl)}`;
     return targetUrl;
+  };
+
+  const saveProxySettings = () => {
+    storeProxyUrl(editingProxyUrl);
+    setProxyUrl(editingProxyUrl);
+    setShowSettings(false);
   };
 
   const navigate = (u: string) => {
@@ -116,10 +136,44 @@ export function EDziennik() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-lg text-xs transition ${showSettings ? "bg-cyan-500/20 text-cyan-300" : "text-white/50 hover:text-white hover:bg-white/5"}`} title="Ustawienia proxy">
+            <SettingsIcon className="w-4 h-4" />
+          </button>
           <button onClick={() => setViewMode("desktop")} className={`px-3 py-1.5 rounded-lg text-xs font-mono transition ${viewMode === "desktop" ? "bg-cyan-500 text-black" : "bg-white/5 text-white/50 hover:text-white"}`}><Monitor className="w-3.5 h-3.5 inline mr-1" />Desktop</button>
           <button onClick={() => setViewMode("mobile")} className={`px-3 py-1.5 rounded-lg text-xs font-mono transition ${viewMode === "mobile" ? "bg-cyan-500 text-black" : "bg-white/5 text-white/50 hover:text-white"}`}><Smartphone className="w-3.5 h-3.5 inline mr-1" />Mobilny</button>
         </div>
       </div>
+
+      {/* Proxy settings panel */}
+      {showSettings && (
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2"><SettingsIcon className="w-4 h-4 text-cyan-400" />Ustawienia proxy</h3>
+            <button onClick={() => setShowSettings(false)} className="text-white/30 hover:text-white/60 transition"><ExternalLink className="w-4 h-4 rotate-45" /></button>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs text-white/50 font-mono">Adres serwera proxy</label>
+            <div className="flex gap-2">
+              <input
+                value={editingProxyUrl}
+                onChange={(e) => setEditingProxyUrl(e.target.value)}
+                placeholder="https://proxy.edunex.pl"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 font-mono outline-none focus:border-cyan-500/50 transition"
+              />
+              <button onClick={saveProxySettings} className="px-3 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-900 text-sm font-semibold transition flex items-center gap-1.5">
+                <Save className="w-4 h-4" />Zapisz
+              </button>
+            </div>
+            <p className="text-[10px] text-white/30 font-mono">
+              Domyślnie: <code className="text-cyan-400/60">/api/proxy</code> (Vercel) • Po deployu na nazwa.pl: <code className="text-cyan-400/60">https://proxy.edunex.pl</code>
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] text-white/30">
+            <span className={`inline-block w-1.5 h-1.5 rounded-full ${proxyUrl !== DEFAULT_PROXY_URL ? "bg-emerald-400" : "bg-white/20"}`} />
+            Aktualny: <code className="text-white/50 font-mono">{proxyUrl}</code>
+          </div>
+        </div>
+      )}
 
       {/* Sub-tabs */}
       <div className="flex gap-1 border-b border-white/10 pb-0.5">

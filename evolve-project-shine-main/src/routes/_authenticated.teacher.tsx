@@ -296,7 +296,7 @@ function TeacherPanel() {
               <span className="flex items-center gap-1.5 text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>SYSTEM ONLINE
               </span>
-              <span className="text-white/30">V3.2 · {now.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span className="text-white/30">V3.3 · {now.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}</span>
             </div>
           )}
 

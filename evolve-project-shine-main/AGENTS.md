@@ -38,6 +38,15 @@ RESEND_API_KEY="re_GR4dCMHG_9uenunBS98WJknFMNWpAFtnu"
 - MX was tricky in nazwa.pl — final format that worked: **Nazwa: `send.edunex.pl`, Typ: MX, Wartość: `10 feedback-smtp.eu-west-1.amazonses.com`** (without trailing dot)
 - Resend domain verification: **PASSED ✅**
 
+## Proxy Server (nazwa.pl CloudHosting Pro)
+- **Location:** `proxy-server/` — standalone Node.js proxy (package.json + server.js)
+- **Port:** 3000 (configurable via `PORT` env)
+- **Deploy:** Upload via FTP to nazwa.pl, configure subdomain `proxy.edunex.pl` with Node.js interpreter
+- **Endpoint:** `GET /?url=https://target.com/page` — strips X-Frame-Options/CSP, returns HTML
+- **Health:** `GET /health` returns `{"status":"ok"}`
+- **Guide:** `proxy-deploy.md` — step-by-step deployment instructions
+- **Configurable URL:** In EDziennik.tsx, click gear icon to set custom proxy server URL (saved to localStorage)
+
 ## Key Files
 - `src/lib/email.ts` — Email templates + Resend fetch integration (falls back to console log)
 - `src/lib/admin.functions.ts` — Admin OTP (send/verify), in-memory Map store (10min TTL)

@@ -8,7 +8,7 @@ import {
   Image as ImageIcon, Wand2, ChevronRight, CalendarClock, Command,
   TrendingUp, TrendingDown, Zap, ArrowUpRight, CheckCircle2, Clock,
   PanelLeftClose, PanelLeft, Rocket, ShieldCheck, Megaphone, MessageCircle, Database,
-  ScrollText, Award, ExternalLink,
+  ScrollText, Award, ExternalLink, Globe,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -28,6 +28,7 @@ import { PlanLekcji } from "@/components/teacher/PlanLekcji";
 import { Ogloszenia } from "@/components/teacher/Ogloszenia";
 import { Wiadomosci } from "@/components/teacher/Wiadomosci";
 import { Eksport } from "@/components/teacher/Eksport";
+import { EDziennik } from "@/components/teacher/EDziennik";
 import { AiOcen } from "@/components/teacher/AiOcen";
 import { Sprawdziany } from "@/components/teacher/Sprawdziany";
 
@@ -40,7 +41,7 @@ type Exam = { id: string; title: string; subject: string | null; status: string;
 type TabKey =
   | "pulpit" | "egzaminy" | "ai" | "aiocen" | "tutor" | "plan" | "bank" | "klasy" | "zadania" | "kalendarz"
   | "live" | "monitoring" | "analityka" | "ranking" | "materialy" | "forum" | "ustawienia"
-  | "ogloszenia" | "wiadomosci" | "eksport" | "sprawdziany" | "certyfikaty";
+  | "ogloszenia" | "wiadomosci" | "eksport" | "edziennik" | "sprawdziany" | "certyfikaty";
 
 type NavItem = { k: TabKey; l: string; i: React.ComponentType<{ className?: string }>; badge?: string };
 type NavGroup = { label: string; items: NavItem[] };
@@ -96,9 +97,10 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Integracje",
+    label: "Dziennik",
     items: [
-      { k: "eksport", l: "e-Dziennik", i: Database, badge: "NEW" },
+      { k: "edziennik", l: "e-Dziennik", i: Globe, badge: "NEW" },
+      { k: "eksport", l: "Eksport ocen", i: Database },
     ],
   },
   {
@@ -294,7 +296,7 @@ function TeacherPanel() {
               <span className="flex items-center gap-1.5 text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>SYSTEM ONLINE
               </span>
-              <span className="text-white/30">V3.1 · {now.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span className="text-white/30">V3.2 · {now.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}</span>
             </div>
           )}
 
@@ -360,7 +362,7 @@ function TeacherPanel() {
         </aside>
 
         {/* Main */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 flex flex-col">
 
 
           {/* Command palette overlay */}
@@ -418,9 +420,48 @@ function TeacherPanel() {
             {tab === "ustawienia" && <Ustawienia />}
             {tab === "ogloszenia" && <Ogloszenia />}
             {tab === "wiadomosci" && <Wiadomosci />}
+            {tab === "edziennik" && <EDziennik />}
             {tab === "eksport" && <Eksport />}
             {tab === "aiocen" && <AiOcen />}
             {tab === "certyfikaty" && <Certyfikaty />}
+          </div>
+
+          {/* GOD MODE - Floating quick action bar */}
+          <div className="sticky bottom-0 z-30 border-t border-white/10 bg-[#0a0f1f]/95 backdrop-blur-xl px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-mono tracking-[0.2em] text-white/30 mr-2 hidden sm:inline">QUICK</span>
+              <button onClick={() => setTab("pulpit")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="Pulpit">
+                <LayoutDashboard className="w-4 h-4" />
+              </button>
+              <button onClick={() => setTab("egzaminy")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="Egzaminy">
+                <FileText className="w-4 h-4" />
+              </button>
+              <button onClick={() => setTab("ai")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="AI Generator">
+                <Sparkles className="w-4 h-4" />
+              </button>
+              <button onClick={() => setTab("monitoring")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="Monitoring">
+                <Activity className="w-4 h-4" />
+              </button>
+              <button onClick={() => setTab("live")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="Live Quiz">
+                <Radio className="w-4 h-4" />
+              </button>
+              <button onClick={() => setTab("edziennik")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="e-Dziennik">
+                <Globe className="w-4 h-4" />
+              </button>
+              <div className="w-px h-5 bg-white/10 mx-1" />
+              <button onClick={() => setTab("analityka")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="Analityka">
+                <BarChart3 className="w-4 h-4" />
+              </button>
+              <button onClick={() => setTab("ustawienia")} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition" title="Ustawienia">
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-mono text-white/25 hidden sm:inline">{now.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span className="flex items-center gap-1 text-[9px] font-mono text-emerald-400/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />ONLINE
+              </span>
+            </div>
           </div>
         </main>
         </div>

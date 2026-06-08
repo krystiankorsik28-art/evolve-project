@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DokumentyRouteImport } from './routes/dokumenty'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VerifySerialRouteImport } from './routes/verify.$serial'
@@ -24,6 +25,11 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.
 import { Route as StudentExamAttemptIdRouteImport } from './routes/student.exam.$attemptId'
 import { Route as ApiAdminFixAuthRouteImport } from './routes/api/admin/fix-auth'
 
+const DokumentyRoute = DokumentyRouteImport.update({
+  id: '/dokumenty',
+  path: '/dokumenty',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -96,6 +102,7 @@ const ApiAdminFixAuthRoute = ApiAdminFixAuthRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dokumenty': typeof DokumentyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dokumenty': typeof DokumentyRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/dokumenty': typeof DokumentyRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dokumenty'
     | '/admin'
     | '/teacher'
     | '/api/ai-tutor-stream'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dokumenty'
     | '/admin'
     | '/teacher'
     | '/api/ai-tutor-stream'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/dokumenty'
     | '/_authenticated/admin'
     | '/_authenticated/teacher'
     | '/api/ai-tutor-stream'
@@ -193,6 +205,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  DokumentyRoute: typeof DokumentyRoute
   ApiAiTutorStreamRoute: typeof ApiAiTutorStreamRoute
   AuthAdminRoute: typeof AuthAdminRoute
   AuthParentRoute: typeof AuthParentRoute
@@ -207,6 +220,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dokumenty': {
+      id: '/dokumenty'
+      path: '/dokumenty'
+      fullPath: '/dokumenty'
+      preLoaderRoute: typeof DokumentyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -325,6 +345,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  DokumentyRoute: DokumentyRoute,
   ApiAiTutorStreamRoute: ApiAiTutorStreamRoute,
   AuthAdminRoute: AuthAdminRoute,
   AuthParentRoute: AuthParentRoute,

@@ -1073,7 +1073,8 @@ function Pricing() {
     if (p.action === "contact") return { price: p.price, sub: p.sub };
     const pr = yearly && p.priceYearly ? p.priceYearly : p.price;
     const saving = p.priceYearly && yearly ? `oszczędzasz ${Math.round((1 - parseInt(p.priceYearly.replace(/[^0-9]/g, '')) / parseInt(p.price.replace(/[^0-9]/g, ''))) * 100)}%` : null;
-    return { price: pr, sub: p.sub, saving };
+    const sub = yearly ? "/ rok" : p.sub;
+    return { price: pr, sub, saving };
   };
 
   const toggleYearly = () => { setYearly((y) => !y); setRollKey((k) => k + 1) };
@@ -1393,11 +1394,11 @@ function Footer() {
         <div>
           <div className="text-[11px] uppercase tracking-widest text-white/40 mb-3">Dokumenty</div>
           <ul className="space-y-2 text-sm text-white/70">
-            <li className="hover:text-cyan-300 transition cursor-pointer">Regulamin</li>
-            <li className="hover:text-cyan-300 transition cursor-pointer">Polityka prywatności</li>
-            <li className="hover:text-cyan-300 transition cursor-pointer">Umowa powierzenia</li>
-            <li className="hover:text-cyan-300 transition cursor-pointer">Status systemu</li>
-            <li className="hover:text-cyan-300 transition cursor-pointer">RODO — informacje</li>
+            <li><Link to="/dokumenty" className="hover:text-cyan-300 transition">Regulamin</Link></li>
+            <li><Link to="/dokumenty" className="hover:text-cyan-300 transition">Polityka prywatności</Link></li>
+            <li><Link to="/dokumenty" className="hover:text-cyan-300 transition">Umowa powierzenia</Link></li>
+            <li><Link to="/dokumenty" className="hover:text-cyan-300 transition">Status systemu</Link></li>
+            <li><Link to="/dokumenty" className="hover:text-cyan-300 transition">RODO — informacje</Link></li>
           </ul>
         </div>
         <div>

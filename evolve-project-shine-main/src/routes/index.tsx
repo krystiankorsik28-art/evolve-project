@@ -698,8 +698,8 @@ function FeaturesBento() {
         {/* Bento grid */}
         <div key={slideKey} className="grid sm:grid-cols-2 gap-3 tab-slide-in">
           {active.items.map((item, i) => (
-            <div className="reveal-scale" style={{ animationDelay: `${i * 0.06}s`, transitionDelay: `${i * 0.06}s` }}>
-              <FeatureCard key={item.title} item={item} gradient={active.gradient} />
+            <div key={item.title} className="reveal-scale reveal" style={{ animationDelay: `${i * 0.06}s`, transitionDelay: `${i * 0.06}s` }}>
+              <FeatureCard item={item} gradient={active.gradient} />
             </div>
           ))}
         </div>
@@ -1108,7 +1108,6 @@ type PlanDef = typeof PLANS[number];
 function Pricing() {
   const navigate = useNavigate();
   const [yearly, setYearly] = useState(false);
-  const [hovered, setHovered] = useState<string | null>(null);
   const toggle = () => setYearly(v => !v);
   const p = (pl: PlanDef) => yearly && pl.priceY !== "Indywidualnie" ? pl.priceY : pl.price;
   const s = (pl: PlanDef) => yearly && pl.priceY !== "Indywidualnie" ? "/rok" : pl.sub;
@@ -1126,39 +1125,35 @@ function Pricing() {
           <h2 className="font-display text-4xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">Wybierz swój plan</h2>
           <p className="mt-3 text-white/60">Od pojedynczej klasy po całe kuratorium</p>
         </div>
-        {/* Toggle */}
         <div className="flex items-center justify-center gap-4 mb-10">
           <span className={`text-sm transition-all ${!yearly ? "text-white font-medium" : "text-white/40"}`}>Miesięcznie</span>
-          <button onClick={toggle} className="relative w-14 h-7 rounded-full bg-white/15 transition-colors hover:shadow-[0_0_20px_-4px_rgba(34,211,238,0.3)]" style={{ backgroundColor: yearly ? 'rgba(34,211,238,0.5)' : '' }}>
+          <button onClick={toggle}
+            className={`relative w-14 h-7 rounded-full transition-colors ${yearly ? 'bg-cyan-400' : 'bg-white/15'} hover:shadow-[0_0_20px_-4px_rgba(34,211,238,0.3)]`}>
             <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-lg transition-all duration-300 ${yearly ? 'translate-x-7' : ''}`}/>
           </button>
           <span className={`text-sm flex items-center gap-1.5 transition-all ${yearly ? "text-white font-medium" : "text-white/40"}`}>
             Rocznie <span className="text-[10px] font-mono bg-emerald-400/15 text-emerald-300 px-2 py-0.5 rounded-full">-20%</span>
           </span>
         </div>
-        {/* Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start">
           {PLANS.map((pl, i) => {
-            const isHovered = hovered === pl.name;
             const feat = pl.featured;
             return (
               <div key={pl.name}
-                onMouseEnter={() => setHovered(pl.name)}
-                onMouseLeave={() => setHovered(null)}
-                className={`relative rounded-2xl backdrop-blur transition-all duration-500 flex flex-col group ${feat ? 'bg-gradient-to-b from-cyan-500/[0.12] to-violet-500/[0.08] shadow-[0_24px_80px_-20px_rgba(34,211,238,0.3)] lg:-translate-y-2 scale-[1.02] z-10' : 'bg-white/[0.03] border border-white/10 hover:bg-white/[0.06]'} ${isHovered && !feat ? '-translate-y-1 border-cyan-400/30' : ''} ${feat ? 'border border-cyan-400/30' : ''} reveal`}
+                className={`relative rounded-2xl backdrop-blur flex flex-col group transition-all duration-300 ${feat ? 'bg-gradient-to-b from-cyan-500/[0.12] to-violet-500/[0.08] border border-cyan-400/30 shadow-[0_24px_80px_-20px_rgba(34,211,238,0.3)] lg:-translate-y-2 scale-[1.02] z-10' : 'bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] hover:-translate-y-0.5 hover:border-cyan-400/20'} reveal`}
                 style={{ animationDelay: `${i * 0.08}s` }}>
                 {feat && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-300 to-violet-400 text-black text-[10px] font-semibold tracking-widest uppercase whitespace-nowrap flex items-center gap-1 shadow-lg">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-300 to-violet-400 text-black text-[10px] font-semibold uppercase whitespace-nowrap flex items-center gap-1 shadow-lg z-20">
                     <Star className="w-3 h-3" /> Najpopularniejszy
                   </div>
                 )}
-                <div className="p-6 flex flex-col h-full">
+                <div className="p-6 flex flex-col h-full pt-7">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="font-display text-lg font-semibold">{pl.name}</h3>
                     {feat && <Sparkles className="w-4 h-4 text-cyan-300" />}
                   </div>
                   <div className="flex items-baseline gap-1 mt-2">
-                    <span className={`font-display text-4xl font-bold transition-all ${feat ? 'bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent' : 'text-white'}`}>{p(pl)}</span>
+                    <span className={`font-display text-4xl font-bold ${feat ? 'bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent' : 'text-white'}`}>{p(pl)}</span>
                     <span className="text-sm text-white/50">{s(pl)}</span>
                   </div>
                   {saving(pl) && (
@@ -1173,14 +1168,14 @@ function Pricing() {
                     {pl.lines.map((l) => (
                       <li key={l} className="flex gap-2.5 items-start">
                         <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${feat ? 'text-cyan-300' : 'text-white/40 group-hover:text-cyan-300'} transition-colors`} />
-                        <span className={feat ? "text-white/85" : "text-white/60 group-hover:text-white/75 transition-colors"}>{l}</span>
+                        <span className={feat ? "text-white/85" : "text-white/60 group-hover:text-white/75"}>{l}</span>
                       </li>
                     ))}
                   </ul>
                   <div className="mt-6">
                     {pl.action === "register" && (
                       <button onClick={() => navigate({ to: "/auth/teacher" })}
-                        className="w-full py-3 rounded-xl text-sm font-semibold transition-all bg-white/10 hover:bg-white/15 border border-white/20 text-white hover:border-cyan-400/40">
+                        className="w-full py-3 rounded-xl text-sm font-semibold bg-white/10 hover:bg-white/15 border border-white/20 text-white hover:border-cyan-400/40 transition-all">
                         Rozpocznij za darmo
                       </button>
                     )}
@@ -1191,7 +1186,7 @@ function Pricing() {
                     )}
                     {pl.action === "contact" && (
                       <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })}
-                        className="w-full py-3 rounded-xl text-sm font-semibold transition-all bg-white/10 hover:bg-white/15 border border-white/20 text-white">
+                        className="w-full py-3 rounded-xl text-sm font-semibold bg-white/10 hover:bg-white/15 border border-white/20 text-white transition-all">
                         Poproś o wycenę
                       </button>
                     )}

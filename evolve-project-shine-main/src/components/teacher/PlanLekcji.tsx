@@ -29,8 +29,15 @@ export function PlanLekcji() {
   const [duration, setDuration] = useState(45);
 
   const load = async () => {
-    const { data } = await supabase.from("lesson_plans").select("*").order("created_at", { ascending: false });
-    setPlans((data ?? []) as unknown as Plan[]);
+    try {
+      const { data, error } = await supabase.from("lesson_plans").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      setPlans((data ?? []) as unknown as Plan[]);
+    } catch (e) {
+      console.error("Błąd ładowania planów:", e);
+      toast.error("Nie udało się załadować planów lekcji");
+      setPlans([]);
+    }
   };
   useEffect(() => { load(); }, []);
 

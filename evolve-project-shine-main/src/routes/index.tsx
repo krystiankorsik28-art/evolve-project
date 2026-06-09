@@ -308,7 +308,7 @@ function Hero() {
           {/* Headline */}
           <h1 className="mt-6 font-display text-5xl sm:text-6xl lg:text-7xl font-semibold leading-[0.95] tracking-tight text-white animate-fadeIn" style={{ animationDelay: "0.1s" }}>
             Egzaminy bez tarcia.{" "}
-            <span className="block bg-gradient-to-r from-red-400 via-white to-red-400 bg-clip-text text-transparent">
+            <span className="block text-white/90">
               <span className={`inline-block transition-all duration-300 ${typing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}>
                 {headlines[currentSlide]}
               </span>
@@ -1420,7 +1420,7 @@ function Footer() {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 pulse-ring"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>100% online</span>
             <span className="text-white/20">·</span>
-            <span className="font-mono text-[10px] text-white/30">v3.2.0</span>
+            <span className="font-mono text-[10px] text-white/30">v3.4.1</span>
           </div>
         </div>
       </div>

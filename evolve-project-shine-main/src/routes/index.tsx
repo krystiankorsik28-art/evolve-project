@@ -1166,12 +1166,10 @@ const ACHIEVEMENTS = [
   { icon: Infinity, label: "Uptime SLA", value: "99.98", suffix: "%", color: "from-emerald-300 to-cyan-400" },
 ];
 function Achievements() {
-  const [hovered, setHovered] = useState<number | null>(null);
   return (
-    <section className="py-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.03),transparent_60%)]"/>
+    <section className="py-20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="reveal text-center mb-12">
+        <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] uppercase tracking-[0.22em] text-white/60 font-mono">★ · Osiągnięcia</div>
           <h2 className="mt-4 font-display text-3xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">
             Platforma w <span className="text-gradient-cyber">liczbach</span>
@@ -1181,13 +1179,8 @@ function Achievements() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {ACHIEVEMENTS.map((a, i) => (
             <div key={a.label}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              className={`relative rounded-2xl border transition-all duration-500 p-5 text-center group
-                ${hovered === i ? 'border-cyan-400/40 bg-white/[0.08] -translate-y-2 shadow-[0_20px_60px_-20px_rgba(34,211,238,0.3)]' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06]'}
-                reveal`}
-              style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${a.color} grid place-items-center mb-4 transition-all duration-500 ${hovered === i ? 'scale-125 rotate-6 shadow-xl' : ''}`}>
+              className="relative rounded-2xl border border-white/10 bg-[#0a0d18] p-5 text-center group hover:bg-[#0f1322] hover:border-cyan-400/30 hover:-translate-y-1 transition-all duration-300">
+              <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${a.color} grid place-items-center mb-4`}>
                 <a.icon className="w-6 h-6 text-black" />
               </div>
               <div className="font-display text-3xl font-bold tabular-nums">
@@ -1195,9 +1188,6 @@ function Achievements() {
                 <span className="text-cyan-300/60 text-2xl">{a.suffix}</span>
               </div>
               <div className="text-xs text-white/50 mt-1.5">{a.label}</div>
-              {hovered === i && (
-                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-cyan-400/20 via-violet-400/20 to-cyan-400/20 blur-xl -z-10 transition-all duration-500" />
-              )}
             </div>
           ))}
         </div>
@@ -1208,99 +1198,89 @@ function Achievements() {
 
 /* ──── PRICING ──── */
 const PLANS = [
-  { name: "Klasa", price: "0", priceY: "0", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań 300+", "15 egzaminów/mies", "Podstawowe raporty", "Wsparcie e-mail"], featured: false, action: "register" as const },
-  { name: "Korepetytor", price: "49", priceY: "39", sub: "/mies", lines: ["Do 25 uczniów", "Bank pytań 1000+", "Egzaminy bez limitu", "Generator AI 50 zapytań", "Eksport PDF/Excel"], featured: false, action: "pay" as const, usd: "12", usdY: "10" },
-  { name: "Nauczyciel", price: "99", priceY: "79", sub: "/mies", lines: ["Do 60 uczniów", "Bank pytań 3000+", "Egzaminy bez limitu", "Generator AI 200 zapytań", "Monitoring na żywo", "Wsparcie priorytetowe"], featured: false, action: "pay" as const, usd: "25", usdY: "20" },
-  { name: "Szkoła", price: "490", priceY: "390", sub: "/mies", lines: ["Do 300 uczniów", "Bank pytań 10000+", "Generator AI bez limitu", "Eksport Vulcan/Librus", "Anti-cheat AI", "Wsparcie 24/7"], featured: false, action: "pay" as const, usd: "125", usdY: "99" },
-  { name: "Szkoła Plus", price: "890", priceY: "690", sub: "/mies", lines: ["Do 800 uczniów", "Bank pytań bez limitu", "Anti-cheat + monitoring", "API REST dostęp", "Dedykowany opiekun", "Priorytetowy SLA"], featured: true, action: "pay" as const, usd: "225", usdY: "175" },
-  { name: "Dzielnica", price: "2990", priceY: "2490", sub: "/mies", lines: ["Do 8 szkół / 3000 uczniów", "Centralne zarządzanie", "Wspólna baza pytań", "Raporty porównawcze", "SLA 99,95%", "Dedykowane wdrożenie"], featured: false, action: "pay" as const, usd: "750", usdY: "625" },
-  { name: "Kuratorium", price: "Indywidualnie", priceY: "Indywidualnie", sub: "", lines: ["Nieograniczona liczba szkół", "Centralna baza + zatwierdzanie", "Raporty wojewódzkie", "SLA 99,99% + DR", "Dedykowany zespół", "Niestandardowe integracje"], featured: false, action: "contact" as const },
+  { name: "Klasa", price: "0", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań 300+", "15 egzaminów/mies", "Podstawowe raporty", "Wsparcie e-mail"], feat: false },
+  { name: "Korepetytor", price: "49", sub: "/mies", lines: ["Do 25 uczniów", "Bank pytań 1000+", "Egzaminy bez limitu", "Generator AI 50 zapytań", "Eksport PDF/Excel"], feat: false },
+  { name: "Nauczyciel", price: "99", sub: "/mies", lines: ["Do 60 uczniów", "Bank pytań 3000+", "Egzaminy bez limitu", "Generator AI 200 zapytań", "Monitoring na żywo", "Wsparcie priorytetowe"], feat: false },
+  { name: "Szkoła", price: "490", sub: "/mies", lines: ["Do 300 uczniów", "Bank pytań 10000+", "Generator AI bez limitu", "Eksport Vulcan/Librus", "Anti-cheat AI", "Wsparcie 24/7"], feat: false },
+  { name: "Szkoła Plus", price: "890", sub: "/mies", lines: ["Do 800 uczniów", "Bank pytań bez limitu", "Anti-cheat + monitoring", "API REST dostęp", "Dedykowany opiekun", "Priorytetowy SLA"], feat: true },
+  { name: "Dzielnica", price: "2990", sub: "/mies", lines: ["Do 8 szkół / 3000 uczniów", "Centralne zarządzanie", "Wspólna baza pytań", "Raporty porównawcze", "SLA 99,95%", "Dedykowane wdrożenie"], feat: false },
+  { name: "Kuratorium", price: "Indywidualnie", sub: "", lines: ["Nieograniczona liczba szkół", "Centralna baza + zatwierdzanie", "Raporty wojewódzkie", "SLA 99,99% + DR", "Dedykowany zespół", "Niestandardowe integracje"], feat: false },
 ];
-
-type PlanDef = typeof PLANS[number];
 
 function Pricing() {
   const navigate = useNavigate();
-  const [yearly, setYearly] = useState(false);
-  const toggle = () => setYearly(v => !v);
-  const p = (pl: PlanDef) => yearly && pl.priceY !== "Indywidualnie" ? pl.priceY : pl.price;
-  const s = (pl: PlanDef) => yearly && pl.priceY !== "Indywidualnie" ? "/rok" : pl.sub;
-  const saving = (pl: PlanDef) => {
-    if (!yearly || pl.priceY === "Indywidualnie") return null;
-    const a = parseInt(pl.price), b = parseInt(pl.priceY);
-    return a ? Math.round((1 - b/a)*100) : null;
+  const [yr, setYr] = useState(false);
+  const yearlyPrice = (p: string) => {
+    if (p === "0" || p === "Indywidualnie") return p;
+    return String(Math.round(parseInt(p) * 0.8));
   };
   return (
-    <section id="cennik" className="py-28 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.06),transparent_60%)]"/>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-        <div className="text-center mb-14 reveal">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] uppercase tracking-[0.22em] text-white/60 font-mono mb-4">08 &middot; Cennik</div>
+    <section id="cennik" className="py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] uppercase tracking-[0.22em] text-white/60 font-mono mb-4">Cennik</div>
           <h2 className="font-display text-4xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">Wybierz swój plan</h2>
-          <p className="mt-3 text-white/60">Od pojedynczej klasy po całe kuratorium</p>
+          <p className="mt-3 text-white/60">Płatność kartą, przelewem lub krypto</p>
         </div>
         <div className="flex items-center justify-center gap-4 mb-10">
-          <span className={`text-sm transition-all ${!yearly ? "text-white font-medium" : "text-white/40"}`}>Miesięcznie</span>
-          <button onClick={toggle}
-            className={`relative w-14 h-7 rounded-full transition-colors ${yearly ? 'bg-cyan-400' : 'bg-white/15'} hover:shadow-[0_0_20px_-4px_rgba(34,211,238,0.3)]`}>
-            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-lg transition-all duration-300 ${yearly ? 'translate-x-7' : ''}`}/>
+          <span className={`text-sm ${!yr ? "text-white font-medium" : "text-white/40"}`}>Miesięcznie</span>
+          <button onClick={() => setYr((v) => !v)}
+            className={`relative w-14 h-7 rounded-full transition-colors ${yr ? "bg-cyan-400" : "bg-white/20"}`}>
+            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-all duration-300 ${yr ? "translate-x-7" : ""}`} />
           </button>
-          <span className={`text-sm flex items-center gap-1.5 transition-all ${yearly ? "text-white font-medium" : "text-white/40"}`}>
-            Rocznie <span className="text-[10px] font-mono bg-emerald-400/15 text-emerald-300 px-2 py-0.5 rounded-full">-20%</span>
+          <span className={`text-sm ${yr ? "text-white font-medium" : "text-white/40"}`}>
+            Rocznie <span className="ml-1 text-[10px] font-mono bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full">-20%</span>
           </span>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start">
-          {PLANS.map((pl, i) => {
-            const feat = pl.featured;
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
+          {PLANS.map((pl) => {
+            const price = yr && pl.price !== "0" && pl.price !== "Indywidualnie" ? yearlyPrice(pl.price) : pl.price;
+            const isFeat = pl.feat;
+            const isKlasa = pl.price === "0";
+            const isContact = pl.price === "Indywidualnie";
+            const isPay = !isKlasa && !isContact;
             return (
               <div key={pl.name}
-                className={`relative rounded-2xl flex flex-col group transition-all duration-300 ${feat ? 'bg-gradient-to-b from-cyan-500/20 to-violet-500/15 border border-cyan-400/40 shadow-[0_24px_80px_-20px_rgba(34,211,238,0.4)] lg:-translate-y-2 scale-[1.02] z-10' : 'bg-[#0a0d18] border border-white/10 hover:bg-[#0f1322] hover:-translate-y-0.5 hover:border-cyan-400/20'} reveal`}
-                style={{ animationDelay: `${i * 0.08}s` }}>
-                {feat && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-300 to-violet-400 text-black text-[10px] font-semibold uppercase whitespace-nowrap flex items-center gap-1 shadow-lg z-20">
-                    <Star className="w-3 h-3" /> Najpopularniejszy
+                className={`rounded-2xl border flex flex-col transition-all duration-200
+                  ${isFeat
+                    ? "border-cyan-400/50 bg-cyan-950/40 shadow-[0_0_30px_-8px_rgba(34,211,238,0.3)] scale-[1.02] z-10"
+                    : "border-white/10 bg-[#0a0d18] hover:border-white/20"}`}>
+                {isFeat && (
+                  <div className="text-center -mt-3 mb-2">
+                    <span className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400 text-black text-[10px] font-semibold uppercase shadow-lg">
+                      <Star className="w-3 h-3 inline-block -mt-0.5 mr-1" />Najpopularniejszy
+                    </span>
                   </div>
                 )}
-                <div className="p-6 flex flex-col h-full pt-7" style={{ background: 'inherit' }}>
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-display text-lg font-semibold">{pl.name}</h3>
-                    {feat && <Sparkles className="w-4 h-4 text-cyan-300" />}
+                <div className="p-5 flex flex-col h-full">
+                  <h3 className="font-display text-lg font-semibold">{pl.name}</h3>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className={`font-display text-4xl font-bold ${isFeat ? "text-cyan-300" : "text-white"}`}>{price}</span>
+                    <span className="text-sm text-white/50">{pl.sub}</span>
                   </div>
-                  <div className="flex items-baseline gap-1 mt-2">
-                    <span className={`font-display text-4xl font-bold ${feat ? 'bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent' : 'text-white'}`}>{p(pl)}</span>
-                    <span className="text-sm text-white/50">{s(pl)}</span>
-                  </div>
-                  {saving(pl) && (
-                    <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-400/15 text-emerald-300 text-[10px] font-mono w-fit">
-                      <TrendingUp className="w-3 h-3" /> oszczędzasz {saving(pl)}%
-                    </div>
-                  )}
-                  {pl.action === "pay" && pl.price !== "Indywidualnie" && (
-                    <div className="mt-1 text-[10px] text-white/30 font-mono">≈ ${yearly && pl.usdY ? pl.usdY : pl.usd} USD</div>
-                  )}
-                  <ul className="mt-5 space-y-2.5 text-sm flex-1">
+                  <ul className="mt-4 space-y-2 text-sm flex-1">
                     {pl.lines.map((l) => (
-                      <li key={l} className="flex gap-2.5 items-start">
-                        <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${feat ? 'text-cyan-300' : 'text-white/40 group-hover:text-cyan-300'} transition-colors`} />
-                        <span className={feat ? "text-white/85" : "text-white/60 group-hover:text-white/75"}>{l}</span>
+                      <li key={l} className="flex gap-2">
+                        <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${isFeat ? "text-cyan-300" : "text-white/30"}`} />
+                        <span className={isFeat ? "text-white/90" : "text-white/60"}>{l}</span>
                       </li>
                     ))}
                   </ul>
-                  <div className="mt-6">
-                    {pl.action === "register" && (
+                  <div className="mt-5">
+                    {isKlasa && (
                       <button onClick={() => navigate({ to: "/auth/teacher" })}
-                        className="w-full py-3 rounded-xl text-sm font-semibold bg-white/10 hover:bg-white/15 border border-white/20 text-white hover:border-cyan-400/40 transition-all">
+                        className="w-full py-3 rounded-xl text-sm font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all">
                         Rozpocznij za darmo
                       </button>
                     )}
-                    {pl.action === "pay" && (
+                    {isPay && (
                       <NexaPayCheckout planName={pl.name}
-                        amount={yearly && pl.priceY ? pl.priceY + " zł" : pl.price + " zł"}
-                        amountUsd={yearly && pl.usdY ? pl.usdY : pl.usd!} />
+                        amount={yr && pl.price !== "0" ? yearlyPrice(pl.price) + " zł" : pl.price + " zł"}
+                        amountUsd={String(Math.round(parseInt(pl.price) / 4))} />
                     )}
-                    {pl.action === "contact" && (
+                    {isContact && (
                       <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })}
-                        className="w-full py-3 rounded-xl text-sm font-semibold bg-white/10 hover:bg-white/15 border border-white/20 text-white transition-all">
+                        className="w-full py-3 rounded-xl text-sm font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all">
                         Poproś o wycenę
                       </button>
                     )}

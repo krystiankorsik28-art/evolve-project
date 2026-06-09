@@ -68,20 +68,23 @@ function Landing() {
 /* ──── Scroll reveal hook ──── */
 function useScrollReveal() {
   useEffect(() => {
+    const els = document.querySelectorAll(".reveal");
     requestAnimationFrame(() => {
-      document.querySelectorAll(".reveal").forEach((el) => {
-        if (el.getBoundingClientRect().top < window.innerHeight + 200) {
+      els.forEach((el) => {
+        if (el.getBoundingClientRect().top < window.innerHeight + 300) {
           el.classList.add("revealed");
         }
       });
     });
+    // also reveal everything after a short delay as fallback
+    setTimeout(() => { els.forEach((el) => el.classList.add("revealed")) }, 800);
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("revealed") });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
     );
-    document.querySelectorAll(".reveal").forEach((el) => obs.observe(el));
+    els.forEach((el) => obs.observe(el));
     return () => obs.disconnect();
   }, []);
 }
@@ -756,10 +759,10 @@ function FeaturesBento() {
           <div className="absolute -top-10 -left-10 w-20 h-20 rounded-full border border-cyan-400/20 float-shape" />
           <div className="absolute -bottom-5 -right-5 w-14 h-14 rounded-full border border-violet-400/20 float-shape" style={{ animationDelay: '2s' }} />
         </div>
-        {/* Bento grid */}
+         {/* Bento grid */}
         <div key={slideKey} className="grid sm:grid-cols-2 gap-3 tab-slide-in">
           {active.items.map((item, i) => (
-            <div key={item.title} className="reveal-scale reveal" style={{ animationDelay: `${i * 0.06}s`, transitionDelay: `${i * 0.06}s` }}>
+            <div key={item.title}>
               <FeatureCard item={item} gradient={active.gradient} />
             </div>
           ))}
@@ -1180,10 +1183,10 @@ function Achievements() {
             <div key={a.label}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
-              className={`tilt-card relative rounded-2xl border transition-all duration-500 p-5 text-center group
-                ${hovered === i ? 'border-cyan-400/40 bg-white/[0.08] -translate-y-2 shadow-[0_20px_60px_-20px_rgba(34,211,238,0.3)]' : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]'}
+              className={`relative rounded-2xl border transition-all duration-500 p-5 text-center group
+                ${hovered === i ? 'border-cyan-400/40 bg-white/[0.08] -translate-y-2 shadow-[0_20px_60px_-20px_rgba(34,211,238,0.3)]' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06]'}
                 reveal`}
-              style={{ animationDelay: `${i * 0.1}s`, transformStyle: 'preserve-3d' }}>
+              style={{ animationDelay: `${i * 0.1}s` }}>
               <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${a.color} grid place-items-center mb-4 transition-all duration-500 ${hovered === i ? 'scale-125 rotate-6 shadow-xl' : ''}`}>
                 <a.icon className="w-6 h-6 text-black" />
               </div>
@@ -1251,14 +1254,14 @@ function Pricing() {
             const feat = pl.featured;
             return (
               <div key={pl.name}
-                className={`relative rounded-2xl backdrop-blur flex flex-col group transition-all duration-300 ${feat ? 'bg-gradient-to-b from-cyan-500/[0.12] to-violet-500/[0.08] border border-cyan-400/30 shadow-[0_24px_80px_-20px_rgba(34,211,238,0.3)] lg:-translate-y-2 scale-[1.02] z-10' : 'bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] hover:-translate-y-0.5 hover:border-cyan-400/20'} reveal`}
+                className={`relative rounded-2xl flex flex-col group transition-all duration-300 ${feat ? 'bg-gradient-to-b from-cyan-500/20 to-violet-500/15 border border-cyan-400/40 shadow-[0_24px_80px_-20px_rgba(34,211,238,0.4)] lg:-translate-y-2 scale-[1.02] z-10' : 'bg-[#0a0d18] border border-white/10 hover:bg-[#0f1322] hover:-translate-y-0.5 hover:border-cyan-400/20'} reveal`}
                 style={{ animationDelay: `${i * 0.08}s` }}>
                 {feat && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-300 to-violet-400 text-black text-[10px] font-semibold uppercase whitespace-nowrap flex items-center gap-1 shadow-lg z-20">
                     <Star className="w-3 h-3" /> Najpopularniejszy
                   </div>
                 )}
-                <div className="p-6 flex flex-col h-full pt-7">
+                <div className="p-6 flex flex-col h-full pt-7" style={{ background: 'inherit' }}>
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="font-display text-lg font-semibold">{pl.name}</h3>
                     {feat && <Sparkles className="w-4 h-4 text-cyan-300" />}

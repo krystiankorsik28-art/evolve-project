@@ -4,7 +4,7 @@
 Polish-language teacher/student/admin platform with Gemini AI, Vercel hosting, Supabase auth, dark UI, exam creation, AI tutoring, certificate system, email OTP, and crypto/card payment integration via NexaPay.
 
 **Domain:** edunex.pl (via nazwa.pl)
-**GitHub:** https://github.com/krystiankorsik28-art/evolve-project-shine
+**GitHub:** https://github.com/krystiankorsik28-art/evolve-project
 **Vercel:** Connected to GitHub (auto-deploy on push to main)
 
 ## Tech Stack

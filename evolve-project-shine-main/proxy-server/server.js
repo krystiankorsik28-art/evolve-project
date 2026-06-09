@@ -1,8 +1,7 @@
-import { createServer } from 'http';
-
+const http = require('http');
 const PORT = process.env.PORT || 3000;
 
-createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const target = url.searchParams.get('url');
 
@@ -19,6 +18,8 @@ createServer(async (req, res) => {
   }
 
   try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 30000);
     const response = await fetch(target, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -26,15 +27,16 @@ createServer(async (req, res) => {
         'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
       },
       redirect: 'follow',
-      signal: AbortSignal.timeout(30000),
+      signal: ac.signal,
     });
+    clearTimeout(t);
 
     let html = await response.text();
     html = html.replace(/<base\s[^>]*\/?>/gi, '');
     html = html.replace(/<\/head>/i, `<base href="${target}">\n</head>`);
     html = html.replace(
       /<frame(?:set)?[^>]*>[\s\S]*?<\/frame(?:set)?>/gi,
-      '<div style="padding:20px;text-align:center;color:#888;">Zawartośc w ramkach nie jest dostępna przez proxy</div>'
+      '<div style="padding:20px;text-align:center;color:#888;">Zawartość w ramkach nie jest dostępna przez proxy</div>'
     );
 
     const headers = {
@@ -51,6 +53,7 @@ createServer(async (req, res) => {
     res.writeHead(502, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
     res.end(JSON.stringify({ error: `Proxy error: ${e.message}` }));
   }
-}).listen(PORT, () => {
-  console.log(`EduNex Proxy running on port ${PORT}`);
 });
+
+server.listen(PORT, () => console.log(`EduNex Proxy running on port ${PORT}`));
+module.exports = server;

@@ -3,7 +3,7 @@ import { ExternalLink, Globe, ArrowLeft, ArrowRight, RotateCw, Bookmark, Monitor
 import { Eksport } from "./Eksport";
 
 const PROXY_URL_KEY = "edunex-proxy-url";
-const DEFAULT_PROXY_URL = "/api/proxy";
+const DEFAULT_PROXY_URL = "http://proxy.edunex.pl";
 
 function getStoredProxyUrl(): string {
   try { return localStorage.getItem(PROXY_URL_KEY) || DEFAULT_PROXY_URL; } catch { return DEFAULT_PROXY_URL; }
@@ -165,7 +165,7 @@ export function EDziennik() {
               </button>
             </div>
             <p className="text-[10px] text-white/30 font-mono">
-              Domyślnie: <code className="text-cyan-400/60">/api/proxy</code> (Vercel) • Po deployu na nazwa.pl: <code className="text-cyan-400/60">https://proxy.edunex.pl</code>
+              Domyślnie: <code className="text-cyan-400/60">http://proxy.edunex.pl</code> (nazwa.pl)
             </p>
           </div>
           <div className="flex items-center gap-2 text-[10px] text-white/30">

@@ -14,7 +14,7 @@ import {
   Laptop, Rocket, Flag, Compass, PenTool,
   ArrowLeft, Play, ChevronRight, ChevronDown, Plus, Tablet, Headphones, Bell,
   Lightbulb, Cable, Workflow, GripVertical, Puzzle, ScrollText, Heart, KeyRound, Video,
-
+  Infinity,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -55,6 +55,7 @@ function Landing() {
       <Integrations />
       <Compliance />
       <Testimony />
+      <Achievements />
       <Pricing />
       <FAQ />
       <Newsletter />
@@ -102,33 +103,45 @@ function CursorGlow() {
 
 /* ──── Social proof toast ──── */
 const SOCIAL_EVENTS = [
-  { n: "Zofia Wiśniewska", a: "zakończyła egzamin z wynikiem 92%", s: "ok" },
-  { n: "III LO Gdynia", a: "dodała 15 nowych pytań do banku", s: "add" },
-  { n: "Jakub Kamiński", a: "otrzymał certyfikat z matematyki", s: "cert" },
-  { n: "V LO Kraków", a: "rozpoczęła sprawdzian — 28 uczniów", s: "start" },
-  { n: "Hanna Lewandowska", a: "poprawiła wynik o 14 punktów", s: "up" },
-  { n: "XIV LO Warszawa", a: "wygenerowała raport miesięczny", s: "report" },
-  { n: "Antoni Dąbrowski", a: "przekroczył próg zaliczenia — 58%", s: "ok" },
-  { n: "ZSE Poznań", a: "zaimportowała 200 uczniów z CSV", s: "add" },
+  { n: "Zofia Wiśniewska", a: "zakończyła egzamin", s: "92%", g: "emerald" },
+  { n: "III LO w Gdyni", a: "dodała 15 pytań", s: "+bank", g: "cyan" },
+  { n: "Jakub Kamiński", a: "otrzymał certyfikat", s: "matematyka", g: "amber" },
+  { n: "V LO Kraków", a: "rozpoczęła sprawdzian", s: "28 uczniów", g: "violet" },
+  { n: "Hanna Lewandowska", a: "poprawiła wynik", s: "+14 pkt", g: "emerald" },
+  { n: "XIV LO Warszawa", a: "wygenerowała raport", s: "miesięczny", g: "blue" },
+  { n: "ZSE Poznań", a: "zaimportowała uczniów", s: "200 z CSV", g: "cyan" },
+  { n: "Maja Szymańska", a: "rozwiązała quiz", s: "100%", g: "emerald" },
+  { n: "SP nr 5", a: "dodała klasę", s: "3B", g: "violet" },
 ];
 function SocialProof() {
-  const [current, setCurrent] = useState(0);
-  const [exiting, setExiting] = useState(false);
+  const [items, setItems] = useState<{ n: string; a: string; s: string; g: string; id: number }[]>([]);
+  const idRef = useRef(0);
   useEffect(() => {
-    const iv = setInterval(() => {
-      setExiting(true);
-      setTimeout(() => { setCurrent((p) => (p + 1) % SOCIAL_EVENTS.length); setExiting(false) }, 300);
-    }, 5000);
-    return () => clearInterval(iv);
+    const show = () => {
+      const ev = SOCIAL_EVENTS[Math.floor(Math.random() * SOCIAL_EVENTS.length)];
+      const id = ++idRef.current;
+      setItems((prev) => [...prev.slice(-2), { ...ev, id }]);
+      setTimeout(() => setItems((prev) => prev.filter((x) => x.id !== id)), 4000 + Math.random() * 2000);
+    };
+    show();
+    let timeout: ReturnType<typeof setTimeout>;
+    const schedule = () => { timeout = setTimeout(() => { show(); schedule(); }, 4000 + Math.random() * 6000); };
+    schedule();
+    return () => clearTimeout(timeout);
   }, []);
-  const ev = SOCIAL_EVENTS[current];
-  const colors: Record<string, string> = { ok: "bg-emerald-400", add: "bg-cyan-400", cert: "bg-amber-400", start: "bg-violet-400", up: "bg-emerald-400", report: "bg-blue-400" };
+  const colorMap: Record<string, string> = { emerald: "bg-emerald-400", cyan: "bg-cyan-400", amber: "bg-amber-400", violet: "bg-violet-400", blue: "bg-blue-400" };
   return (
-    <div className={`fixed bottom-24 left-6 z-50 max-w-xs rounded-2xl border border-white/10 bg-black/80 backdrop-blur-xl px-4 py-3 shadow-xl hidden lg:block ${exiting ? "social-toast exit" : "social-toast"}`}>
-      <div className="flex items-center gap-3 text-xs">
-        <span className={`w-2 h-2 rounded-full ${colors[ev.s] ?? "bg-white/40"} animate-pulse shrink-0`}/>
-        <div><span className="font-medium text-white">{ev.n}</span><span className="text-white/60"> {ev.a}</span></div>
-      </div>
+    <div className="fixed bottom-24 left-6 z-50 flex flex-col gap-2 hidden lg:block">
+      {items.map((ev, i) => (
+        <div key={ev.id}
+          className="rounded-2xl border border-white/10 bg-black/80 backdrop-blur-xl px-4 py-3 shadow-xl max-w-xs transition-all duration-500 animate-fadeIn"
+          style={{ animation: 'slideInUp 0.4s ease-out' }}>
+          <div className="flex items-center gap-3 text-xs">
+            <span className={`w-2 h-2 rounded-full ${colorMap[ev.g] ?? "bg-white/40"} shrink-0`} style={{ boxShadow: `0 0 6px ${ev.g === 'emerald' ? '#34d399' : ev.g === 'cyan' ? '#22d3ee' : ev.g === 'amber' ? '#fbbf24' : ev.g === 'violet' ? '#a78bfa' : '#60a5fa'}` }}/>
+            <div><span className="font-medium text-white">{ev.n}</span><span className="text-white/60"> {ev.a}</span> <span className="text-cyan-200 font-mono">{ev.s}</span></div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -170,17 +183,54 @@ function BackgroundFX() {
       });
     };
     window.addEventListener('mousemove', f);
-    return () => window.removeEventListener('mousemove', f);
+
+    // Parallax on scroll
+    const scrollF = () => {
+      const sy = window.scrollY;
+      const layers = el.querySelectorAll('.parallax-layer') as NodeListOf<HTMLElement>;
+      layers.forEach((l) => {
+        const sp = parseFloat(l.dataset.speed || '0.3');
+        l.style.transform = `translateY(${sy * sp}px)`;
+      });
+    };
+    window.addEventListener('scroll', scrollF, { passive: true });
+
+    return () => {
+      window.removeEventListener('mousemove', f);
+      window.removeEventListener('scroll', scrollF);
+    };
   }, []);
+
+  // Speed lines
+  const [speedLines] = useState(() =>
+    Array.from({ length: 8 }, (_, i) => ({
+      left: `${5 + Math.random() * 90}%`,
+      animationDelay: `${Math.random() * 8}s`,
+      animationDuration: `${3 + Math.random() * 4}s`,
+      height: `${40 + Math.random() * 80}px`,
+      opacity: 0.15 + Math.random() * 0.2,
+    }))
+  );
+
   return (
     <div ref={bgRef} className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="absolute inset-0 bg-aurora opacity-90" />
       <div className="absolute inset-0 bg-grid opacity-[0.5] [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
-      <div data-speed="1.5" className="float-shape-bg absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full bg-violet-500/20 blur-[160px] float-shape" />
-      <div data-speed="1" className="float-shape-bg absolute top-1/3 -right-40 w-[520px] h-[520px] rounded-full bg-cyan-400/15 blur-[160px] float-shape" style={{ animationDelay: "1.5s" }} />
-      <div data-speed="0.7" className="float-shape-bg absolute bottom-0 left-1/3 w-[420px] h-[420px] rounded-full bg-rose-500/15 blur-[160px] float-shape" style={{ animationDelay: "3s" }} />
-      <div data-speed="0.4" className="float-shape-bg absolute top-1/2 right-1/4 w-[320px] h-[320px] rounded-full bg-amber-400/10 blur-[140px] float-shape" style={{ animationDelay: "0.7s" }} />
-      <div data-speed="1.2" className="float-shape-bg absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full bg-emerald-400/8 blur-[120px] float-shape" style={{ animationDelay: "2s" }} />
+      {/* Speed lines */}
+      {speedLines.map((sl, i) => (
+        <div key={i} className="speed-line" style={{
+          left: sl.left,
+          animation: `speedLine ${sl.animationDuration} linear ${sl.animationDelay} infinite`,
+          height: sl.height,
+          opacity: sl.opacity,
+        }} />
+      ))}
+      {/* Parallax glow layers */}
+      <div data-speed="0.15" className="parallax-layer float-shape-bg absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full bg-violet-500/20 blur-[160px] float-shape" />
+      <div data-speed="0.1" className="parallax-layer float-shape-bg absolute top-1/3 -right-40 w-[520px] h-[520px] rounded-full bg-cyan-400/15 blur-[160px] float-shape" style={{ animationDelay: "1.5s" }} />
+      <div data-speed="0.07" className="parallax-layer float-shape-bg absolute bottom-0 left-1/3 w-[420px] h-[420px] rounded-full bg-rose-500/15 blur-[160px] float-shape" style={{ animationDelay: "3s" }} />
+      <div data-speed="0.04" className="parallax-layer float-shape-bg absolute top-1/2 right-1/4 w-[320px] h-[320px] rounded-full bg-amber-400/10 blur-[140px] float-shape" style={{ animationDelay: "0.7s" }} />
+      <div data-speed="0.12" className="parallax-layer float-shape-bg absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full bg-emerald-400/8 blur-[120px] float-shape" style={{ animationDelay: "2s" }} />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] opacity-[0.03] pointer-events-none select-none float-shape" style={{ animationDuration: '12s' }}>
         <svg viewBox="0 0 400 500" fill="white" className="w-full h-full">
           <path d="M200 20C180 20 160 35 155 55L150 70C145 80 140 85 130 90L120 95C110 100 105 110 105 120L105 135C105 145 110 150 120 150L125 150C130 150 135 145 140 140L145 135C150 130 155 130 160 135L165 140C170 145 175 145 180 140L185 135C190 130 195 130 200 135C205 130 210 130 215 135L220 140C225 145 230 145 235 140L240 135C245 130 250 130 255 135L260 140C265 145 270 150 275 150L280 150C290 150 295 145 295 135L295 120C295 110 290 100 280 95L270 90C260 85 255 80 250 70L245 55C240 35 220 20 200 20Z" />
@@ -616,6 +666,7 @@ const FEATURE_CATEGORIES = [
       { title: "Asystent AI nauczyciela", bullets: ["Rozmowa głosowa z asystentem przez mikrofon", "Podpowiedzi przy układaniu pytań", "Generowanie przykładów i zadań domowych", "Analiza błędów klasy — AI znajduje słabe punkty", "Personalizowane rekomendacje dla uczniów"] },
       { title: "Wykrywanie ściągania", bullets: ["AI analizuje ruchy myszy i klawiaturę", "Wykrywanie opuszczania okna egzaminu", "Analiza podobieństwa odpowiedzi między uczniami", "Alerty o podejrzanych zachowaniach w czasie rzeczywistym", "Raport końcowy z podejrzanymi zdarzeniami"] },
       { title: "Automatyczne raporty", bullets: ["Raport PDF po każdym egzaminie — gotowy do druku", "Rozkład wyników klasy na tle szkoły", "Eksport do dziennika jednym kliknięciem", "Historia postępów ucznia w czasie", "Powiadomienia e-mail dla rodziców"] },
+      { title: "Inteligentne rekomendacje", bullets: ["AI sugeruje pytania na podstawie słabych punktów klasy", "Personalizowane zestawy powtórkowe dla uczniów", "Automatyczne dobieranie poziomu trudności", "Prognoza wyników przed egzaminem", "Rekomendacje materiałów z biblioteki Cyfrowy Zeszyt"] },
     ],
   },
   {
@@ -628,6 +679,7 @@ const FEATURE_CATEGORIES = [
       { title: "Monitoring na żywo", bullets: ["Postęp każdego ucznia w czasie rzeczywistym", "Aktywni / średnie ryzyko / wysokie ryzyko —统计", "Zdarzenia: blokady, wyjścia z fullscreena", "Możliwość zatrzymania egzaminu zdalnie", "Podgląd ekranu ucznia w FrameViewer"] },
       { title: "Raporty dla dyrekcji", bullets: ["Zbiorcze zestawienie wszystkich klas", "Wskaźniki zdawalności przedmiotów", "Porównanie nauczycieli i klas", "Eksport do PDF / Excel / CSV", "Dziennik audytu — kto, co, kiedy"] },
       { title: "Analiza pytań", bullets: ["Które pytania sprawiają najwięcej trudności", "Procent poprawnych odpowiedzi na pytanie", "Czas spędzony na każdym pytaniu", "Dystraktory — które odpowiedzi mylą uczniów", "Sugestie AI: zmień treść, próg, wagę"] },
+      { title: "Prognozy i trend", bullets: ["Wykresy predykcyjne — który uczeń potrzebuje pomocy", "Porównanie semestrów i lat", "Mapa cieplna wyników dla całej szkoły", "Automatyczne alerty przy spadku wyników", "Raport dyrektorski z rekomendacjami AI"] },
     ],
   },
   {
@@ -640,6 +692,7 @@ const FEATURE_CATEGORIES = [
       { title: "Dziennik i oceny", bullets: ["Wystawianie ocen z egzaminów i sprawdzianów", "Średnia ważona z wagami ustawialnymi", "Średnia klasy — porównanie wizualne", "Eksport do Vulcan / Librus / Mobidziennik", "Wystawianie ocen opisowych"] },
       { title: "Plan lekcji", bullets: ["Tygodniowy harmonogram z drag & drop", "Zaznaczanie terminów egzaminów", "Powiadomienia dla uczniów o nadchodzących testach", "Synchronizacja z kalendarzem Google / Outlook", "Widok dla ucznia i nauczyciela"] },
       { title: "Komunikacja", bullets: ["Wiadomości wewnętrzne do uczniów i rodziców", "Wysyłka wyników na e-mail", "Ogłoszenia dla całej klasy / szkoły", "Szablon wiadomości dla powtarzalnych通知", "Historia korespondencji w profilu ucznia"] },
+      { title: "Zastępstwa i dyżury", bullets: ["Planowanie zastępstw na Kalendarzu", "Automatyczne powiadomienie o zmianie", "Dostępność sal i pracowni", "Dyżury na przerwach z podglądem grafiku", "Eksport zastępstw do dziennika"] },
     ],
   },
   {
@@ -652,6 +705,7 @@ const FEATURE_CATEGORIES = [
       { title: "Zgodność z RODO", bullets: ["Umowa powierzenia danych dla każdej szkoły", "Pełen dziennik audytu wszystkich operacji", "Eksport danych ucznia na żądanie", "Usunięcie konta i danych w 48h", "Anonimizacja danych po zakończeniu roku"] },
       { title: "Tryb egzaminacyjny", bullets: ["Wymagany pełny ekran — brak dostępu do innych kart", "Blokada skrótów klawiszowych (Ctrl+C, Alt+Tab)", "Zapis co 5 sekund — brak utraty odpowiedzi", "Brak możliwości cofnięcia po zakończeniu", "Monitoring aktywności na żywo"] },
       { title: "Kontrola dostępu", bullets: ["3 role: administrator, nauczyciel, uczeń", "Dostęp nauczyciela tylko do własnych klas", "Logowanie dwuetapowe dla administratora", "Sesja wygasa po 15 min bezczynności", "Blokada po 5 nieudanych próbach logowania"] },
+      { title: "Szyfrowane archiwum", bullets: ["Archiwum egzaminów z 5-letnią retencją", "Kopia zapasowa w 3 lokalizacjach", "Przywracanie danych jednym kliknięciem", "Szyfrowanie end-to-end dla wyników", "Eksport pełnego archiwum na żądanie dyrekcji"] },
     ],
   },
   {
@@ -1099,6 +1153,56 @@ function Testimony() {
   );
 }
 
+/* ──── ACHIEVEMENTS ──── */
+const ACHIEVEMENTS = [
+  { icon: Trophy, label: "Egzaminów dziennie", value: "847", suffix: "+", color: "from-amber-400 to-orange-500" },
+  { icon: School, label: "Aktywnych szkół", value: "128", suffix: "+", color: "from-cyan-400 to-blue-500" },
+  { icon: Users, label: "Nauczycieli online", value: "2 340", suffix: "", color: "from-violet-400 to-fuchsia-500" },
+  { icon: Award, label: "Certyfikatów wydanych", value: "18 920", suffix: "", color: "from-emerald-400 to-teal-500" },
+  { icon: Heart, label: "Zadowolonych uczniów", value: "97.8", suffix: "%", color: "from-rose-400 to-pink-500" },
+  { icon: Infinity, label: "Uptime SLA", value: "99.98", suffix: "%", color: "from-emerald-300 to-cyan-400" },
+];
+function Achievements() {
+  const [hovered, setHovered] = useState<number | null>(null);
+  return (
+    <section className="py-20 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.03),transparent_60%)]"/>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] uppercase tracking-[0.22em] text-white/60 font-mono">★ · Osiągnięcia</div>
+          <h2 className="mt-4 font-display text-3xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">
+            Platforma w <span className="text-gradient-cyber">liczbach</span>
+          </h2>
+          <p className="mt-4 text-white/60 text-base">Każda statystyka to realna wartość dla polskiej edukacji.</p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {ACHIEVEMENTS.map((a, i) => (
+            <div key={a.label}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+              className={`tilt-card relative rounded-2xl border transition-all duration-500 p-5 text-center group
+                ${hovered === i ? 'border-cyan-400/40 bg-white/[0.08] -translate-y-2 shadow-[0_20px_60px_-20px_rgba(34,211,238,0.3)]' : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]'}
+                reveal`}
+              style={{ animationDelay: `${i * 0.1}s`, transformStyle: 'preserve-3d' }}>
+              <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${a.color} grid place-items-center mb-4 transition-all duration-500 ${hovered === i ? 'scale-125 rotate-6 shadow-xl' : ''}`}>
+                <a.icon className="w-6 h-6 text-black" />
+              </div>
+              <div className="font-display text-3xl font-bold tabular-nums">
+                <span className={`bg-gradient-to-r ${a.color} bg-clip-text text-transparent`}>{a.value}</span>
+                <span className="text-cyan-300/60 text-2xl">{a.suffix}</span>
+              </div>
+              <div className="text-xs text-white/50 mt-1.5">{a.label}</div>
+              {hovered === i && (
+                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-cyan-400/20 via-violet-400/20 to-cyan-400/20 blur-xl -z-10 transition-all duration-500" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ──── PRICING ──── */
 const PLANS = [
   { name: "Klasa", price: "0", priceY: "0", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań 300+", "15 egzaminów/mies", "Podstawowe raporty", "Wsparcie e-mail"], featured: false, action: "register" as const },
@@ -1453,7 +1557,7 @@ function Footer() {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 pulse-ring"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>100% online</span>
             <span className="text-white/20">·</span>
-            <span className="font-mono text-[10px] text-white/30">v4.0</span>
+            <span className="font-mono text-[10px] text-white/30">v5.0</span>
           </div>
         </div>
       </div>

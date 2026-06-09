@@ -67,6 +67,13 @@ function Landing() {
 /* ──── Scroll reveal hook ──── */
 function useScrollReveal() {
   useEffect(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll(".reveal").forEach((el) => {
+        if (el.getBoundingClientRect().top < window.innerHeight + 200) {
+          el.classList.add("revealed");
+        }
+      });
+    });
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("revealed") });

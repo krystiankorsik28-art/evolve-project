@@ -1,0 +1,296 @@
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { aiTutorCreateThread } from "@/lib/ai-advanced.functions";
+import { Brain, Plus, Send, Loader2, Trash2, Sparkles, BookOpen, ImageUp, X } from "lucide-react";
+import { toast } from "sonner";
+import { VoiceInput } from "@/components/VoiceInput";
+import { confirmDialog } from "@/components/ConfirmDialog";
+
+type Thread = { id: string; title: string; subject: string | null; updated_at: string };
+type Msg = { id?: string; role: "user" | "assistant" | "system"; content: string };
+
+const SUBJECTS = ["", "Matematyka", "Fizyka", "Chemia", "Biologia", "Polski", "Angielski", "Historia", "Geografia", "Informatyka"];
+
+export function AiTutor() {
+  const create = useServerFn(aiTutorCreateThread);
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [subject, setSubject] = useState<string>("");
+  const [image, setImage] = useState<{ name: string; preview: string; data: string; mime_type: string } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const loadThreads = async () => {
+    const { data } = await supabase.from("ai_tutor_threads").select("id,title,subject,updated_at").order("updated_at", { ascending: false });
+    setThreads((data ?? []) as Thread[]);
+  };
+  useEffect(() => { loadThreads(); }, []);
+
+  const loadMessages = async (id: string) => {
+    const { data } = await supabase.from("ai_tutor_messages").select("id,role,content").eq("thread_id", id).order("created_at", { ascending: true });
+    setMessages((data ?? []).map(m => ({ id: m.id, role: m.role as Msg["role"], content: m.content })));
+  };
+
+  const selectThread = async (id: string) => {
+    setActiveId(id);
+    await loadMessages(id);
+  };
+
+  const newThread = async () => {
+    try {
+      const t = await create({ data: { title: subject ? `Nowa rozmowa (${subject})` : "Nowa rozmowa", subject: subject || null } });
+      await loadThreads();
+      setActiveId(t.id);
+      setMessages([]);
+      toast.success("Nowy wątek utworzony");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Błąd"); }
+  };
+
+  const deleteThread = async (id: string) => {
+    if (!(await confirmDialog({ description: "Usunąć wątek?" }))) return;
+    await supabase.from("ai_tutor_threads").delete().eq("id", id);
+    setThreads((p) => p.filter(t => t.id !== id));
+    if (activeId === id) { setActiveId(null); setMessages([]); }
+  };
+
+  const send = async () => {
+    if (!input.trim() && !image) return;
+    let tid = activeId;
+    if (!tid) {
+      const t = await create({ data: { title: input.slice(0, 60) || "Nowa rozmowa", subject: subject || null } });
+      tid = t.id;
+      await loadThreads();
+      setActiveId(tid);
+    }
+    const userText = input || "";
+    const img = image;
+    setInput("");
+    setImage(null);
+    const dispText = img ? userText + "\n[Załącznik: obraz]" : userText;
+    setMessages((p) => [...p, { role: "user", content: dispText }, { role: "assistant", content: "" }]);
+    setBusy(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Niezalogowany");
+
+      // Kiedy jest zdjęcie — użyj API route (streaming)
+      if (img) {
+        const res = await fetch("/api/ai-tutor-stream", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            thread_id: tid,
+            message: userText,
+            subject: subject || null,
+            image: { mime_type: img.mime_type, data: img.data },
+          }),
+        });
+
+        if (!res.ok || !res.body) {
+          let msg = `HTTP ${res.status}`;
+          try {
+            const j = await res.json();
+            if (j?.error) msg = j.error;
+          } catch { }
+          throw new Error(msg);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let full = "";
+
+        while (true) {
+          const r = await reader.read();
+          if (r.done) break;
+          buffer += decoder.decode(r.value, { stream: true });
+
+          let idx: number;
+          while ((idx = buffer.indexOf("\n")) !== -1) {
+            let line = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (!line || line.startsWith(":")) continue;
+            if (!line.startsWith("data: ")) continue;
+            const payload = line.slice(6).trim();
+            if (payload === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(payload) as {
+                choices?: Array<{ delta?: { content?: string } }>;
+              };
+              const piece = parsed.choices?.[0]?.delta?.content;
+              if (piece) {
+                full += piece;
+                setMessages((p) => {
+                  const cp = [...p];
+                  const last = cp[cp.length - 1];
+                  if (last && last.role === "assistant") cp[cp.length - 1] = { ...last, content: full };
+                  return cp;
+                });
+              }
+            } catch {
+              buffer = line + "\n" + buffer;
+              break;
+            }
+          }
+        }
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+        loadThreads();
+      } else {
+        // Bez zdjęcia — użyj serverFn (szybciej)
+        const res = await fetch("/_serverFn/aiTutorReplyNoImage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            thread_id: tid,
+            message: userText,
+            subject: subject || null,
+          }),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json() as { content: string; examId?: string };
+
+        setMessages((p) => {
+          const cp = [...p];
+          const last = cp[cp.length - 1];
+          if (last && last.role === "assistant") cp[cp.length - 1] = { ...last, content: data.content };
+          return cp;
+        });
+
+        if (data.examId) {
+          toast.success("Egzamin został utworzony!", { duration: 5000 });
+        }
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+        loadThreads();
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Błąd AI");
+      setMessages((p) => p.slice(0, -1));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pickFile = () => fileRef.current?.click();
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { toast.error("Maksymalny rozmiar pliku to 10 MB"); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Obsługiwane tylko obrazy"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1];
+      setImage({ name: file.name, preview: result, data: base64, mime_type: file.type });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages.length]);
+
+  return (
+    <div className="grid lg:grid-cols-[280px_1fr] gap-4 h-[calc(100vh-180px)] min-h-[500px]">
+      {/* Sidebar wątków */}
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col">
+        <div className="p-3 border-b border-white/5 space-y-2">
+          <button onClick={newThread} className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-400 hover:to-cyan-400">
+            <Plus className="w-4 h-4"/>Nowa rozmowa
+          </button>
+          <select value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full px-2 py-1.5 rounded-md bg-white/5 border border-white/10 text-xs text-white">
+            {SUBJECTS.map(s => <option key={s} value={s} className="bg-slate-900">{s || "Wszystkie przedmioty"}</option>)}
+          </select>
+        </div>
+        <div className="flex-1 overflow-y-auto p-2 space-y-1 min-h-0">
+          {threads.length === 0 && <div className="text-xs text-white/40 p-3">Brak rozmów. Zacznij nową.</div>}
+          {threads.map(t => (
+            <div key={t.id} className={`group flex items-center gap-1 rounded-lg ${activeId === t.id ? "bg-cyan-500/10 border border-cyan-400/20" : "hover:bg-white/5 border border-transparent"}`}>
+              <button onClick={() => selectThread(t.id)} className="flex-1 text-left px-3 py-2 min-w-0">
+                <div className="text-sm text-white truncate">{t.title}</div>
+                {t.subject && <div className="text-[10px] text-cyan-300/70 font-mono">{t.subject}</div>}
+              </button>
+              <button onClick={() => deleteThread(t.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-white/40 hover:text-rose-400"><Trash2 className="w-3.5 h-3.5"/></button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Chat */}
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] flex flex-col">
+        <div className="p-4 border-b border-white/5 flex items-center gap-2">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 grid place-items-center"><Brain className="w-5 h-5 text-white"/></div>
+          <div>
+            <div className="text-sm font-bold text-white">AI Tutor</div>
+            <div className="text-[11px] text-white/40">Wytłumaczy każdy temat, krok po kroku. Po polsku.</div>
+          </div>
+        </div>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
+          {messages.length === 0 && (
+            <div className="text-center py-12">
+              <Sparkles className="w-12 h-12 text-cyan-400/40 mx-auto mb-3"/>
+              <div className="text-white/60 text-sm">Zapytaj o cokolwiek — wytłumaczę.</div>
+              <div className="mt-4 grid sm:grid-cols-2 gap-2 max-w-xl mx-auto">
+                {["Wyjaśnij wzór skróconego mnożenia (a+b)²","Co to jest fotosynteza?","Pomóż mi zrozumieć drugą wojnę światową","Jak rozwiązać równanie kwadratowe?"].map((s) => (
+                  <button key={s} onClick={() => setInput(s)} className="text-xs text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70">
+                    <BookOpen className="w-3.5 h-3.5 inline mr-1.5 text-cyan-300"/>{s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-cyan-500 text-slate-900 font-medium" : "bg-white/[0.06] text-white/90 border border-white/10"}`}>
+                {m.content || <Loader2 className="w-4 h-4 animate-spin"/>}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="p-3 border-t border-white/5">
+          {image && (
+            <div className="mb-2 flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/10">
+              <img src={image.preview} alt="" className="w-10 h-10 rounded object-cover"/>
+              <span className="text-xs text-white/70 truncate flex-1">{image.name}</span>
+              <button type="button" onClick={() => setImage(null)} className="p-1 text-white/40 hover:text-rose-400"><X className="w-4 h-4"/></button>
+            </div>
+          )}
+          <div className="flex items-end gap-2">
+            <div className="flex-1 relative">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+                placeholder="Napisz lub podyktuj wiadomość... (Enter wysyła)"
+                rows={2}
+                className="w-full px-3 py-2 pr-32 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-400/40 resize-none"
+              />
+              <div className="absolute right-2 bottom-2 flex items-center gap-1">
+                <button type="button" onClick={pickFile} className="p-1.5 rounded-lg text-white/40 hover:text-cyan-300 hover:bg-white/5 transition" title="Załącz obraz"><ImageUp className="w-4 h-4"/></button>
+                <VoiceInput size="sm" value={input} onChange={setInput} />
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFileChange}/>
+            </div>
+            <button onClick={send} disabled={busy || (!input.trim() && !image)} className="h-[60px] px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold disabled:opacity-50 transition flex items-center justify-center">
+              {busy ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

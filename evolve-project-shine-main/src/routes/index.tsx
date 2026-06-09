@@ -1241,22 +1241,25 @@ function Pricing() {
             const isPay = !isKlasa && !isContact;
             return (
               <div key={pl.name}
-                className={`rounded-2xl border flex flex-col transition-all duration-200
+                className={`rounded-2xl border flex flex-col transition-all duration-200 relative overflow-hidden
                   ${isFeat
                     ? "border-cyan-400/50 bg-cyan-950/40 shadow-[0_0_30px_-8px_rgba(34,211,238,0.3)] scale-[1.02] z-10"
                     : "border-white/10 bg-[#0a0d18] hover:border-white/20"}`}>
                 {isFeat && (
-                  <div className="text-center -mt-3 mb-2">
-                    <span className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400 text-black text-[10px] font-semibold uppercase shadow-lg">
-                      <Star className="w-3 h-3 inline-block -mt-0.5 mr-1" />Najpopularniejszy
-                    </span>
-                  </div>
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400" />
                 )}
                 <div className="p-5 flex flex-col h-full">
-                  <h3 className="font-display text-lg font-semibold">{pl.name}</h3>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-display text-lg font-semibold">{pl.name}</h3>
+                    {isFeat && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400 text-black text-[9px] font-bold uppercase tracking-wide shadow-lg">
+                        <Star className="w-3 h-3" />Najpopularniejszy
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-baseline gap-1 mt-1">
                     <span className={`font-display text-4xl font-bold ${isFeat ? "text-cyan-300" : "text-white"}`}>{price}</span>
-                    <span className="text-sm text-white/50">{pl.sub}</span>
+                    <span className="text-sm text-white/50">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
                   </div>
                   <ul className="mt-4 space-y-2 text-sm flex-1">
                     {pl.lines.map((l) => (

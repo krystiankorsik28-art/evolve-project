@@ -109,7 +109,7 @@ export const Route = createFileRoute("/api/ai-tutor-stream")({
 ${subject ? `Specjalizacja: ${subject}.` : ""}
 
 CO MOŻESZ ROBIĆ:
-- Tworzyć egzaminy, sprawdziany, kartkówki na dowolny temat i poziom
+- Tworzy�� egzaminy, sprawdziany, kartkówki na dowolny temat i poziom
 - Generować pytania różnych typów: jednokrotnego/wielokrotnego wyboru, prawda/fałsz, krótkiej odpowiedzi, otwarte, na dobieranie
 - Tworzyć plany lekcji i konspekty
 - Opracowywać materiały dydaktyczne i karty pracy
@@ -119,7 +119,7 @@ CO MOŻESZ ROBIĆ:
 ZASADY:
 - Gdy nauczyciel opisuje czego potrzebuje — wykonaj to od razu
 - Używaj Markdown (nagłówki, listy, **pogrubienie**, kod \`tak\`)
-- Wzory pisz w LaTeX między $...$ lub $$...$$
+- Wzory pisz w LaTeX między \$...\$ lub \$\$...\$\$
 - Odpowiadaj zwięźle ale wyczerpująco. Pisz po polsku.
 
 TON: profesjonalny, pomocny, rzeczowy. To asystent nauczyciela, nie ucznia.`;
@@ -131,7 +131,7 @@ TON: profesjonalny, pomocny, rzeczowy. To asystent nauczyciela, nie ucznia.`;
           }));
 
           const upstream = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

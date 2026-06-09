@@ -78,7 +78,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Klasa",
     items: [
       { k: "klasy", l: "Klasy", i: Users },
-      { k: "plan", l: "Plan lekcji", i: CalendarClock },
+      { k: "plan", l: "Szkoła", i: CalendarClock },
       { k: "kalendarz", l: "Kalendarz", i: Calendar },
     ],
   },

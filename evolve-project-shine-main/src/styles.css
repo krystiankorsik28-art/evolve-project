@@ -651,6 +651,75 @@ html {
   fill: #fbbf24;
 }
 
+/* ──── Gradient border animation ──── */
+@keyframes borderRotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gradient-border-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.gradient-border-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #22d3ee, #a78bfa, #22d3ee, #f472b6);
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: borderRotate 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ──── Glow pulse ──── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px -8px rgba(34,211,238,0.3); }
+  50% { box-shadow: 0 0 40px -8px rgba(34,211,238,0.6); }
+}
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* ──── Scale reveal variant ──── */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-scale.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ──── Shimmer shimmer ──── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0.2) 80%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ──── Floating shapes ──── */
+@keyframes floatShape {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-15px) rotate(2deg); }
+  66% { transform: translateY(8px) rotate(-1deg); }
+}
+.float-shape {
+  animation: floatShape 8s ease-in-out infinite;
+}
+
 /* ──── Feature tooltip ──── */
 .feature-tooltip {
   position: relative;

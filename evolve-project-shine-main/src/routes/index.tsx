@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "EduNex — Państwowa platforma egzaminacyjna | edu.nex.pl" },
+      { title: "EduNex — Państwowa platforma egzaminacyjna" },
       { name: "description", content: "Oficjalna platforma egzaminacyjna dla polskich szkół. Egzaminy, sprawdziany i certyfikowane testy zgodne z podstawą programową MEN." },
       { property: "og:title", content: "EduNex — Państwowa platforma egzaminacyjna" },
       { property: "og:description", content: "Certyfikowana platforma egzaminacyjna dla szkół. Bezpieczeństwo, RODO, zgodność z MEN." },
@@ -148,14 +148,33 @@ function CookieBanner() {
 
 /* ──── Background FX ──── */
 function BackgroundFX() {
+  const bgRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = bgRef.current;
+    if (!el) return;
+    const shapes = el.querySelectorAll('.float-shape-bg');
+    const f = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      shapes.forEach((s) => {
+        const el = s as HTMLElement;
+        const speed = parseFloat(el.dataset.speed || '1');
+        el.style.transform = `translate(${x * 20 * speed}px, ${y * 20 * speed}px)`;
+      });
+    };
+    window.addEventListener('mousemove', f);
+    return () => window.removeEventListener('mousemove', f);
+  }, []);
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div ref={bgRef} className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="absolute inset-0 bg-aurora opacity-90" />
       <div className="absolute inset-0 bg-grid opacity-[0.5] [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
-      <div className="absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full bg-violet-500/20 blur-[160px] animate-float" />
-      <div className="absolute top-1/3 -right-40 w-[520px] h-[520px] rounded-full bg-cyan-400/15 blur-[160px] animate-float" style={{ animationDelay: "1.5s" }} />
-      <div className="absolute bottom-0 left-1/3 w-[420px] h-[420px] rounded-full bg-rose-500/15 blur-[160px] animate-float" style={{ animationDelay: "3s" }} />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] opacity-[0.03] pointer-events-none select-none">
+      <div data-speed="1.5" className="float-shape-bg absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full bg-violet-500/20 blur-[160px] float-shape" />
+      <div data-speed="1" className="float-shape-bg absolute top-1/3 -right-40 w-[520px] h-[520px] rounded-full bg-cyan-400/15 blur-[160px] float-shape" style={{ animationDelay: "1.5s" }} />
+      <div data-speed="0.7" className="float-shape-bg absolute bottom-0 left-1/3 w-[420px] h-[420px] rounded-full bg-rose-500/15 blur-[160px] float-shape" style={{ animationDelay: "3s" }} />
+      <div data-speed="0.4" className="float-shape-bg absolute top-1/2 right-1/4 w-[320px] h-[320px] rounded-full bg-amber-400/10 blur-[140px] float-shape" style={{ animationDelay: "0.7s" }} />
+      <div data-speed="1.2" className="float-shape-bg absolute -bottom-20 left-[10%] w-[300px] h-[300px] rounded-full bg-emerald-400/8 blur-[120px] float-shape" style={{ animationDelay: "2s" }} />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] opacity-[0.03] pointer-events-none select-none float-shape" style={{ animationDuration: '12s' }}>
         <svg viewBox="0 0 400 500" fill="white" className="w-full h-full">
           <path d="M200 20C180 20 160 35 155 55L150 70C145 80 140 85 130 90L120 95C110 100 105 110 105 120L105 135C105 145 110 150 120 150L125 150C130 150 135 145 140 140L145 135C150 130 155 130 160 135L165 140C170 145 175 145 180 140L185 135C190 130 195 130 200 135C205 130 210 130 215 135L220 140C225 145 230 145 235 140L240 135C245 130 250 130 255 135L260 140C265 145 270 150 275 150L280 150C290 150 295 145 295 135L295 120C295 110 290 100 280 95L270 90C260 85 255 80 250 70L245 55C240 35 220 20 200 20Z" />
           <path d="M170 160L175 155C180 150 185 150 190 155L195 160C200 165 200 175 195 180L190 185C185 190 180 190 175 185L170 180C165 175 165 165 170 160Z" />
@@ -671,10 +690,17 @@ function FeaturesBento() {
             );
           })}
         </div>
+        {/* Floating decorative shapes */}
+        <div className="relative">
+          <div className="absolute -top-10 -left-10 w-20 h-20 rounded-full border border-cyan-400/20 float-shape" />
+          <div className="absolute -bottom-5 -right-5 w-14 h-14 rounded-full border border-violet-400/20 float-shape" style={{ animationDelay: '2s' }} />
+        </div>
         {/* Bento grid */}
         <div key={slideKey} className="grid sm:grid-cols-2 gap-3 tab-slide-in">
-          {active.items.map((item) => (
-            <FeatureCard key={item.title} item={item} gradient={active.gradient} />
+          {active.items.map((item, i) => (
+            <div className="reveal-scale" style={{ animationDelay: `${i * 0.06}s`, transitionDelay: `${i * 0.06}s` }}>
+              <FeatureCard key={item.title} item={item} gradient={active.gradient} />
+            </div>
           ))}
         </div>
       </div>
@@ -699,16 +725,28 @@ function FeatureCard({ item, gradient }: { item: typeof FEATURE_CATEGORIES[numbe
     el.addEventListener("mouseleave", reset);
     return () => { el.removeEventListener("mousemove", f); el.removeEventListener("mouseleave", reset); };
   }, []);
+  const [shining, setShining] = useState(false);
+  const shineRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = shineRef.current;
+    if (!el) return;
+    const f = () => { setShining(true); setTimeout(() => setShining(false), 600); };
+    el.addEventListener('mouseenter', f);
+    return () => el.removeEventListener('mouseenter', f);
+  }, []);
   return (
-    <div ref={ref} className="tilt-3d group rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur p-5 sm:p-6 transition-all hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_16px_48px_-16px_rgba(34,211,238,0.15)]">
+    <div ref={ref} className="tilt-3d group rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur p-5 sm:p-6 transition-all duration-500 hover:-translate-y-1.5 hover:border-cyan-400/20 hover:shadow-[0_20px_60px_-20px_rgba(34,211,238,0.2)] relative overflow-hidden">
+      {/* Shine effect */}
+      <div ref={shineRef} className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${shining ? 'opacity-100' : 'opacity-0'}`}
+        style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%)' }} />
       <h3 className="font-display text-base font-semibold flex items-center gap-2">
         <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${gradient}`}/>
         {item.title}
       </h3>
       <ul className="mt-3 space-y-1.5">
         {item.bullets.map((b) => (
-          <li key={b} className="text-sm text-white/60 flex gap-2 feature-tooltip" data-tip={b.length > 50 ? b.slice(0, 50) + "…" : b}>
-            <span className="text-cyan-400/70 shrink-0 mt-0.5">›</span>{b}
+          <li key={b} className="text-sm text-white/60 flex gap-2 feature-tooltip transition-all duration-300 group-hover:text-white/80" data-tip={b.length > 50 ? b.slice(0, 50) + "…" : b}>
+            <span className="text-cyan-400/70 shrink-0 mt-0.5 group-hover:text-cyan-300 transition-colors">›</span>{b}
           </li>
         ))}
       </ul>
@@ -726,26 +764,26 @@ function ForWhom() {
   ];
   return (
     <Section id="dla-kogo" eyebrow="02 · Role" title="Cztery perspektywy, jedna platforma">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((c, i) => (
-          <Link key={c.title} to={c.to} className={`reveal reveal-delay-${i + 1} group relative rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur p-6 overflow-hidden transition-all hover:-translate-y-1 hover:border-cyan-400/20`}>
-            <div className={`absolute -top-20 -right-20 w-48 h-48 rounded-full bg-gradient-to-br ${c.accent} opacity-20 blur-3xl group-hover:opacity-40 transition-all duration-500`}/>
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.accent} grid place-items-center mb-5 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-              <c.icon className="w-6 h-6 text-black group-hover:scale-110 transition-transform duration-300"/>
-            </div>
-            <h3 className="font-display text-2xl font-semibold">{c.title}</h3>
-            <ul className="mt-4 space-y-2 text-sm text-white/65">
-              {c.lines.map((l) => (
-                <li key={l} className="flex gap-2 group/li"><CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0 mt-0.5 transition-transform duration-200 group-hover/li:scale-110"/>{l}</li>
-              ))}
-            </ul>
-            <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white group-hover:text-cyan-300 transition-colors">
-              Przejdź <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-200"/>
-            </div>
-            <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/0 group-hover:ring-cyan-400/20 transition-all duration-500 pointer-events-none" />
-          </Link>
-        ))}
-      </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {cards.map((c, i) => (
+            <Link key={c.title} to={c.to} className={`reveal-scale reveal group relative rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur p-6 overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:border-cyan-400/30 hover:shadow-[0_20px_60px_-20px_rgba(34,211,238,0.25)]`} style={{ animationDelay: `${i * 0.1}s`, transitionDelay: `${i * 0.1}s` }}>
+              <div className={`absolute -top-20 -right-20 w-48 h-48 rounded-full bg-gradient-to-br ${c.accent} opacity-20 blur-3xl group-hover:opacity-40 transition-all duration-700 group-hover:scale-150`}/>
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.accent} grid place-items-center mb-5 shadow-lg transition-all duration-500 group-hover:scale-125 group-hover:rotate-6 group-hover:shadow-xl`}>
+                <c.icon className="w-6 h-6 text-black transition-transform duration-500 group-hover:scale-110"/>
+              </div>
+              <h3 className="font-display text-2xl font-semibold group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-cyan-200 group-hover:bg-clip-text transition-all duration-500">{c.title}</h3>
+              <ul className="mt-4 space-y-2 text-sm text-white/65">
+                {c.lines.map((l) => (
+                  <li key={l} className="flex gap-2 group/li"><CheckCircle2 className="w-4 h-4 text-cyan-300 shrink-0 mt-0.5 transition-all duration-200 group-hover/li:scale-125 group-hover/li:text-emerald-300"/>{l}</li>
+                ))}
+              </ul>
+              <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-white/80 group-hover:text-cyan-300 transition-all duration-300">
+                Przejdź <ArrowUpRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1.5 group-hover:-translate-y-1.5"/>
+              </div>
+              <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/0 group-hover:ring-cyan-400/25 transition-all duration-500 pointer-events-none" />
+            </Link>
+          ))}
+        </div>
     </Section>
   );
 }
@@ -1055,123 +1093,116 @@ function Testimony() {
 }
 
 /* ──── PRICING ──── */
+const PLANS = [
+  { name: "Klasa", price: "0", priceY: "0", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań 300+", "15 egzaminów/mies", "Podstawowe raporty", "Wsparcie e-mail"], featured: false, action: "register" as const },
+  { name: "Korepetytor", price: "49", priceY: "39", sub: "/mies", lines: ["Do 25 uczniów", "Bank pytań 1000+", "Egzaminy bez limitu", "Generator AI 50 zapytań", "Eksport PDF/Excel"], featured: false, action: "pay" as const, usd: "12", usdY: "10" },
+  { name: "Nauczyciel", price: "99", priceY: "79", sub: "/mies", lines: ["Do 60 uczniów", "Bank pytań 3000+", "Egzaminy bez limitu", "Generator AI 200 zapytań", "Monitoring na żywo", "Wsparcie priorytetowe"], featured: false, action: "pay" as const, usd: "25", usdY: "20" },
+  { name: "Szkoła", price: "490", priceY: "390", sub: "/mies", lines: ["Do 300 uczniów", "Bank pytań 10000+", "Generator AI bez limitu", "Eksport Vulcan/Librus", "Anti-cheat AI", "Wsparcie 24/7"], featured: false, action: "pay" as const, usd: "125", usdY: "99" },
+  { name: "Szkoła Plus", price: "890", priceY: "690", sub: "/mies", lines: ["Do 800 uczniów", "Bank pytań bez limitu", "Anti-cheat + monitoring", "API REST dostęp", "Dedykowany opiekun", "Priorytetowy SLA"], featured: true, action: "pay" as const, usd: "225", usdY: "175" },
+  { name: "Dzielnica", price: "2990", priceY: "2490", sub: "/mies", lines: ["Do 8 szkół / 3000 uczniów", "Centralne zarządzanie", "Wspólna baza pytań", "Raporty porównawcze", "SLA 99,95%", "Dedykowane wdrożenie"], featured: false, action: "pay" as const, usd: "750", usdY: "625" },
+  { name: "Kuratorium", price: "Indywidualnie", priceY: "Indywidualnie", sub: "", lines: ["Nieograniczona liczba szkół", "Centralna baza + zatwierdzanie", "Raporty wojewódzkie", "SLA 99,99% + DR", "Dedykowany zespół", "Niestandardowe integracje"], featured: false, action: "contact" as const },
+];
+
+type PlanDef = typeof PLANS[number];
+
 function Pricing() {
   const navigate = useNavigate();
   const [yearly, setYearly] = useState(false);
-  const [rollKey, setRollKey] = useState(0);
-  const plans = [
-    { name: "Klasa", price: "0 zł", priceYearly: "0 zł", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań — 300+ szt.", "15 egzaminów / mies.", "Podstawowe raporty", "Wsparcie e-mail", "Import z Word / PDF"], featured: false, action: "register" as const },
-    { name: "Korepetytor", price: "49 zł", priceYearly: "39 zł", sub: "/ miesiąc", lines: ["Do 25 uczniów", "Bank pytań — 1000+ szt.", "Egzaminy bez limitu", "Generator AI — 50 zapytań", "Eksport PDF / Excel", "Wsparcie e-mail"], featured: false, action: "pay" as const, amount: "49 zł", amountUsd: "12", amountYearly: "39 zł", amountUsdYearly: "10" },
-    { name: "Nauczyciel", price: "99 zł", priceYearly: "79 zł", sub: "/ miesiąc", lines: ["Do 60 uczniów", "Bank pytań — 3000+ szt.", "Egzaminy bez limitu", "Generator AI — 200 zapytań", "Monitoring ekranu na żywo", "Eksport PDF / Excel / CSV", "Wsparcie priorytetowe"], featured: false, action: "pay" as const, amount: "99 zł", amountUsd: "25", amountYearly: "79 zł", amountUsdYearly: "20" },
-    { name: "Szkoła", price: "490 zł", priceYearly: "390 zł", sub: "/ miesiąc", lines: ["Do 300 uczniów", "Bank pytań — 10 000+ szt.", "Egzaminy bez limitu", "Generator AI — bez limitów", "Eksport do dziennika (Vulcan/Librus)", "Anti-cheat AI", "Wsparcie telefoniczne 24/7"], featured: false, action: "pay" as const, amount: "490 zł", amountUsd: "125", amountYearly: "390 zł", amountUsdYearly: "99" },
-    { name: "Szkoła Plus", price: "890 zł", priceYearly: "690 zł", sub: "/ miesiąc", lines: ["Do 800 uczniów", "Bank pytań — bez limitu", "Anti-cheat AI + monitoring", "API REST dostęp", "Dedykowany opiekun", "Szkolenie online dla kadry", "Priorytetowy serwer + SLA"], featured: true, action: "pay" as const, amount: "890 zł", amountUsd: "225", amountYearly: "690 zł", amountUsdYearly: "175" },
-    { name: "Dzielnica", price: "2990 zł", priceYearly: "2490 zł", sub: "/ miesiąc", lines: ["Do 8 szkół / 3000 uczniów", "Centralne zarządzanie", "Wspólna baza pytań", "Raporty porównawcze", "Umowa SLA 99,95%", "Dedykowane wdrożenie", "Opiekun techniczny 24/7"], featured: false, action: "pay" as const, amount: "2990 zł", amountUsd: "750", amountYearly: "2490 zł", amountUsdYearly: "625" },
-    { name: "Kuratorium", price: "Indywidualnie", priceYearly: "Indywidualnie", sub: "wycena", lines: ["Nieograniczona liczba szkół", "Centralna baza pytań + zatwierdzanie", "Raporty regionalne i wojewódzkie", "SLA 99,99% + backup DR", "Dedykowany zespół wdrożeniowy", "Niestandardowe integracje", "Priorytetowe wsparcie 24/7"], featured: false, action: "contact" as const },
-  ];
-
-  const displayPrice = (p: typeof plans[number]) => {
-    if (p.action === "contact") return { price: p.price, sub: p.sub };
-    const pr = yearly && p.priceYearly ? p.priceYearly : p.price;
-    const saving = p.priceYearly && yearly ? `oszczędzasz ${Math.round((1 - parseInt(p.priceYearly.replace(/[^0-9]/g, '')) / parseInt(p.price.replace(/[^0-9]/g, ''))) * 100)}%` : null;
-    const sub = yearly ? "/ rok" : p.sub;
-    return { price: pr, sub, saving };
+  const [hovered, setHovered] = useState<string | null>(null);
+  const toggle = () => setYearly(v => !v);
+  const p = (pl: PlanDef) => yearly && pl.priceY !== "Indywidualnie" ? pl.priceY : pl.price;
+  const s = (pl: PlanDef) => yearly && pl.priceY !== "Indywidualnie" ? "/rok" : pl.sub;
+  const saving = (pl: PlanDef) => {
+    if (!yearly || pl.priceY === "Indywidualnie") return null;
+    const a = parseInt(pl.price), b = parseInt(pl.priceY);
+    return a ? Math.round((1 - b/a)*100) : null;
   };
-
-  const toggleYearly = () => { setYearly((y) => !y); setRollKey((k) => k + 1) };
-
   return (
-    <Section id="cennik" eyebrow="08 · Cennik" title="Wybierz plan dla swojej placówki." sub="Od pojedynczej klasy po całe kuratorium — skaluj się z potrzebami.">
-      {/* Toggle monthly/yearly */}
-      <div className="flex items-center justify-center gap-4 mb-10">
-        <span className={`text-sm transition-colors ${!yearly ? "text-white font-medium" : "text-white/50"}`}>Miesięcznie</span>
-        <button onClick={toggleYearly} className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${yearly ? "bg-cyan-400" : "bg-white/20"} hover:shadow-[0_0_16px_-4px_rgba(34,211,238,0.5)]`}>
-          <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-lg transition-transform duration-300 ${yearly ? "translate-x-7" : ""}`}/>
-        </button>
-        <span className={`text-sm flex items-center gap-1.5 transition-colors ${yearly ? "text-white font-medium" : "text-white/50"}`}>
-          Rocznie
-          <span className="text-[10px] font-mono bg-emerald-400/15 text-emerald-300 px-2 py-0.5 rounded-full">-20%</span>
-        </span>
-      </div>
-
-      {/* Yearly savings banner */}
-      {yearly && (
-        <div className="reveal -mt-4 mb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-200 text-xs">
-            <Zap className="w-3.5 h-3.5" />
-            Oszczędzasz średnio 20% przy płatności rocznej. Promocja ważna do końca miesiąca.
-          </div>
+    <section id="cennik" className="py-28 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.06),transparent_60%)]"/>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
+        <div className="text-center mb-14 reveal">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[10px] uppercase tracking-[0.22em] text-white/60 font-mono mb-4">08 &middot; Cennik</div>
+          <h2 className="font-display text-4xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">Wybierz swój plan</h2>
+          <p className="mt-3 text-white/60">Od pojedynczej klasy po całe kuratorium</p>
         </div>
-      )}
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {plans.slice(0, 4).map((p) => {
-          const dp = displayPrice(p);
-          return <PlanCard key={p.name} plan={p} displayPrice={dp} yearly={yearly} rollKey={rollKey} navigate={navigate} />;
-        })}
-      </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-        {plans.slice(4).map((p) => {
-          const dp = displayPrice(p);
-          return <PlanCard key={p.name} plan={p} displayPrice={dp} yearly={yearly} rollKey={rollKey} navigate={navigate} />;
-        })}
-      </div>
-    </Section>
-  );
-}
-
-function PlanCard({ plan, displayPrice, yearly, rollKey, navigate }: {
-  plan: { name: string; lines: string[]; featured?: boolean; action: string; amount?: string; amountUsd?: string; amountYearly?: string; amountUsdYearly?: string };
-  displayPrice: { price: string; sub: string; saving?: string | null };
-  yearly: boolean;
-  rollKey: number;
-  navigate: any;
-}) {
-  const p = plan;
-  const dp = displayPrice;
-  return (
-    <div className={`relative rounded-2xl p-6 backdrop-blur transition-all flex flex-col group ${p.featured ? "animated-border bg-gradient-to-br from-cyan-500/[0.08] to-violet-500/[0.08] shadow-[0_24px_80px_-20px_rgba(34,211,238,0.3)] lg:-translate-y-1" : "border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:-translate-y-0.5"}`}>
-      {p.featured && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-br from-cyan-300 to-violet-400 text-black text-[10px] font-semibold tracking-widest uppercase whitespace-nowrap flex items-center gap-1">
-          <Star className="w-3 h-3" /> Najpopularniejszy
+        {/* Toggle */}
+        <div className="flex items-center justify-center gap-4 mb-10">
+          <span className={`text-sm transition-all ${!yearly ? "text-white font-medium" : "text-white/40"}`}>Miesięcznie</span>
+          <button onClick={toggle} className="relative w-14 h-7 rounded-full bg-white/15 transition-colors hover:shadow-[0_0_20px_-4px_rgba(34,211,238,0.3)]" style={{ backgroundColor: yearly ? 'rgba(34,211,238,0.5)' : '' }}>
+            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-lg transition-all duration-300 ${yearly ? 'translate-x-7' : ''}`}/>
+          </button>
+          <span className={`text-sm flex items-center gap-1.5 transition-all ${yearly ? "text-white font-medium" : "text-white/40"}`}>
+            Rocznie <span className="text-[10px] font-mono bg-emerald-400/15 text-emerald-300 px-2 py-0.5 rounded-full">-20%</span>
+          </span>
         </div>
-      )}
-      <div className="flex items-center justify-between">
-        <div className="text-[10px] uppercase tracking-widest text-white/50">Plan</div>
-        {p.featured && <span className="text-[9px] font-mono text-cyan-400/60">★ polecany</span>}
-      </div>
-      <div className="font-display text-xl font-semibold mt-1">{p.name}</div>
-      <div className="mt-4 flex items-baseline gap-1.5">
-        <span key={rollKey} className="font-display text-4xl font-semibold number-roll inline-block">{dp.price}</span>
-        <span className="text-white/50 text-xs">{dp.sub}</span>
-      </div>
-      {dp.saving && (
-        <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-400/15 text-emerald-300 text-[10px] font-mono">
-          <TrendingUp className="w-3 h-3" /> {dp.saving}
+        {/* Cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start">
+          {PLANS.map((pl, i) => {
+            const isHovered = hovered === pl.name;
+            const feat = pl.featured;
+            return (
+              <div key={pl.name}
+                onMouseEnter={() => setHovered(pl.name)}
+                onMouseLeave={() => setHovered(null)}
+                className={`relative rounded-2xl backdrop-blur transition-all duration-500 flex flex-col group ${feat ? 'bg-gradient-to-b from-cyan-500/[0.12] to-violet-500/[0.08] shadow-[0_24px_80px_-20px_rgba(34,211,238,0.3)] lg:-translate-y-2 scale-[1.02] z-10' : 'bg-white/[0.03] border border-white/10 hover:bg-white/[0.06]'} ${isHovered && !feat ? '-translate-y-1 border-cyan-400/30' : ''} ${feat ? 'border border-cyan-400/30' : ''} reveal`}
+                style={{ animationDelay: `${i * 0.08}s` }}>
+                {feat && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-300 to-violet-400 text-black text-[10px] font-semibold tracking-widest uppercase whitespace-nowrap flex items-center gap-1 shadow-lg">
+                    <Star className="w-3 h-3" /> Najpopularniejszy
+                  </div>
+                )}
+                <div className="p-6 flex flex-col h-full">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-display text-lg font-semibold">{pl.name}</h3>
+                    {feat && <Sparkles className="w-4 h-4 text-cyan-300" />}
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-2">
+                    <span className={`font-display text-4xl font-bold transition-all ${feat ? 'bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent' : 'text-white'}`}>{p(pl)}</span>
+                    <span className="text-sm text-white/50">{s(pl)}</span>
+                  </div>
+                  {saving(pl) && (
+                    <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-400/15 text-emerald-300 text-[10px] font-mono w-fit">
+                      <TrendingUp className="w-3 h-3" /> oszczędzasz {saving(pl)}%
+                    </div>
+                  )}
+                  {pl.action === "pay" && pl.price !== "Indywidualnie" && (
+                    <div className="mt-1 text-[10px] text-white/30 font-mono">≈ ${yearly && pl.usdY ? pl.usdY : pl.usd} USD</div>
+                  )}
+                  <ul className="mt-5 space-y-2.5 text-sm flex-1">
+                    {pl.lines.map((l) => (
+                      <li key={l} className="flex gap-2.5 items-start">
+                        <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${feat ? 'text-cyan-300' : 'text-white/40 group-hover:text-cyan-300'} transition-colors`} />
+                        <span className={feat ? "text-white/85" : "text-white/60 group-hover:text-white/75 transition-colors"}>{l}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-6">
+                    {pl.action === "register" && (
+                      <button onClick={() => navigate({ to: "/auth/teacher" })}
+                        className="w-full py-3 rounded-xl text-sm font-semibold transition-all bg-white/10 hover:bg-white/15 border border-white/20 text-white hover:border-cyan-400/40">
+                        Rozpocznij za darmo
+                      </button>
+                    )}
+                    {pl.action === "pay" && (
+                      <NexaPayCheckout planName={pl.name}
+                        amount={yearly && pl.priceY ? pl.priceY + " zł" : pl.price + " zł"}
+                        amountUsd={yearly && pl.usdY ? pl.usdY : pl.usd!} />
+                    )}
+                    {pl.action === "contact" && (
+                      <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })}
+                        className="w-full py-3 rounded-xl text-sm font-semibold transition-all bg-white/10 hover:bg-white/15 border border-white/20 text-white">
+                        Poproś o wycenę
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
-      {/* Price in USD for crypto */}
-      {p.action === "pay" && dp.price !== "Indywidualnie" && (
-        <div key={`usd-${rollKey}`} className="mt-1 text-[10px] text-white/30 font-mono number-roll">
-          ≈ ${yearly && p.amountUsdYearly ? p.amountUsdYearly : p.amountUsd} USD
-        </div>
-      )}
-      <ul className="mt-5 space-y-2 text-sm text-white/75 flex-1">
-        {p.lines.map((l) => (
-          <li key={l} className="flex gap-2 group/li feature-tooltip" data-tip={l}>
-            <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-cyan-300 shrink-0 transition-transform duration-200 group-hover/li:scale-110"/>{l}
-          </li>
-        ))}
-      </ul>
-      {p.action === "register" && (
-        <button onClick={() => navigate({ to: "/auth/teacher" })} className="mt-6 w-full py-3 rounded-xl text-sm font-medium transition border border-white/15 bg-white/5 hover:bg-white/10 hover:border-cyan-400/30 group-hover:border-cyan-400/30">Rozpocznij za darmo</button>
-      )}
-      {p.action === "pay" && (
-        <NexaPayCheckout planName={p.name} amount={yearly && p.amountYearly ? p.amountYearly : p.amount!} amountUsd={yearly && p.amountUsdYearly ? p.amountUsdYearly : p.amountUsd} />
-      )}
-      {p.action === "contact" && (
-        <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="mt-6 w-full py-3 rounded-xl text-sm font-medium transition border border-white/15 bg-white/5 hover:bg-white/10">Poproś o wycenę</button>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }
 
@@ -1388,7 +1419,7 @@ function Footer() {
             <li><Link to="/auth/teacher" className="hover:text-cyan-300 transition">Panel nauczyciela</Link></li>
             <li><Link to="/auth/admin" className="hover:text-cyan-300 transition">Panel dyrekcji</Link></li>
             <li><a href="#funkcje" className="hover:text-cyan-300 transition">Wszystkie funkcje</a></li>
-            <li><a href="#cennik" className="hover:text-cyan-300 transition">Cennik i plany</a></li>
+            <li><a href="#cennik" className="hover:text-cyan-300 transition">Pricing</a></li>
           </ul>
         </div>
         <div>
@@ -1420,7 +1451,7 @@ function Footer() {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 pulse-ring"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>100% online</span>
             <span className="text-white/20">·</span>
-            <span className="font-mono text-[10px] text-white/30">v3.4.1</span>
+            <span className="font-mono text-[10px] text-white/30">v4.0</span>
           </div>
         </div>
       </div>

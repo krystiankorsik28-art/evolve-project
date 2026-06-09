@@ -12,6 +12,43 @@ type Msg = { id?: string; role: "user" | "assistant" | "system"; content: string
 
 const SUBJECTS = ["", "Matematyka", "Fizyka", "Chemia", "Biologia", "Polski", "Angielski", "Historia", "Geografia", "Informatyka"];
 
+const compressImage = async (base64: string, maxSize = 1.5 * 1024 * 1024): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = `data:image/jpeg;base64,${base64}`;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let { width, height } = img;
+
+      if (width > 1280) {
+        height = Math.round((height * 1280) / width);
+        width = 1280;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.drawImage(img, 0, 0, width, height);
+
+      let quality = 0.85;
+      let compressed = canvas.toDataURL("image/jpeg", quality);
+
+      while (compressed.length > maxSize && quality > 0.3) {
+        quality -= 0.05;
+        compressed = canvas.toDataURL("image/jpeg", quality);
+      }
+
+      const base64Data = compressed.split(",")[1];
+      if (!base64Data || base64Data.length > maxSize) {
+        resolve(null);
+      } else {
+        resolve(base64Data);
+      }
+    };
+    img.onerror = () => resolve(null);
+  });
+};
+
 export function AiTutor() {
   const create = useServerFn(aiTutorCreateThread);
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -80,6 +117,11 @@ export function AiTutor() {
 
       // Kiedy jest zdjęcie — użyj API route (streaming)
       if (img) {
+        const compressedData = await compressImage(img.data);
+        if (!compressedData) {
+          throw new Error("Nie udało się skompresować zdjęcia");
+        }
+
         const res = await fetch("/api/ai-tutor-stream", {
           method: "POST",
           headers: {
@@ -90,7 +132,7 @@ export function AiTutor() {
             thread_id: tid,
             message: userText,
             subject: subject || null,
-            image: { mime_type: img.mime_type, data: img.data },
+            image: { mime_type: "image/jpeg", data: compressedData },
           }),
         });
 
@@ -185,16 +227,22 @@ export function AiTutor() {
 
   const pickFile = () => fileRef.current?.click();
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) { toast.error("Maksymalny rozmiar pliku to 10 MB"); return; }
     if (!file.type.startsWith("image/")) { toast.error("Obsługiwane tylko obrazy"); return; }
+    
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const result = reader.result as string;
       const base64 = result.split(",")[1];
-      setImage({ name: file.name, preview: result, data: base64, mime_type: file.type });
+      const compressed = await compressImage(base64);
+      if (!compressed) {
+        toast.error("Nie udało się skompresować zdjęcia");
+        return;
+      }
+      setImage({ name: file.name, preview: result, data: compressed, mime_type: "image/jpeg" });
     };
     reader.readAsDataURL(file);
     e.target.value = "";

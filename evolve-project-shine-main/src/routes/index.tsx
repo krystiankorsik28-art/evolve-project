@@ -14,10 +14,10 @@ import {
   Laptop, Rocket, Flag, Compass, PenTool,
   ArrowLeft, Play, ChevronRight, ChevronDown, Plus, Tablet, Headphones, Bell,
   Lightbulb, Cable, Workflow, GripVertical, Puzzle, ScrollText, Heart, KeyRound, Video,
-  Infinity, Computer, SmartphoneNfc, Newspaper, Radio, GitBranch,
+  Infinity, Computer, Newspaper, Radio, GitBranch,
   ScanFace, Building2, Scale, Fingerprint, Tv, Globe, Paintbrush,
-  Sigma, Orbit, Handshake, Coins, Notebook, SigmaSquare, ListChecks,
-  HandMetal, AlarmCheck, Goal, CandlestickChart,
+  Sigma, Orbit, Handshake, Coins, Notebook, ListChecks,
+  SmartphoneNfc,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -30,8 +30,6 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "EduNex — Państwowa platforma egzaminacyjna" },
       { name: "description", content: "Oficjalna platforma egzaminacyjna dla polskich szkół. Egzaminy, sprawdziany i certyfikowane testy zgodne z podstawą programową MEN." },
-      { property: "og:title", content: "EduNex — Państwowa platforma egzaminacyjna" },
-      { property: "og:description", content: "Certyfikowana platforma egzaminacyjna dla szkół. Bezpieczeństwo, RODO, zgodność z MEN." },
     ],
   }),
 });
@@ -40,98 +38,83 @@ function Landing() {
   const { setTheme } = useTheme();
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { setTheme("dark") }, []);
-  useScrollReveal();
+  useEffect(() => {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("revealed");
+        }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -60px 0px" });
+    setTimeout(() => {
+      document.querySelectorAll(".reveal, .reveal-scale, .reveal-left, .reveal-right").forEach((el) => obs.observe(el));
+      if (document.documentElement.getBoundingClientRect().top > -200) {
+        document.querySelectorAll(".reveal, .reveal-scale, .reveal-left, .reveal-right").forEach((el) => {
+          if (el.getBoundingClientRect().top < window.innerHeight + 200) el.classList.add("revealed");
+        });
+      }
+    }, 100);
+    return () => obs.disconnect();
+  }, []);
   return (
     <>
       <SplashScreen onDone={() => setLoaded(true)} />
-      <div className={`min-h-screen selection:bg-cyan-400/30 selection:text-white overflow-x-clip antialiased transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}>
+      <div className={`min-h-screen bg-canvas selection:bg-cyan-400/20 selection:text-white ${loaded ? "opacity-100" : "opacity-0"} transition-opacity duration-700`}>
+        <div className="bg-noise" />
         <Toaster theme="dark" />
-        <CursorGlow />
         <SocialProof />
         <CookieBanner />
-        <BackgroundFX />
         <NavBar />
-        <Hero />
-        <Stats />
-        <Marquee />
-        <BentoFeatures />
-        <InteractiveDemo />
-        <ForWhom />
-        <Process />
-        <ProductShowcase />
-        <Achievements />
-        <Comparison />
-        <TrustBar />
-        <SecuritySection />
-        <Testimonials />
-        <Pricing />
-        <FAQSection />
-        <Integrations />
-        <BlogPreview />
-        <MobileApp />
-        <Newsletter />
-        <Contact />
-        <Footer />
+        <main className="relative z-10">
+          <Hero />
+          <StatsMarquee />
+          <FeaturesFlow />
+          <DemoShowcase />
+          <ForWhomFlow />
+          <ComparisonShowcase />
+          <AchievementsFlow />
+          <SecurityFlow />
+          <TestimonialsFlow />
+          <PricingFlow />
+          <FAQFlow />
+          <BlogFlow />
+          <MobileCtaFlow />
+          <NewsletterFlow />
+          <ContactFlow />
+        </main>
+        <FooterFlow />
       </div>
     </>
   );
 }
 
-/* ──── Splash screen ──── */
 function SplashScreen({ onDone }: { onDone: () => void }) {
-  const [exiting, setExiting] = useState(false);
+  const [exit, setExit] = useState(false);
   useEffect(() => {
-    const t1 = setTimeout(() => setExiting(true), 1800);
-    const t2 = setTimeout(() => onDone(), 2400);
+    const t1 = setTimeout(() => setExit(true), 1400);
+    const t2 = setTimeout(() => onDone(), 2000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onDone]);
   return (
-    <div className={`splash-overlay ${exiting ? "exit" : ""}`}>
+    <div className={`fixed inset-0 z-[9999] grid place-items-center bg-[oklch(0.06_0.03_270)] transition-all duration-700 ${exit ? "opacity-0 pointer-events-none" : ""}`}>
       <div className="text-center">
-        <div className="splash-logo mx-auto">
-          <div className="splash-logo-inner">
-            <svg viewBox="0 0 24 24" className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <div className="mx-auto w-20 h-20 rounded-[28px] bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[2px] shadow-[0_0_80px_-16px_rgba(34,211,238,0.3)]" style={{ animation: "splashPulse 1s ease-in-out infinite" }}>
+          <div className="w-full h-full rounded-[26px] bg-[oklch(0.06_0.03_270)] grid place-items-center">
+            <svg viewBox="0 0 24 24" className="w-9 h-9 text-white" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>
             </svg>
           </div>
         </div>
-        <div className="splash-text">EduNex</div>
-        <div className="splash-loader"><div className="splash-loader-bar" /></div>
+        <div className="mt-5 text-xl font-semibold text-white/90 tracking-tight" style={{ animation: "splashFade 0.5s 0.2s ease-out forwards" }}>EduNex</div>
+        <div className="mx-auto mt-5 w-32 h-[2px] rounded-full bg-white/[0.06] overflow-hidden" style={{ animation: "splashFade 0.5s 0.3s ease-out forwards" }}>
+          <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400" style={{ animation: "splashLoad 1s 0.4s cubic-bezier(0.16,1,0.3,1) forwards", transformOrigin: "left", transform: "scaleX(0)" }} />
+        </div>
       </div>
+      <style>{`@keyframes splashPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } } @keyframes splashFade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } } @keyframes splashLoad { to { transform:scaleX(1); } }`}</style>
     </div>
   );
 }
 
-/* ──── Hooks ──── */
-function useScrollReveal() {
-  useEffect(() => {
-    const els = document.querySelectorAll(".reveal");
-    requestAnimationFrame(() => {
-      els.forEach((el) => {
-        if (el.getBoundingClientRect().top < window.innerHeight + 300) el.classList.add("revealed");
-      });
-    });
-    setTimeout(() => els.forEach((el) => el.classList.add("revealed")), 800);
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("revealed") });
-    }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
-    els.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
-}
-
-/* ──── Cursor ──── */
-function CursorGlow() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const f = (e: MouseEvent) => { if (ref.current) ref.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`; };
-    window.addEventListener("mousemove", f);
-    return () => window.removeEventListener("mousemove", f);
-  }, []);
-  return <div ref={ref} className="cursor-glow hidden lg:block" />;
-}
-
-/* ──── Social proof ──── */
 const SOCIAL_EVENTS = [
   { n: "Zofia Wiśniewska", a: "zakończyła egzamin", s: "92%", g: "emerald" },
   { n: "III LO w Gdyni", a: "dodała pytania", s: "+bank", g: "cyan" },
@@ -141,6 +124,10 @@ const SOCIAL_EVENTS = [
   { n: "ZSE Poznań", a: "zaimportowała uczniów", s: "200 z CSV", g: "cyan" },
   { n: "Maja Szymańska", a: "rozwiązała quiz", s: "100%", g: "emerald" },
   { n: "SP nr 5", a: "dodała klasę", s: "3B", g: "violet" },
+  { n: "II LO Warszawa", a: "aktywowała monitoring", s: "AI włączone", g: "cyan" },
+  { n: "Paweł Górski", a: "dodał sprawdzian", s: "chemia", g: "amber" },
+  { n: "XIV LO Staszic", a: "przeprowadził egzamin", s: "32 uczniów", g: "emerald" },
+  { n: "Ewa Kwiatkowska", a: "otrzymała certyfikat", s: "język polski", g: "violet" },
 ];
 function SocialProof() {
   const [items, setItems] = useState<{ n: string; a: string; s: string; g: string; id: number }[]>([]);
@@ -149,123 +136,98 @@ function SocialProof() {
     const show = () => {
       const ev = SOCIAL_EVENTS[Math.floor(Math.random() * SOCIAL_EVENTS.length)];
       const id = ++idRef.current;
-      setItems((prev) => [...prev.slice(-2), { ...ev, id }]);
-      setTimeout(() => setItems((prev) => prev.filter((x) => x.id !== id)), 4500 + Math.random() * 1500);
+      setItems((prev) => [...prev.slice(-3), { ...ev, id }]);
+      setTimeout(() => setItems((prev) => prev.filter((x) => x.id !== id)), 5000 + Math.random() * 2000);
     };
     show();
     let timeout: ReturnType<typeof setTimeout>;
-    const schedule = () => { timeout = setTimeout(() => { show(); schedule(); }, 4000 + Math.random() * 6000); };
-    schedule();
+    const sched = () => { timeout = setTimeout(() => { show(); sched(); }, 3500 + Math.random() * 5500); };
+    sched();
     return () => clearTimeout(timeout);
   }, []);
   const cm: Record<string, string> = { emerald: "#34d399", cyan: "#22d3ee", amber: "#fbbf24", violet: "#a78bfa" };
   return (
-    <div className="fixed bottom-24 left-6 z-50 flex flex-col gap-2 max-lg:hidden">
+    <div className="fixed bottom-28 left-6 z-50 flex flex-col gap-2.5 max-lg:hidden">
       {items.map((ev) => (
-        <div key={ev.id} className="rounded-xl border border-white/[0.06] bg-black/70 backdrop-blur-xl px-3.5 py-2.5 shadow-xl max-w-[280px]"
-          style={{ animation: "slideInUp 0.35s ease-out" }}>
-          <div className="flex items-center gap-2.5 text-xs">
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cm[ev.g] ?? "#888", boxShadow: `0 0 6px ${cm[ev.g] ?? "#888"}` }} />
-            <div><span className="font-medium text-white/90">{ev.n}</span><span className="text-white/50"> {ev.a}</span> <span className="text-cyan-200/80 font-mono">{ev.s}</span></div>
+        <div key={ev.id} className="rounded-2xl bg-black/60 backdrop-blur-2xl px-4 py-3 shadow-2xl max-w-[280px] border border-white/[0.06]"
+          style={{ animation: "notifIn 0.4s cubic-bezier(0.16,1,0.3,1)" }}>
+          <div className="flex items-center gap-3 text-xs">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: cm[ev.g] ?? "#888", boxShadow: `0 0 8px ${cm[ev.g] ?? "#888"}` }} />
+            <div><span className="font-medium text-white/90">{ev.n}</span><span className="text-white/40"> {ev.a}</span> <span className="text-transparent bg-gradient-to-r from-cyan-200 to-violet-200 bg-clip-text font-mono">{ev.s}</span></div>
           </div>
         </div>
       ))}
-      <style>{`@keyframes slideInUp { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }`}</style>
+      <style>{`@keyframes notifIn { from { opacity:0; transform:translateY(16px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }`}</style>
     </div>
   );
 }
 
-/* ──── Cookie ──── */
 function CookieBanner() {
   const [v, setV] = useState(true);
   useEffect(() => { if (typeof window !== "undefined" && localStorage.getItem("cookies-ok")) setV(false); }, []);
   if (!v) return null;
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 border-t border-white/[0.06] bg-black/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div className="fixed bottom-0 inset-x-0 z-50 bg-black/70 backdrop-blur-2xl border-t border-white/[0.06]">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p className="text-xs text-white/50">Używamy plików cookie, aby zapewnić najlepsze doświadczenia.</p>
-        <button onClick={() => { localStorage.setItem("cookies-ok", "1"); setV(false) }} className="px-4 py-2 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white transition shrink-0">Akceptuję</button>
+        <button onClick={() => { localStorage.setItem("cookies-ok", "1"); setV(false) }} className="px-6 py-2.5 rounded-full text-xs font-medium bg-white text-black hover:bg-white/90 transition-all shrink-0">Akceptuję</button>
       </div>
     </div>
   );
 }
 
-/* ──── Background ──── */
-function BackgroundFX() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const shapes = el.querySelectorAll<HTMLElement>(".float-shape-bg");
-    const f = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      const y = (e.clientY / window.innerHeight - 0.5) * 2;
-      shapes.forEach((s) => { const sp = parseFloat(s.dataset.speed || "1"); s.style.transform = `translate(${x * 16 * sp}px, ${y * 16 * sp}px)`; });
-    };
-    window.addEventListener("mousemove", f);
-    return () => window.removeEventListener("mousemove", f);
-  }, []);
-  return (
-    <div ref={ref} className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute inset-0 bg-aurora" />
-      <div className="absolute inset-0 bg-grid [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
-      <div data-speed="1.2" className="float-shape-bg absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-violet-500/15 blur-[140px] animate-float" />
-      <div data-speed="0.8" className="float-shape-bg absolute top-1/3 -right-40 w-[420px] h-[420px] rounded-full bg-cyan-400/10 blur-[140px] animate-float" style={{ animationDelay: "2s" }} />
-      <div data-speed="0.5" className="float-shape-bg absolute bottom-0 left-1/3 w-[320px] h-[320px] rounded-full bg-rose-500/10 blur-[120px] animate-float" style={{ animationDelay: "4s" }} />
-    </div>
-  );
-}
-
-/* ──── Nav ──── */
-const NAV = [
-  ["#funkcje", "Funkcje"], ["#cennik", "Cennik"], ["#faq", "FAQ"], ["#kontakt", "Kontakt"],
+const NAV_LINKS = [
+  ["#funkcje", "Funkcje"], ["#cennik", "Cennik"], ["#opinie", "Opinie"], ["#kontakt", "Kontakt"],
 ];
 function NavBar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [progress, setProgress] = useState(0);
   useEffect(() => {
-    const f = () => { setScrolled(window.scrollY > 10); const h = document.documentElement; setProgress(Math.min((window.scrollY / (h.scrollHeight - h.clientHeight)) * 100, 100)); };
+    const f = () => setScrolled(window.scrollY > 20);
     f(); window.addEventListener("scroll", f, { passive: true }); return () => window.removeEventListener("scroll", f);
   }, []);
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "py-2" : "py-4"}`}>
-      <div className="absolute bottom-0 inset-x-0 h-[1.5px] bg-white/[0.03]">
-        <div className="h-full bg-gradient-to-r from-cyan-400/60 via-violet-400/60 to-transparent scroll-progress" style={{ transform: `scaleX(${progress / 100})` }} />
-      </div>
-      <div className="max-w-7xl mx-auto px-4">
-        <div className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-2.5 transition-all duration-500 ${scrolled ? "border-white/[0.08] bg-black/60 backdrop-blur-xl shadow-sm" : "border-transparent bg-transparent"}`}>
-          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <Mark />
+    <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "bg-black/60 backdrop-blur-2xl shadow-[0_1px_0_oklch(1_0_0_/_0.06)]" : ""}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between gap-4 h-16 sm:h-20">
+          <Link to="/" className="flex items-center gap-3 group shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px] shadow-sm transition-transform duration-300 group-hover:scale-105">
+              <div className="w-full h-full rounded-[10px] bg-[oklch(0.08_0.03_270)] grid place-items-center">
+                <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>
+                </svg>
+              </div>
+            </div>
             <div className="leading-tight">
-              <div className="font-display text-base font-semibold tracking-tight">EduNex</div>
-              <div className="text-[8px] tracking-[0.2em] text-white/40 uppercase font-mono">Platforma egzaminacyjna</div>
+              <div className="font-semibold text-base tracking-tight">EduNex</div>
+              <div className="text-[7px] tracking-[0.25em] text-white/30 uppercase">Platforma egzaminacyjna</div>
             </div>
           </Link>
-          <nav className="hidden lg:flex items-center gap-1 text-sm">
-            {NAV.map(([h, l]) => (
-              <a key={h} href={h} className="px-3 py-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition">{l}</a>
+          <nav className="hidden lg:flex items-center gap-1">
+            {NAV_LINKS.map(([h, l]) => (
+              <a key={h} href={h} className="relative px-4 py-2 text-sm text-white/50 hover:text-white transition-colors duration-200 rounded-full hover:bg-white/[0.04]">{l}</a>
             ))}
           </nav>
-          <div className="hidden sm:flex items-center gap-2 shrink-0">
-            <Link to="/auth/student" className="px-3 py-2 text-sm rounded-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition inline-flex items-center gap-1.5">
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/auth/student" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm text-white/50 hover:text-white rounded-full hover:bg-white/[0.04] transition-colors">
               <GraduationCap className="w-4 h-4"/>Uczeń
             </Link>
-            <Link to="/auth/teacher" className="px-4 py-2 text-sm rounded-lg font-medium inline-flex items-center gap-1.5 text-black bg-white hover:bg-white/90 transition-all shadow-sm">
+            <Link to="/auth/teacher" className="btn-shine inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-full bg-white text-black hover:bg-white/90 transition-all shadow-sm">
               Zaloguj <ArrowRight className="w-4 h-4"/>
             </Link>
+            <button onClick={() => setOpen(!open)} className="lg:hidden p-2 rounded-full hover:bg-white/[0.04]" aria-label="Menu">
+              {open ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
+            </button>
           </div>
-          <button onClick={() => setOpen(!open)} className="sm:hidden p-2 rounded-lg hover:bg-white/[0.04]" aria-label="Menu">
-            {open ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
-          </button>
         </div>
         {open && (
-          <div className="lg:hidden mt-2 rounded-2xl border border-white/[0.06] bg-black/80 backdrop-blur-xl p-3 flex flex-col gap-1 text-sm">
-            {["Funkcje", "Cennik", "FAQ", "Kontakt"].map((l, i) => (
-              <a key={l} onClick={() => setOpen(false)} href={`#${["funkcje","cennik","faq","kontakt"][i]}`} className="px-3 py-2.5 rounded-lg hover:bg-white/[0.04]">{l}</a>
+          <div className="lg:hidden pb-4 flex flex-col gap-1 text-sm">
+            {["Funkcje", "Cennik", "Opinie", "Kontakt"].map((l, i) => (
+              <a key={l} onClick={() => setOpen(false)} href={`#${["funkcje","cennik","opinie","kontakt"][i]}`} className="px-4 py-3 rounded-xl hover:bg-white/[0.04] text-white/70">{l}</a>
             ))}
             <div className="h-px bg-white/[0.06] my-1"/>
-            <Link onClick={() => setOpen(false)} to="/auth/student" className="px-3 py-2.5 rounded-lg hover:bg-white/[0.04]">Uczeń</Link>
-            <Link onClick={() => setOpen(false)} to="/auth/teacher" className="px-3 py-2.5 rounded-lg hover:bg-white/[0.04]">Nauczyciel</Link>
+            <Link onClick={() => setOpen(false)} to="/auth/student" className="px-4 py-3 rounded-xl hover:bg-white/[0.04] text-white/70">Uczeń</Link>
+            <Link onClick={() => setOpen(false)} to="/auth/teacher" className="px-4 py-3 rounded-xl hover:bg-white/[0.04] text-white/70">Nauczyciel</Link>
           </div>
         )}
       </div>
@@ -273,19 +235,6 @@ function NavBar() {
   );
 }
 
-function Mark() {
-  return (
-    <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px] shadow-sm">
-      <div className="w-full h-full rounded-[10px] bg-[#07080d] grid place-items-center">
-        <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-/* ──── Hero ──── */
 function Hero() {
   const headlines = ["w jednym miejscu.", "bez instalacji.", "zgodnie z MEN.", "z monitoringiem AI.", "dla każdej szkoły."];
   const [text, setText] = useState("");
@@ -293,39 +242,42 @@ function Hero() {
   const [char, setChar] = useState(0);
   useEffect(() => {
     if (char < headlines[idx].length) {
-      const t = setTimeout(() => { setText(headlines[idx].slice(0, char + 1)); setChar((c) => c + 1); }, 50);
+      const t = setTimeout(() => { setText(headlines[idx].slice(0, char + 1)); setChar((c) => c + 1); }, 45);
       return () => clearTimeout(t);
     }
-    const t = setTimeout(() => { setIdx((i) => (i + 1) % headlines.length); setChar(0); setText(""); }, 3000);
+    const t = setTimeout(() => { setIdx((i) => (i + 1) % headlines.length); setChar(0); setText(""); }, 2800);
     return () => clearTimeout(t);
   }, [char, idx]);
   return (
-    <section className="relative pt-36 sm:pt-44 pb-20 sm:pb-28">
-      <div className="max-w-6xl mx-auto px-4 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-xs text-white/60 mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
-          Platforma zatwierdzona przez MEN · 100% online
+    <section className="relative pt-32 sm:pt-40 pb-24 sm:pb-32 overflow-hidden">
+      <div className="absolute inset-0 bg-dots" />
+      <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full glass-orb floating-2" />
+      <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full glass-orb floating-1" style={{ animationDelay: "2s" }} />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center relative">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 mb-8 backdrop-blur-sm">
+          <span className="pulse-dot"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block" /></span>
+          Platforma zatwierdzona przez MEN
         </div>
-        <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-semibold leading-[0.9] tracking-tight">
-          <span className="text-white">Egzaminy bez<br/></span>
-          <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent">tarcia i papieru.</span>
+        <h1 className="hero-giant font-bold text-white mb-4">
+          Egzaminy<br />
+          <span className="bg-gradient-to-r from-cyan-200 via-violet-200 to-fuchsia-200 bg-clip-text text-transparent">bez tarcia.</span>
         </h1>
-        <p className="mt-5 text-lg text-white/50 max-w-2xl mx-auto leading-relaxed min-h-[1.8em]">
-          Certyfikowana platforma egzaminacyjna dla polskich szkół. Twórz sprawdziany, zarządzaj klasami i monitoruj wyniki na żywo — <span className="text-white/80">{text}<span className="typewriter-cursor" /></span>
+        <p className="text-base sm:text-lg text-white/40 max-w-2xl mx-auto leading-relaxed min-h-[1.8em]">
+          Certyfikowana platforma egzaminacyjna. Twórz sprawdziany, zarządzaj klasami i monitoruj wyniki — <span className="text-white/70">{text}<span className="type-cursor" /></span>
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link to="/auth/teacher" className="group inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">
-            Rozpocznij za darmo <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition"/>
+          <Link to="/auth/teacher" className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm glow-pulse">
+            Rozpocznij za darmo <ArrowRight className="w-4 h-4"/>
           </Link>
-          <Link to="/auth/student" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm border border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.04] transition">
+          <Link to="/auth/student" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.04] transition-all">
             <GraduationCap className="w-4 h-4"/>Wejdź PIN-em
           </Link>
         </div>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/40">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/40">
           {[
             ["Zgodność z MEN", ShieldCheck], ["Serwery w UE", Globe2], ["RODO", Lock], ["99.98% uptime", Activity], ["Wsparcie 24/7", Zap],
           ].map(([t, I]) => (
-            <span key={t as string} className="inline-flex items-center gap-1.5"><I className="w-3.5 h-3.5 text-cyan-400/60"/>{t}</span>
+            <span key={t as string} className="inline-flex items-center gap-1.5"><I className="w-3.5 h-3.5 text-cyan-400/50"/>{t as string}</span>
           ))}
         </div>
       </div>
@@ -333,15 +285,14 @@ function Hero() {
   );
 }
 
-/* ──── Stats ──── */
-const STATS = [
-  { v: 3752, l: "Przeprowadzonych egzaminów", c: "from-cyan-400 to-blue-400", s: "+" },
-  { v: 829, l: "Aktywnych nauczycieli", c: "from-violet-400 to-fuchsia-400", s: "+" },
-  { v: 36140, l: "Uczniów w systemie", c: "from-emerald-400 to-teal-400", s: "+" },
-  { v: 99.98, l: "Dostępność", c: "from-amber-400 to-orange-400", s: "%" },
-  { v: 18920, l: "Certyfikatów wydanych", c: "from-emerald-400 to-cyan-400", s: "+" },
+const STATS_DATA = [
+  { v: 3752, l: "Przeprowadzonych egzaminów", s: "+" },
+  { v: 829, l: "Aktywnych nauczycieli", s: "+" },
+  { v: 36140, l: "Uczniów w systemie", s: "+" },
+  { v: 99.98, l: "Dostępność", s: "%" },
+  { v: 18920, l: "Certyfikatów wydanych", s: "+" },
 ];
-function CountUp({ target, suffix, duration = 2000 }: { target: number; suffix: string; duration?: number }) {
+function CountUp({ target, suffix }: { target: number; suffix: string }) {
   const [val, setVal] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const [started, setStarted] = useState(false);
@@ -352,58 +303,37 @@ function CountUp({ target, suffix, duration = 2000 }: { target: number; suffix: 
   }, [started]);
   useEffect(() => {
     if (!started) return;
-    const startTime = performance.now();
+    const t0 = performance.now();
     const step = (now: number) => {
-      const pct = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - pct, 3);
-      const current = Math.round(eased * target);
-      setVal(target > 1000 ? current : parseFloat((eased * target).toFixed(1)));
+      const pct = Math.min((now - t0) / 2000, 1);
+      const e = 1 - Math.pow(1 - pct, 3);
+      setVal(target > 1000 ? Math.round(e * target) : parseFloat((e * target).toFixed(1)));
       if (pct < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
-  }, [started, target, duration]);
-  return <div ref={ref} className="tabular-nums">{val.toLocaleString()}{suffix}</div>;
+  }, [started, target]);
+  return <div ref={ref} className="tabular-nums font-bold">{val.toLocaleString()}{suffix}</div>;
 }
-function Stats() {
+function StatsMarquee() {
   return (
-    <section className="border-y border-white/[0.05] py-10">
-      <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-        {STATS.map((s, i) => (
-          <div key={s.l} className="text-center reveal" style={{ animationDelay: `${i * 0.1}s` }}>
-            <div className={`text-2xl sm:text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r ${s.c} bg-clip-text text-transparent`}>
-              <CountUp target={s.v} suffix={s.s} />
+    <section className="relative py-12 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
+          {STATS_DATA.map((s, i) => (
+            <div key={s.l} className="text-center reveal" style={{ animationDelay: `${i * 0.08}s` }}>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-cyan-200 via-violet-200 to-fuchsia-200 bg-clip-text text-transparent">
+                <CountUp target={s.v} suffix={s.s} />
+              </div>
+              <div className="text-xs text-white/40 mt-1.5 font-medium">{s.l}</div>
             </div>
-            <div className="text-xs text-white/40 mt-1">{s.l}</div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ──── Marquee ──── */
-function Marquee() {
-  const items = [
-    "XIV LO im. Staszica · Warszawa", "III LO Marynarki Wojennej · Gdynia",
-    "V LO im. Witkowskiego · Kraków", "XIII LO · Szczecin",
-    "II LO im. Batorego · Warszawa", "I LO im. Kopernika · Łódź",
-    "ZSE im. Skłodowskiej-Curie · Poznań", "VI LO im. Kochanowskiego · Wrocław",
-  ];
-  return (
-    <section className="py-6 border-b border-white/[0.05]">
-      <div className="relative flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)]">
-        <div className="flex shrink-0 gap-12 animate-[marquee_40s_linear_infinite] pr-12">
-          {[...items, ...items].map((s, i) => (
-            <span key={i} className="text-sm text-white/30 whitespace-nowrap font-display">{s}</span>
           ))}
         </div>
       </div>
-      <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
     </section>
   );
 }
 
-/* ──── Features (6 categories, bento grid) ──── */
 const FEATURE_CATEGORIES = [
   {
     id: "egzaminy", label: "Egzaminy", icon: FileText, gradient: "from-cyan-400 to-blue-500",
@@ -461,7 +391,7 @@ const FEATURE_CATEGORIES = [
   {
     id: "szkola", label: "Dla szkoły", icon: School, gradient: "from-teal-400 to-emerald-500",
     items: [
-      { title: "Organizacja roku", bullets: ["Kalendarz roku szkolnego", " Planowanie ferii i przerw", "Zarządzanie zastępstwami", "Dyżury nauczycielskie"] },
+      { title: "Organizacja roku", bullets: ["Kalendarz roku szkolnego", "Planowanie ferii i przerw", "Zarządzanie zastępstwami", "Dyżury nauczycielskie"] },
       { title: "Dokumentacja", bullets: ["Dzienniki lekcyjne online", "Arkusze ocen i świadectwa", "Druki MEN gotowe do wydruku", "Archiwum elektroniczne"] },
       { title: "Statystyki szkoły", bullets: ["Wskaźniki zdawalności", "Frekwencja klas", "Porównanie oddziałów", "Raporty dla organu prowadzącego"] },
       { title: "Komunikacja z rodzicami", bullets: ["Masowe powiadomienia e-mail", "Kontakt przez dziennik", "Wywieszki i ogłoszenia", "Konsultacje online"] },
@@ -477,88 +407,199 @@ const FEATURE_CATEGORIES = [
   },
 ];
 
-function BentoFeatures() {
+function FeaturesFlow() {
   const [active, setActive] = useState(FEATURE_CATEGORIES[0].id);
   const [key, setKey] = useState(0);
   const cat = FEATURE_CATEGORIES.find((c) => c.id === active) ?? FEATURE_CATEGORIES[0];
   const total = FEATURE_CATEGORIES.reduce((a, c) => a + c.items.reduce((b, i) => b + i.bullets.length, 0), 0);
   useEffect(() => setKey((k) => k + 1), [active]);
   return (
-    <section id="funkcje" className="py-20 sm:py-28">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="reveal max-w-xl mx-auto text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Funkcje</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-semibold leading-[1.05] tracking-tight">
-            Ponad <span className="text-gradient-cyber">{total}+</span> możliwości
+    <section id="funkcje" className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute top-0 left-1/3 w-[600px] h-[600px] rounded-full glass-orb floating-3 opacity-40" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center max-w-2xl mx-auto mb-16">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Funkcje</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+            Ponad <span className="shimmer">{total}+</span> możliwości
           </h2>
-          <p className="mt-3 text-white/50 text-sm">Wszystko, czego potrzebuje nowoczesna szkoła.</p>
+          <p className="mt-4 text-white/40 text-sm max-w-lg mx-auto">Wszystko, czego potrzebuje nowoczesna szkoła — w jednej, spójnej platformie.</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
           {FEATURE_CATEGORIES.map((c) => {
             const a = active === c.id;
             return (
               <button key={c.id} onClick={() => setActive(c.id)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${a ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white hover:bg-white/[0.04]"}`}>
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${a ? "bg-white text-black shadow-sm" : "text-white/40 hover:text-white hover:bg-white/[0.04]"}`}>
                 <c.icon className="w-4 h-4"/>{c.label}
               </button>
             );
           })}
         </div>
-        <div key={key} style={{ animation: "fadeIn 0.3s ease-out" }}>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {cat.items.map((item, i) => (
-              <div key={item.title} className="gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-all duration-200 hover-bounce">
-                <h3 className="font-display text-sm font-semibold text-white/90 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"/>
-                  {item.title}
-                </h3>
-                <ul className="mt-2.5 space-y-1">
-                  {item.bullets.map((b) => (
-                    <li key={b} className="text-xs text-white/50 flex gap-1.5">
-                      <CheckCircle2 className="w-3 h-3 text-cyan-400/40 shrink-0 mt-0.5"/>{b}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+        <div key={key} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" style={{ animation: "fadeUp 0.35s ease-out" }}>
+          {cat.items.map((item) => (
+            <div key={item.title} className="org-card rounded-2xl p-6 hover:-translate-y-1">
+              <h3 className="font-semibold text-sm text-white/90 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"/>
+                {item.title}
+              </h3>
+              <ul className="mt-3 space-y-1.5">
+                {item.bullets.map((b) => (
+                  <li key={b} className="text-xs text-white/50 flex gap-2">
+                    <CheckCircle2 className="w-3 h-3 text-cyan-400/30 shrink-0 mt-0.5"/>{b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
-      <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
+      <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </section>
   );
 }
 
-/* ──── ForWhom ──── */
-function ForWhom() {
+function DemoShowcase() {
+  const [step, setStep] = useState<"start" | "q1" | "q2" | "q3" | "done">("start");
+  const [a1, setA1] = useState<number | null>(null);
+  const [a2, setA2] = useState<number | null>(null);
+  const [a3, setA3] = useState<number | null>(null);
+  const score = (a1 === 1 ? 1 : 0) + (a2 === 0 ? 1 : 0) + (a3 === 2 ? 1 : 0);
+  const restart = () => { setStep("start"); setA1(null); setA2(null); setA3(null); };
+  return (
+    <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute top-1/2 -translate-y-1/2 -right-60 w-[500px] h-[500px] rounded-full glass-orb floating-1 opacity-30" />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Demo na żywo</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Rozwiąż <span className="shimmer">mini egzamin</span></h2>
+          <p className="mt-3 text-white/40 text-sm">Zobacz jak działa platforma — 3 pytania z matematyki.</p>
+        </div>
+        <div className="reveal-scale max-w-xl mx-auto">
+          <div className="org-card rounded-3xl p-8 sm:p-10">
+            {step === "start" && (
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto rounded-[24px] bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center mb-6 shadow-lg floating-3"><Notebook className="w-8 h-8 text-black"/></div>
+                <h3 className="text-2xl font-bold">Matematyka — Klasa 6</h3>
+                <p className="mt-2 text-white/40 text-sm">3 pytania · bez limitu czasu · sprawdź swoją wiedzę</p>
+                <button onClick={() => setStep("q1")} className="mt-8 btn-shine inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">Rozpocznij quiz <Play className="w-4 h-4"/></button>
+              </div>
+            )}
+            {step === "q1" && (
+              <div><div className="flex items-center gap-2 text-xs text-white/40 mb-6"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 1/3</div>
+                <p className="text-lg sm:text-xl font-medium text-white/90">Ile wynosi pole kwadratu o boku 5 cm?</p>
+                <div className="mt-5 grid gap-2.5">{[["25 cm²", 1], ["20 cm²", 0], ["10 cm²", 0], ["30 cm²", 0]].map(([t, i]) => (
+                  <button key={t as string} onClick={() => { setA1(i as number); setStep("q2"); }} className="text-left px-5 py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-sm text-white/60 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] hover:text-white transition-all">{t}</button>
+                ))}</div>
+              </div>
+            )}
+            {step === "q2" && (
+              <div><div className="flex items-center gap-2 text-xs text-white/40 mb-6"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 2/3</div>
+                <p className="text-lg sm:text-xl font-medium text-white/90">Która liczba jest podzielna przez 3?</p>
+                <div className="mt-5 grid gap-2.5">{[["124", 0], ["327", 1], ["401", 0], ["550", 0]].map(([t, i]) => (
+                  <button key={t as string} onClick={() => { setA2(i as number); setStep("q3"); }} className="text-left px-5 py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-sm text-white/60 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] hover:text-white transition-all">{t}</button>
+                ))}</div>
+              </div>
+            )}
+            {step === "q3" && (
+              <div><div className="flex items-center gap-2 text-xs text-white/40 mb-6"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 3/3</div>
+                <p className="text-lg sm:text-xl font-medium text-white/90">Jaki jest pierwiastek kwadratowy z 144?</p>
+                <div className="mt-5 grid gap-2.5">{[["10", 0], ["14", 0], ["12", 1], ["16", 0]].map(([t, i]) => (
+                  <button key={t as string} onClick={() => { setA3(i as number); setStep("done"); }} className="text-left px-5 py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-sm text-white/60 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] hover:text-white transition-all">{t}</button>
+                ))}</div>
+              </div>
+            )}
+            {step === "done" && (
+              <div className="text-center">
+                <div className={`w-20 h-20 mx-auto rounded-[24px] grid place-items-center mb-6 shadow-lg floating-3 ${score === 3 ? "bg-gradient-to-br from-emerald-400 to-teal-500" : "bg-gradient-to-br from-amber-400 to-orange-500"}`}>
+                  {score === 3 ? <Award className="w-8 h-8 text-black"/> : <Target className="w-8 h-8 text-black"/>}
+                </div>
+                <h3 className="text-2xl font-bold">{score === 3 ? "Celująco! 🎉" : score === 2 ? "Dobrze! 👍" : "Spróbuj jeszcze raz 💪"}</h3>
+                <p className="mt-2 text-white/40 text-sm">Twój wynik: <span className="text-white font-mono font-bold">{score}/3</span></p>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                  <button onClick={restart} className="px-6 py-2.5 rounded-full text-sm font-medium border border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.04] transition-all">Rozwiąż ponownie</button>
+                  <Link to="/auth/teacher" className="btn-shine inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 transition-all shadow-sm">Załóż konto <ArrowRight className="w-4 h-4"/></Link>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="mt-4 text-center text-xs text-white/30">W rzeczywistym egzaminie AI sprawdza odpowiedzi otwarte i wykrywa ściąganie.</div>
+        </div>
+        <div className="mt-16 reveal">
+          <div className="org-card rounded-3xl p-6 sm:p-8">
+            <div className="grid lg:grid-cols-2 gap-6 items-center">
+              <div>
+                <h3 className="text-lg font-bold flex items-center gap-2"><Radio className="w-5 h-5 text-cyan-400"/> Monitoring na żywo</h3>
+                <p className="mt-2 text-sm text-white/40">Widzisz postęp każdego ucznia w czasie rzeczywistym. AI wykrywa nieprawidłowości.</p>
+                <ul className="mt-4 space-y-2 text-sm text-white/50">
+                  {[["Postęp na żywo", "Widzisz kto skończył, a kto utknął"], ["Wykrywanie ściągania", "AI analizuje ruchy myszy i ostrzega"], ["Kontrola zdalna", "Możesz zatrzymać lub przedłużyć egzamin"]].map(([t, d]) => (
+                    <li key={t} className="flex gap-2"><span className="grad-dot"/><div><span className="text-white/80">{t}</span> — {d}</div></li>
+                  ))}
+                </ul>
+              </div>
+              <div className="relative">
+                <div className="absolute -inset-3 bg-gradient-to-r from-cyan-400/5 via-violet-400/5 to-fuchsia-400/5 rounded-3xl blur-xl" />
+                <div className="relative rounded-2xl bg-[oklch(0.06_0.03_270)] border border-white/[0.06] overflow-hidden">
+                  <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06]">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/60"/><span className="w-2.5 h-2.5 rounded-full bg-amber-500/60"/><span className="w-2.5 h-2.5 rounded-full bg-emerald-500/60"/>
+                    <span className="ml-2 text-[9px] text-white/30 font-mono">Panel · monitoring</span>
+                  </div>
+                  <div className="p-4 sm:p-5 space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                      <div className="flex items-center gap-2"><span className="pulse-dot"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block"/></span><span className="text-xs text-white/50">Na żywo: <span className="text-white font-medium">24 uczniów</span></span></div>
+                      <span className="text-xs text-white/40">Średnia: <span className="text-cyan-300 font-mono">73%</span></span>
+                    </div>
+                    {[
+                      { n: "Kowalski J.", p: 88, c: "#34d399" }, { n: "Nowak A.", p: 72, c: "#22d3ee" },
+                      { n: "Wiśniewska Z.", p: 95, c: "#34d399" }, { n: "Kamiński P.", p: 45, c: "#fb7185" },
+                      { n: "Lewandowska M.", p: 68, c: "#fbbf24" },
+                    ].map((s) => (
+                      <div key={s.n} className="flex items-center gap-3">
+                        <span className="text-xs text-white/50 w-20 truncate">{s.n}</span>
+                        <div className="flex-1 h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                          <div className="h-full rounded-full prog-fill" style={{ width: `${s.p}%`, background: s.c, opacity: 0.7 }} />
+                        </div>
+                        <span className="text-xs font-mono w-8 text-right text-white/50">{s.p}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ForWhomFlow() {
   const cards = [
-    { icon: GraduationCap, accent: "from-cyan-400 to-blue-500", to: "/auth/student", title: "Uczeń", lines: ["Wejście PIN-em lub kontem", "Czysty interfejs egzaminu", "Wynik widoczny od razu", "Certyfikat PDF + QR"] },
-    { icon: Users, accent: "from-violet-400 to-fuchsia-500", to: "/auth/teacher", title: "Nauczyciel", lines: ["Pytania z AI w 3s", "Klasy, oceny, dziennik", "Monitoring na żywo", "Eksport PDF/Excel"] },
-    { icon: Shield, accent: "from-amber-300 to-rose-400", to: "/auth/admin", title: "Dyrekcja", lines: ["Zatwierdzanie nauczycieli", "Raporty zbiorcze", "Audyt i statystyki"] },
-    { icon: Heart, accent: "from-emerald-400 to-teal-500", to: "/auth/parent", title: "Rodzic", lines: ["Wgląd w wyniki dziecka", "Powiadomienia", "Raport postępów"] },
+    { icon: GraduationCap, accent: "from-cyan-400 to-blue-500", to: "/auth/student", title: "Uczeń", lines: ["Wejście PIN-em bez konta", "Czysty interfejs egzaminu", "Wynik widoczny od razu", "Certyfikat PDF + QR"] },
+    { icon: Users, accent: "from-violet-400 to-fuchsia-500", to: "/auth/teacher", title: "Nauczyciel", lines: ["Pytania z AI w 3 sekundy", "Klasy, oceny, dziennik", "Monitoring na żywo", "Eksport PDF/Excel"] },
+    { icon: ShieldCheck, accent: "from-amber-300 to-rose-400", to: "/auth/admin", title: "Dyrekcja", lines: ["Zatwierdzanie nauczycieli", "Raporty zbiorcze", "Audyt i statystyki", "Wgląd w wyniki szkoły"] },
+    { icon: Heart, accent: "from-emerald-400 to-teal-500", to: "/auth/parent", title: "Rodzic", lines: ["Wgląd w wyniki dziecka", "Powiadomienia e-mail", "Raport postępów", "Konsultacje online"] },
   ];
   return (
-    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="reveal text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Dla kogo</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Cztery perspektywy, jedna platforma</h2>
+    <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute -left-40 top-1/3 w-[400px] h-[400px] rounded-full glass-orb floating-2" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Dla kogo</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Cztery perspektywy, <span className="shimmer">jedna platforma</span></h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map((c, i) => (
-            <Link key={c.title} to={c.to} className="reveal group gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-200 hover-bounce" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${c.accent} grid place-items-center shadow-sm`}>
-                  <c.icon className="w-5 h-5 text-black" />
-                </div>
-                <h3 className="font-display text-lg font-semibold">{c.title}</h3>
+            <Link key={c.title} to={c.to} className="reveal group org-card rounded-3xl p-6 hover:-translate-y-1" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${c.accent} grid place-items-center mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110`}>
+                <c.icon className="w-6 h-6 text-black" />
               </div>
-              <ul className="space-y-1.5 text-sm text-white/60">
+              <h3 className="text-lg font-bold">{c.title}</h3>
+              <ul className="mt-3 space-y-2 text-sm text-white/50">
                 {c.lines.map((l) => (
-                  <li key={l} className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-cyan-400/60 shrink-0 mt-0.5"/>{l}</li>
+                  <li key={l} className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-400/40 shrink-0 mt-0.5"/>{l}</li>
                 ))}
               </ul>
-              <div className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-white/40 group-hover:text-cyan-300 transition-colors">
+              <div className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-white/30 group-hover:text-cyan-300 transition-colors">
                 Przejdź <ArrowUpRight className="w-3 h-3"/>
               </div>
             </Link>
@@ -569,47 +610,55 @@ function ForWhom() {
   );
 }
 
-/* ──── Process ──── */
-function Process() {
-  const steps = [
-    { n: "1", t: "Załóż klasę", d: "Wpisz przedmiot i listę uczniów. Import z CSV — 2 minuty." },
-    { n: "2", t: "Przygotuj pytania", d: "Wpisz ręcznie, wybierz z banku lub wygeneruj AI z 3 słów." },
-    { n: "3", t: "Generuj PIN", d: "6-cyfrowy kod. Uczeń wpisuje na dowolnym urządzeniu — bez logowania." },
-    { n: "4", t: "Monitoruj", d: "Postęp na żywo. AI wykrywa podejrzane zachowania." },
-    { n: "5", t: "Oceń i raportuj", d: "Auto-ocena w 0,3s. Eksport PDF/Excel jednym klikiem." },
+function ComparisonShowcase() {
+  const rows = [
+    { l: "Czas przygotowania egzaminu", t: "2–4 godziny", e: "3 minuty" },
+    { l: "Sprawdzanie prac", t: "5–15 godzin", e: "Automatyczne (0.3s)" },
+    { l: "Koszty druku / mies.", t: "200–500 zł", e: "0 zł" },
+    { l: "Ryzyko ściągania", t: "Wysokie", e: "AI wykrywa" },
+    { l: "Dostęp do wyników", t: "1–2 tygodnie", e: "Natychmiast" },
+    { l: "Archiwizacja", t: "Segregator", e: "Chmura · RODO" },
+    { l: "Certyfikaty", t: "Ręcznie", e: "PDF + QR auto" },
+    { l: "Analiza statystyk", t: "Excel ręcznie", e: "Automatyczne wykresy" },
+    { l: "Kontrola postępów", t: "Brak", e: "Na żywo · dashboard" },
+    { l: "Migracja danych", t: "Godziny", e: "Import 1 klik" },
   ];
   return (
-    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
-      <div className="max-w-3xl mx-auto px-4">
-        <div className="reveal text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Jak działa</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Pięć kroków do gotowego egzaminu</h2>
-          <p className="mt-3 text-white/50 text-sm">Od założenia klasy do raportu — w mniej niż 10 minut.</p>
+    <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Porównanie</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Tradycyjnie vs <span className="shimmer">EduNex</span></h2>
         </div>
-        <div className="space-y-4">
-          {steps.map((s) => (
-            <div key={s.n} className="reveal flex items-start gap-4 group">
-              <div className="shrink-0 w-10 h-10 rounded-lg bg-white/[0.06] border border-white/[0.06] grid place-items-center text-sm font-semibold text-white/60 group-hover:text-cyan-300 group-hover:border-cyan-400/30 transition-all duration-200">
-                {s.n}
-              </div>
-              <div className="flex-1 pt-1.5">
-                <h3 className="font-display text-base font-semibold">{s.t}</h3>
-                <p className="text-sm text-white/50 mt-1">{s.d}</p>
-              </div>
+        <div className="reveal">
+          <div className="org-card rounded-3xl p-6 sm:p-8 overflow-hidden">
+            <div className="overflow-x-auto -mx-2">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06]">
+                    <th className="text-left py-3 pr-4 text-white/40 font-medium">Obszar</th>
+                    <th className="text-left py-3 px-4 text-rose-300/50 font-medium">Tradycyjnie</th>
+                    <th className="text-left py-3 pl-4 text-cyan-300/70 font-medium">EduNex</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={r.l} className={`${i < rows.length - 1 ? "border-b border-white/[0.03]" : ""} hover:bg-white/[0.02] transition-colors`}>
+                      <td className="py-3 pr-4 text-white/60">{r.l}</td>
+                      <td className="py-3 px-4 text-rose-300/40"><X className="w-3.5 h-3.5 inline mr-1.5 opacity-50"/>{r.t}</td>
+                      <td className="py-3 pl-4 text-cyan-200/70"><CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 text-emerald-400/70"/>{r.e}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
-        <div className="reveal mt-8 text-center">
-          <Link to="/auth/teacher" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">
-            Wypróbuj teraz — 2 minuty <ArrowRight className="w-4 h-4"/>
-          </Link>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/* ──── Achievements ──── */
 const ACHIEVEMENTS = [
   { icon: Trophy, value: "847+", label: "Egzaminów dziennie", color: "from-amber-400 to-orange-500" },
   { icon: School, value: "128+", label: "Aktywnych szkół", color: "from-cyan-400 to-blue-500" },
@@ -617,25 +666,29 @@ const ACHIEVEMENTS = [
   { icon: Award, value: "18 920", label: "Certyfikatów", color: "from-emerald-400 to-teal-500" },
   { icon: Heart, value: "97.8%", label: "Zadowolonych uczniów", color: "from-rose-400 to-pink-500" },
   { icon: Infinity, value: "99.98%", label: "Uptime SLA", color: "from-emerald-300 to-cyan-400" },
+  { icon: Sparkles, value: "670+", label: "Funkcji i integracji", color: "from-sky-400 to-indigo-500" },
+  { icon: Globe2, value: "16", label: "Województw", color: "from-teal-400 to-emerald-500" },
 ];
-function Achievements() {
+function AchievementsFlow() {
   return (
-    <section className="py-20 border-t border-white/[0.05]">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="reveal text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Osiągnięcia</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Platforma w <span className="text-gradient-cyber">liczbach</span></h2>
+    <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full glass-orb floating-3 opacity-20" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Osiągnięcia</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Platforma w <span className="shimmer">liczbach</span></h2>
+          <p className="mt-3 text-white/40 text-sm">Ponad 36 000 użytkowników i ciągle rośniemy.</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {ACHIEVEMENTS.map((a, i) => (
-            <div key={a.label} className="reveal gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-center hover:bg-white/[0.04] transition-all duration-200 hover-bounce" style={{ animationDelay: `${i * 0.08}s` }}>
-              <div className={`w-10 h-10 mx-auto rounded-lg bg-gradient-to-br ${a.color} grid place-items-center mb-3 shadow-sm`}>
-                <a.icon className="w-5 h-5 text-black" />
+            <div key={a.label} className={`reveal org-card rounded-2xl p-6 text-center hover:-translate-y-1 ${i === 0 || i === 5 ? "sm:col-span-1" : ""}`} style={{ animationDelay: `${i * 0.06}s` }}>
+              <div className={`w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br ${a.color} grid place-items-center mb-4`}>
+                <a.icon className="w-6 h-6 text-black" />
               </div>
-              <div className="font-display text-2xl sm:text-3xl font-bold tabular-nums">
+              <div className="text-3xl sm:text-4xl font-bold">
                 <span className={`bg-gradient-to-r ${a.color} bg-clip-text text-transparent`}>{a.value}</span>
               </div>
-              <div className="text-xs text-white/40 mt-1">{a.label}</div>
+              <div className="text-xs text-white/40 mt-1.5 font-medium">{a.label}</div>
             </div>
           ))}
         </div>
@@ -644,38 +697,82 @@ function Achievements() {
   );
 }
 
-/* ──── Testimonials ──── */
-const NOTES = [
-  { n: "Katarzyna Mazurek", r: "Matematyka · XIV LO Warszawa", text: "Przed EduNex układałam testy w Wordzie. Teraz robię to dwa razy szybciej." },
-  { n: "Paweł Górski", r: "Wicedyrektor · III LO Gdynia", text: "Monitoring na żywo to game changer — od razu widzę, kto potrzebuje pomocy." },
-  { n: "Magdalena Adamczyk", r: "Polonistka · V LO Kraków", text: "Uczeń widzi wynik od razu i wie co poprawić. Oszczędzam 10 godzin tygodniowo." },
-  { n: "Tomasz Wróblewski", r: "Dyrektor · ZSE Poznań", text: "Platforma spełnia wszystkie wymogi RODO. Koszty druku spadły o 90%." },
-  { n: "Anna Jabłońska", r: "Anglistka · VI LO Wrocław", text: "Generator AI — wczytuję zdjęcie i w 10s mam 10 pytań. Niesamowite." },
+const SECURITY_ITEMS = [
+  { icon: Lock, title: "Szyfrowanie TLS 1.3", desc: "Dane przesyłane z szyfrowaniem klasy bankowej. Certyfikat SSL automatycznie odnawiany.", color: "from-cyan-400 to-blue-500" },
+  { icon: Shield, title: "Ochrona przed atakami", desc: "WAF, DDoS protection, rate limiting. Monitoring 24/7 przez zespół bezpieczeństwa.", color: "from-violet-400 to-fuchsia-500" },
+  { icon: Fingerprint, title: "RODO — pełna zgodność", desc: "Umowa powierzenia danych, dziennik audytu, prawo do bycia zapomnianym.", color: "from-emerald-400 to-teal-500" },
+  { icon: Database, title: "Backupy co 6h", desc: "Automatyczne kopie na 3 niezależnych serwerach w różnych lokalizacjach w UE.", color: "from-amber-400 to-orange-500" },
+  { icon: ScanFace, title: "Tryb egzaminacyjny", desc: "Blokada skrótów, pełny ekran, monitoring aktywności, losowanie pytań.", color: "from-rose-400 to-pink-500" },
+  { icon: Building2, title: "Serwery w Polsce", desc: "Dane przechowywane w Warszawie i Krakowie. Poza jurysdykcją CLOUD Act.", color: "from-sky-400 to-indigo-500" },
+  { icon: Users, title: "Kontrola dostępu RBAC", desc: "Role: admin, dyrektor, nauczyciel. 2FA dla administratora, dostęp tylko do własnych zasobów.", color: "from-teal-400 to-emerald-500" },
+  { icon: Radio, title: "Monitoring 24/7", desc: "Automatyczne skanowanie podatności, testy penetracyjne co kwartał, SOC.", color: "from-purple-400 to-violet-500" },
 ];
-function Testimonials() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => { const iv = setInterval(() => setIdx((i) => (i + 1) % NOTES.length), 5000); return () => clearInterval(iv); }, []);
+function SecurityFlow() {
   return (
-    <section className="py-20 border-t border-white/[0.05]">
-      <div className="max-w-3xl mx-auto px-4 text-center">
-        <div className="reveal mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Opinie</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Co mówią nauczyciele</h2>
+    <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full glass-orb floating-1" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Bezpieczeństwo</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Dane <span className="shimmer">bezpieczne</span> jak w banku</h2>
+          <p className="mt-3 text-white/40 text-sm">Certyfikaty, szyfrowanie i procedury — wszystko, czego wymaga nowoczesna szkoła.</p>
         </div>
-        <div key={idx} className="reveal gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8" style={{ animation: "fadeIn 0.4s ease-out" }}>
-          <div className="text-4xl text-cyan-300/30 font-display leading-none mb-3">"</div>
-          <blockquote className="text-white/80 text-base sm:text-lg leading-relaxed">{NOTES[idx].text}</blockquote>
-          <div className="mt-5 flex items-center justify-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center text-black font-semibold text-xs">{NOTES[idx].n[0]}</div>
-            <div className="text-left">
-              <div className="font-medium text-sm">{NOTES[idx].n}</div>
-              <div className="text-xs text-white/40">{NOTES[idx].r}</div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {SECURITY_ITEMS.map((it) => (
+            <div key={it.title} className="reveal org-card rounded-2xl p-6 hover:-translate-y-1">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${it.color} grid place-items-center mb-4`}><it.icon className="w-5 h-5 text-black"/></div>
+              <h3 className="font-semibold text-sm text-white/90">{it.title}</h3>
+              <p className="mt-1.5 text-xs text-white/50 leading-relaxed">{it.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="reveal mt-8 grid grid-cols-3 sm:grid-cols-6 gap-3 max-w-2xl mx-auto">
+          {[["Zgodność z MEN", Scale], ["RODO", Shield], ["ISO 27001", ShieldCheck], ["TLS 1.3", Lock], ["Serwery UE", Globe], ["99.98% SLA", Activity]].map(([n, I]) => (
+            <div key={n as string} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all">
+              <I className="w-5 h-5 text-cyan-400/60"/><span className="text-[10px] text-white/50 text-center font-medium">{n as string}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const TESTIMONIALS = [
+  { n: "Katarzyna Mazurek", r: "Matematyka · XIV LO Warszawa", t: "Przed EduNex układałam testy w Wordzie. Teraz robię to dwa razy szybciej. Generator AI to game changer." },
+  { n: "Paweł Górski", r: "Wicedyrektor · III LO Gdynia", t: "Monitoring na żywo to przełom — od razu widzę, kto potrzebuje pomocy, a kto ściąga." },
+  { n: "Magdalena Adamczyk", r: "Polonistka · V LO Kraków", t: "Uczeń widzi wynik od razu i wie co poprawić. Oszczędzam 10 godzin tygodniowo na sprawdzaniu." },
+  { n: "Tomasz Wróblewski", r: "Dyrektor · ZSE Poznań", t: "Spełnia wszystkie wymogi RODO. Koszty druku spadły o 90%, a wyniki są od razu w systemie." },
+  { n: "Anna Jabłońska", r: "Anglistka · VI LO Wrocław", t: "Wczytuję zdjęcie kartkówki i w 10s mam 10 pytań. Uczniowie też to uwielbiają." },
+  { n: "Robert Nowicki", r: "Informatyk · XIII LO Szczecin", t: "Integracja z Librusem działa bezbłędnie. Wdrożenie zajęło 2 dni, a nie 2 miesiące." },
+];
+function TestimonialsFlow() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => { const iv = setInterval(() => setIdx((i) => (i + 1) % TESTIMONIALS.length), 5000); return () => clearInterval(iv); }, []);
+  return (
+    <section id="opinie" className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute top-1/2 -translate-y-1/2 right-0 w-[400px] h-[400px] rounded-full glass-orb floating-2" />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+        <div className="reveal mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Opinie</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Co mówią <span className="shimmer">nauczyciele</span></h2>
+        </div>
+        <div key={idx} className="reveal-scale">
+          <div className="org-card rounded-3xl p-8 sm:p-10">
+            <div className="text-5xl text-cyan-300/20 font-serif leading-none mb-4">"</div>
+            <blockquote className="text-white/80 text-base sm:text-lg leading-relaxed">{TESTIMONIALS[idx].t}</blockquote>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center text-black font-semibold text-sm">{TESTIMONIALS[idx].n[0]}</div>
+              <div className="text-left">
+                <div className="font-medium text-sm text-white/90">{TESTIMONIALS[idx].n}</div>
+                <div className="text-xs text-white/40">{TESTIMONIALS[idx].r}</div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="flex justify-center gap-2 mt-5">
-          {NOTES.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)} className={`w-2 h-2 rounded-full transition-all duration-300 ${i === idx ? "bg-white/60 w-5" : "bg-white/20 hover:bg-white/40"}`} />
+        <div className="flex justify-center gap-2 mt-6">
+          {TESTIMONIALS.map((_, i) => (
+            <button key={i} onClick={() => setIdx(i)} className={`h-2 rounded-full transition-all duration-300 ${i === idx ? "bg-white/60 w-6" : "bg-white/20 w-2 hover:bg-white/40"}`} />
           ))}
         </div>
       </div>
@@ -683,61 +780,63 @@ function Testimonials() {
   );
 }
 
-/* ──── Pricing ──── */
 const PLANS = [
   { name: "Klasa", price: "0", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań 300+", "15 egzaminów/mies", "Podstawowe raporty", "Wsparcie e-mail"], feat: false },
   { name: "Nauczyciel", price: "99", sub: "/mies", lines: ["Do 60 uczniów", "Bank pytań 3000+", "Egzaminy bez limitu", "Generator AI 200 zapytań", "Monitoring na żywo", "Wsparcie priorytetowe"], feat: false },
-  { name: "Szkoła Plus", price: "890", sub: "/mies", lines: ["Do 800 uczniów", "Bank pytań bez limitu", "Anti-cheat + monitoring", "API REST", "Dedykowany opiekun", "Priorytetowy SLA"], feat: true },
-  { name: "Kuratorium", price: "Indywidualnie", sub: "", lines: ["Nieograniczona liczba szkół", "Centralna baza", "Raporty wojewódzkie", "SLA 99,99%", "Dedykowany zespół"], feat: false },
+  { name: "Szkoła Plus", price: "890", sub: "/mies", lines: ["Do 800 uczniów", "Bank pytań bez limitu", "Anti-cheat + monitoring", "API REST + integracje", "Dedykowany opiekun", "Priorytetowy SLA"], feat: true },
+  { name: "Kuratorium", price: "Indywidualnie", sub: "", lines: ["Nieograniczona liczba szkół", "Centralna baza danych", "Raporty wojewódzkie", "SLA 99,99%"], feat: false },
 ];
-function Pricing() {
+function PricingFlow() {
   const navigate = useNavigate();
   const [yr, setYr] = useState(false);
   const yp = (p: string) => p === "0" || p === "Indywidualnie" ? p : String(Math.round(parseInt(p) * 0.8));
   const isContact = (p: string) => p === "Indywidualnie";
   const isFree = (p: string) => p === "0";
   return (
-    <section id="cennik" className="py-20 sm:py-28">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="reveal text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Cennik</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Wybierz swój plan</h2>
-          <p className="mt-3 text-white/50 text-sm">Płatność kartą, przelewem lub krypto</p>
+    <section id="cennik" className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute -left-40 top-1/2 w-[400px] h-[400px] rounded-full glass-orb floating-3" />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Cennik</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Wybierz <span className="shimmer">swój plan</span></h2>
+          <p className="mt-3 text-white/40 text-sm">Płatność kartą, przelewem lub krypto · bez ukrytych kosztów</p>
         </div>
         <div className="flex items-center justify-center gap-4 mb-10">
-          <span className={`text-sm ${!yr ? "text-white font-medium" : "text-white/40"}`}>Miesięcznie</span>
-          <button onClick={() => setYr((v) => !v)} className={`relative w-12 h-6 rounded-full transition-colors ${yr ? "bg-cyan-400" : "bg-white/20"}`}>
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-300 ${yr ? "translate-x-6" : ""}`} />
+          <span className={`text-sm ${!yr ? "text-white/90 font-medium" : "text-white/40"}`}>Miesięcznie</span>
+          <button onClick={() => setYr((v) => !v)} className={`relative w-14 h-7 rounded-full transition-colors ${yr ? "bg-cyan-400" : "bg-white/20"}`}>
+            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-all duration-300 ${yr ? "translate-x-7" : ""}`} />
           </button>
-          <span className={`text-sm ${yr ? "text-white font-medium" : "text-white/40"}`}>
-            Rocznie <span className="ml-1.5 text-[10px] font-mono bg-emerald-400/15 text-emerald-300 px-1.5 py-0.5 rounded">-20%</span>
+          <span className={`text-sm ${yr ? "text-white/90 font-medium" : "text-white/40"}`}>
+            Rocznie <span className="ml-1.5 text-[10px] font-mono bg-emerald-400/15 text-emerald-300/80 px-2 py-0.5 rounded-full">-20%</span>
           </span>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-start">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
           {PLANS.map((pl) => {
             const price = yr && !isFree(pl.price) && !isContact(pl.price) ? yp(pl.price) : pl.price;
             return (
-              <div key={pl.name} className={`rounded-xl border flex flex-col transition-all duration-200 ${pl.feat ? "border-cyan-400/40 bg-cyan-950/30 shadow-sm" : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]"}`}>
-                {pl.feat && <div className="h-1 rounded-t-xl bg-gradient-to-r from-cyan-400 to-violet-400" />}
-                <div className="p-5 flex flex-col h-full">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display text-base font-semibold">{pl.name}</h3>
-                    {pl.feat && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-400/10 text-cyan-300 text-[9px] font-semibold uppercase tracking-wider"><Star className="w-2.5 h-2.5"/>Popularny</span>}
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-2">
-                    <span className={`font-display text-3xl font-bold ${pl.feat ? "text-cyan-300" : "text-white"}`}>{price}</span>
-                    <span className="text-xs text-white/40">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
-                  </div>
-                  <ul className="mt-4 space-y-1.5 text-xs flex-1">
-                    {pl.lines.map((l) => (
-                      <li key={l} className="flex gap-2"><CheckCircle2 className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${pl.feat ? "text-cyan-300" : "text-white/30"}`} /><span className={pl.feat ? "text-white/80" : "text-white/50"}>{l}</span></li>
-                    ))}
-                  </ul>
-                  <div className="mt-5">
-                    {isFree(pl.price) && <button onClick={() => navigate({ to: "/auth/teacher" })} className="w-full py-2.5 rounded-lg text-sm font-medium border border-white/[0.08] text-white/80 hover:text-white hover:bg-white/[0.04] transition">Rozpocznij za darmo</button>}
-                    {!isFree(pl.price) && !isContact(pl.price) && <NexaPayCheckout planName={pl.name} amount={yr ? yp(pl.price) + " zł" : pl.price + " zł"} amountUsd={String(Math.round(parseInt(pl.price) / 4))} />}
-                    {isContact(pl.price) && <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="w-full py-2.5 rounded-lg text-sm font-medium border border-white/[0.08] text-white/80 hover:text-white hover:bg-white/[0.04] transition">Poproś o wycenę</button>}
-                  </div>
+              <div key={pl.name} className={`relative org-card rounded-3xl p-6 sm:p-8 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 ${pl.feat ? "border-cyan-400/30 bg-gradient-to-b from-cyan-950/30 to-transparent" : ""}`}>
+                {pl.feat && (
+                  <>
+                    <div className="absolute -top-px left-8 right-8 h-[2px] rounded-full bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400" />
+                    <div className="absolute -top-3 right-6">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-300 text-[9px] font-semibold uppercase tracking-wider border border-cyan-400/20 backdrop-blur-sm"><Star className="w-2.5 h-2.5"/>Popularny</span>
+                    </div>
+                  </>
+                )}
+                <h3 className="text-lg font-bold">{pl.name}</h3>
+                <div className="flex items-baseline gap-1 mt-2">
+                  <span className={`text-4xl font-bold ${pl.feat ? "text-cyan-300" : "text-white"}`}>{price}</span>
+                  <span className="text-xs text-white/40">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
+                </div>
+                <ul className="mt-5 space-y-2 text-xs flex-1">
+                  {pl.lines.map((l) => (
+                    <li key={l} className="flex gap-2.5"><CheckCircle2 className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${pl.feat ? "text-cyan-300/80" : "text-white/30"}`} /><span className={pl.feat ? "text-white/80" : "text-white/50"}>{l}</span></li>
+                  ))}
+                </ul>
+                <div className="mt-6">
+                  {isFree(pl.price) && <button onClick={() => navigate({ to: "/auth/teacher" })} className="w-full py-3 rounded-full text-sm font-medium border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.04] transition-all">Rozpocznij za darmo</button>}
+                  {!isFree(pl.price) && !isContact(pl.price) && <NexaPayCheckout planName={pl.name} amount={yr ? yp(pl.price) + " zł" : pl.price + " zł"} amountUsd={String(Math.round(parseInt(pl.price) / 4))} />}
+                  {isContact(pl.price) && <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="w-full py-3 rounded-full text-sm font-medium border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.04] transition-all">Poproś o wycenę</button>}
                 </div>
               </div>
             );
@@ -748,39 +847,40 @@ function Pricing() {
   );
 }
 
-/* ──── FAQ ──── */
 const FAQ = [
-  { q: "Czy uczniowie muszą zakładać konto?", a: "Nie. Uczeń wchodzi przeglądarką, wpisuje PIN i imię. Konto nie jest wymagane." },
-  { q: "Czy mogę wgrać pytania z dokumentu?", a: "Tak. Wspieramy import z Worda, PDF oraz Excel. Możesz też wczytać zdjęcie — AI odczyta pytania." },
-  { q: "Jak wygląda umowa ze szkołą?", a: "Umowa powierzenia danych zgodna z RODO oraz faktura VAT. Proces do trzech dni." },
-  { q: "Czy są zniżki dla placówek publicznych?", a: "Tak. Szkoły publiczne otrzymują 30% rabatu na plan Szkoła." },
-  { q: "Jak szybko mogę zacząć?", a: "Rejestracja trwa 2 minuty. Dla planu Klasa — dostęp od razu." },
-  { q: "Czy platforma działa na telefonie?", a: "Tak. EduNex działa w każdej przeglądarce — na komputerze, tablecie i telefonie. Uczeń nie potrzebuje aplikacji." },
-  { q: "Jak AI wykrywa ściąganie?", a: "AI analizuje ruchy myszy, wykrywa opuszczanie okna, porównuje odpowiedzi uczniów i wysyła alerty w czasie rzeczywistym." },
-  { q: "Czy mogę przenieść dane z innego systemu?", a: "Tak. Oferujemy bezpłatny import danych z Vulcan, Librusa, CSV i Excel. Nasi specjaliści pomogą w migracji." },
-  { q: "Jakie są wymagania sprzętowe?", a: "Dowolne urządzenie z przeglądarką (Chrome, Edge, Firefox, Opera). Do monitoringu na żywo — stabilne łącze internetowe." },
-  { q: "Czy są szkolenia dla nauczycieli?", a: "Tak. Oferujemy bezpłatne webinary tygodniowe, bazę wiedzy z video poradnikami oraz szkolenia stacjonarne dla rady pedagogicznej." },
+  { q: "Czy uczniowie muszą zakładać konto?", a: "Nie. Uczeń wchodzi przeglądarką, wpisuje PIN i imię. Konto nie jest wymagane — zero rejestracji." },
+  { q: "Czy mogę wgrać pytania z dokumentu?", a: "Tak. Wspieramy import z Worda, PDF oraz Excel. Możesz też wczytać zdjęcie — AI odczyta pytania automatycznie." },
+  { q: "Jak wygląda umowa ze szkołą?", a: "Umowa powierzenia danych zgodna z RODO oraz faktura VAT. Proces do trzech dni roboczych." },
+  { q: "Czy są zniżki dla placówek publicznych?", a: "Tak. Szkoły publiczne otrzymują 30% rabatu na plan Szkoła i 20% na plan Nauczyciel." },
+  { q: "Jak szybko mogę zacząć?", a: "Rejestracja trwa 2 minuty. Dla planu Klasa — dostęp od razu, bez karty płatniczej." },
+  { q: "Czy platforma działa na telefonie?", a: "Tak. EduNex działa w każdej przeglądarce — komputer, tablet, telefon. Bez instalacji." },
+  { q: "Jak AI wykrywa ściąganie?", a: "AI analizuje ruchy myszy, wykrywa opuszczanie okna, porównuje odpowiedzi uczniów i wysyła alerty na żywo." },
+  { q: "Czy mogę przenieść dane z innego systemu?", a: "Tak. Oferujemy bezpłatny import z Vulcan, Librusa, CSV i Excel. Nasi specjaliści pomogą." },
+  { q: "Jakie są wymagania sprzętowe?", a: "Dowolne urządzenie z przeglądarką (Chrome, Edge, Firefox, Opera, Safari). Stabilne łącze do monitoringu." },
+  { q: "Czy są szkolenia dla nauczycieli?", a: "Tak. Bezpłatne webinary co tydzień, baza wiedzy z video poradnikami oraz szkolenia stacjonarne." },
+  { q: "Jak działa certyfikat po egzaminie?", a: "Po zakończeniu egzaminu generujemy PDF z unikalnym numerem seryjnym i kodem QR do weryfikacji online." },
+  { q: "Czy mogę przetestować przed zakupem?", a: "Tak. Plan Klasa jest całkowicie darmowy — bez limitu czasu, bez karty, bez zobowiązań." },
 ];
-function FAQSection() {
+function FAQFlow() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="faq" className="py-20 sm:py-28">
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="reveal text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">FAQ</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Wątpliwości — wyjaśnione</h2>
+    <section id="faq" className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">FAQ</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Wątpliwości? <span className="shimmer">Wyjaśniamy</span></h2>
         </div>
-        <div className="reveal space-y-2">
+        <div className="reveal space-y-3">
           {FAQ.map((it, i) => (
-            <div key={it.q} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-              <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left transition">
-                <span className="text-sm font-medium text-white/80">{it.q}</span>
-                <span className={`shrink-0 w-6 h-6 rounded-full border border-white/[0.06] grid place-items-center transition-all duration-200 ${open === i ? "border-cyan-400/30 text-cyan-300 rotate-45" : "text-white/30"}`}>
+            <div key={it.q} className="org-card rounded-2xl overflow-hidden">
+              <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left transition-colors hover:bg-white/[0.02]">
+                <span className="text-sm font-medium text-white/80 pr-4">{it.q}</span>
+                <span className={`shrink-0 w-7 h-7 rounded-full bg-white/[0.04] border border-white/[0.06] grid place-items-center transition-all duration-300 ${open === i ? "border-cyan-400/30 text-cyan-300 rotate-45" : "text-white/30"}`}>
                   <Plus className="w-3.5 h-3.5"/>
                 </span>
               </button>
-              <div className={`overflow-hidden transition-all duration-300 ${open === i ? "max-h-40" : "max-h-0"}`}>
-                <p className="px-5 pb-4 text-sm text-white/50 leading-relaxed">{it.a}</p>
+              <div className={`overflow-hidden transition-all duration-300 ease-out ${open === i ? "max-h-48" : "max-h-0"}`}>
+                <p className="px-6 pb-4 text-sm text-white/50 leading-relaxed">{it.a}</p>
               </div>
             </div>
           ))}
@@ -790,25 +890,100 @@ function FAQSection() {
   );
 }
 
-/* ──── Newsletter ──── */
-function Newsletter() {
+const PARTNERS = [
+  { n: "Vulcan", i: Computer, c: "from-blue-400 to-indigo-500" },
+  { n: "Librus", i: Globe2, c: "from-emerald-400 to-teal-500" },
+  { n: "Mobidziennik", i: Smartphone, c: "from-cyan-400 to-sky-500" },
+  { n: "Office 365", i: LayoutDashboard, c: "from-orange-400 to-red-500" },
+  { n: "Google Workspace", i: Search, c: "from-amber-400 to-yellow-500" },
+  { n: "API REST", i: GitBranch, c: "from-violet-400 to-fuchsia-500" },
+];
+function BlogFlow() {
+  const posts = [
+    { t: "Jak AI zmienia egzaminy w polskich szkołach", d: "Sztuczna inteligencja automatyzuje ocenianie i wykrywa ściąganie. Sprawdź, co zmieniło się w 2025 roku.", tag: "AI", time: "5 min" },
+    { t: "RODO w szkole — poradnik dla dyrektora", d: "Wszystko o ochronie danych uczniowskich. Umowy, zgody, procedury krok po kroku.", tag: "RODO", time: "8 min" },
+    { t: "Egzaminy online — jak przygotować szkołę", d: "Od wyboru platformy po pierwszy test. Praktyczny przewodnik dla nauczycieli.", tag: "Poradnik", time: "6 min" },
+    { t: "Monitoring na żywo — jak działa w praktyce", d: "Zobacz jak nauczyciele wykorzystują monitoring do poprawy wyników swoich uczniów.", tag: "Funkcje", time: "4 min" },
+  ];
+  return (
+    <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Blog</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Wiedza i <span className="shimmer">aktualności</span></h2>
+          <p className="mt-3 text-white/40 text-sm">Porady, aktualności i best practices dla nowoczesnej szkoły.</p>
+        </div>
+        <div className="reveal grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {posts.map((p) => (
+            <div key={p.t} className="org-card rounded-2xl p-6 hover:-translate-y-1 cursor-pointer">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-300/80">{p.tag}</span>
+                <span className="text-[10px] text-white/30">{p.time}</span>
+              </div>
+              <h3 className="font-semibold text-sm text-white/90">{p.t}</h3>
+              <p className="mt-2 text-xs text-white/50 leading-relaxed">{p.d}</p>
+            </div>
+          ))}
+        </div>
+        <div className="reveal mt-8 flex items-center justify-center gap-2">
+          {PARTNERS.map((p) => (
+            <div key={p.n} className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.02] border border-white/[0.06] text-xs text-white/40">
+              <div className={`w-5 h-5 rounded-md bg-gradient-to-br ${p.c} grid place-items-center`}><p.i className="w-2.5 h-2.5 text-black"/></div>
+              {p.n}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MobileCtaFlow() {
+  return (
+    <section className="relative py-16 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="reveal-scale">
+          <div className="relative rounded-3xl bg-gradient-to-br from-cyan-950/30 via-violet-950/20 to-fuchsia-950/20 border border-white/[0.06] p-10 sm:p-14 text-center overflow-hidden">
+            <div className="absolute -top-40 -right-40 w-[300px] h-[300px] rounded-full glass-orb floating-3" />
+            <div className="relative">
+              <div className="w-20 h-20 mx-auto rounded-[24px] bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center mb-6 shadow-lg">
+                <SmartphoneNfc className="w-8 h-8 text-black"/>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">EduNex w <span className="shimmer">Twojej kieszeni</span></h2>
+              <p className="mt-3 text-white/40 text-sm max-w-md mx-auto">Uczniowie wchodzą PIN-em z dowolnego telefonu. Nauczyciele zarządzają egzaminami z tabletu. Zero instalacji, zero problemów.</p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-sm text-white/40"><Smartphone className="w-4 h-4"/>Android · wkrótce</div>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-sm text-white/40"><Monitor className="w-4 h-4"/>PWA · dostępne</div>
+                <Link to="/auth/student" className="btn-shine inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 transition-all shadow-sm">Wypróbuj <ArrowRight className="w-4 h-4"/></Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function NewsletterFlow() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const onSubmit = (e: React.FormEvent) => { e.preventDefault(); if (!email.trim()) return; setSent(true); toast.success("Zapisano do newslettera!"); setEmail(""); setTimeout(() => setSent(false), 3000); };
   return (
-    <section className="py-16 border-t border-white/[0.05]">
-      <div className="max-w-xl mx-auto px-4 text-center">
+    <section className="relative py-24 overflow-hidden">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 text-center">
         <div className="reveal">
           {sent ? (
-            <><CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-3" /><h2 className="font-display text-2xl font-semibold text-emerald-300">Jesteś zapisany!</h2></>
+            <div className="org-card rounded-3xl p-8"><CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-3 floating-3"/><h2 className="text-2xl font-bold text-emerald-300">Jesteś zapisany!</h2><p className="mt-2 text-sm text-white/50">Nowości i porady — raz na dwa tygodnie.</p></div>
           ) : (
-            <><Bell className="w-6 h-6 text-cyan-300 mx-auto mb-3" /><h2 className="font-display text-2xl font-semibold">Bądź na bieżąco</h2><p className="mt-2 text-sm text-white/50">Nowe funkcje i porady — raz na dwa tygodnie, zero spamu.</p></>
-          )}
-          {!sent && (
-            <form onSubmit={onSubmit} className="mt-5 flex items-center justify-center gap-2 max-w-sm mx-auto">
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Twój e-mail" className="flex-1 w-full px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/[0.12] transition" />
-              <button type="submit" className="px-4 py-2.5 rounded-lg font-medium text-sm bg-white text-black hover:bg-white/90 transition shrink-0"><Send className="w-4 h-4"/></button>
-            </form>
+            <>
+              <Bell className="w-7 h-7 text-cyan-400 mx-auto mb-4 floating-3"/>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Bądź na bieżąco</h2>
+              <p className="mt-3 text-white/40 text-sm">Nowe funkcje, porady i aktualności — raz na dwa tygodnie, zero spamu.</p>
+              <form onSubmit={onSubmit} className="mt-6 flex items-center gap-2 max-w-sm mx-auto">
+                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Twój e-mail" className="flex-1 px-5 py-3 rounded-full bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-400/30 transition-all" />
+                <button type="submit" className="btn-shine px-5 py-3 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 transition-all shrink-0"><Send className="w-4 h-4"/></button>
+              </form>
+            </>
           )}
         </div>
       </div>
@@ -816,8 +991,7 @@ function Newsletter() {
   );
 }
 
-/* ──── Contact ──── */
-function Contact() {
+function ContactFlow() {
   const submit = useServerFn(submitContact);
   const [busy, setBusy] = useState(false);
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -831,409 +1005,103 @@ function Contact() {
     } catch (err) { toast.error(err instanceof Error ? err.message : "Błąd wysyłki"); } finally { setBusy(false); }
   };
   return (
-    <section id="kontakt" className="py-20 sm:py-28">
-      <div className="max-w-5xl mx-auto px-4">
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 grid lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2 reveal">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono mb-4">Kontakt</div>
-            <h2 className="font-display text-2xl font-semibold">Napisz do nas</h2>
-            <p className="mt-2 text-sm text-white/50">Odpowiadamy w 24h w dni robocze.</p>
-            <ul className="mt-5 space-y-3 text-sm">
-              <li className="flex gap-3"><Mail className="w-4 h-4 text-cyan-300 shrink-0 mt-0.5"/><div><div className="text-white/80">kontakt@edunex.pl</div><div className="text-xs text-white/40">Sekretariat</div></div></li>
-              <li className="flex gap-3"><Phone className="w-4 h-4 text-cyan-300 shrink-0 mt-0.5"/><div><div className="text-white/80">+48 22 100 12 34</div><div className="text-xs text-white/40">Pon–Pt, 8:00–16:00</div></div></li>
-            </ul>
-          </div>
-          <form onSubmit={onSubmit} className="lg:col-span-3 grid sm:grid-cols-2 gap-3">
-            <input name="name" required placeholder="Imię i nazwisko" className="sm:col-span-2 px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/[0.12] transition" />
-            <input name="email" type="email" required placeholder="E-mail" className="sm:col-span-2 px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/[0.12] transition" />
-            <input name="subject" placeholder="Temat" className="sm:col-span-2 px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/[0.12] transition" />
-            <textarea name="message" rows={4} required placeholder="Treść wiadomości" className="sm:col-span-2 px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/[0.12] transition resize-none" />
-            <div className="sm:col-span-2 flex items-center justify-between gap-3">
-              <p className="text-xs text-white/40">Zgoda na kontakt zwrotny.</p>
-              <button disabled={busy} type="submit" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm bg-white text-black hover:bg-white/90 disabled:opacity-50 transition">
-                {busy ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>} Wyślij
-              </button>
+    <section id="kontakt" className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="reveal org-card rounded-3xl p-6 sm:p-10">
+          <div className="grid lg:grid-cols-5 gap-8">
+            <div className="lg:col-span-2">
+              <span className="section-label inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm mb-4">Kontakt</span>
+              <h2 className="text-3xl font-bold tracking-tight">Napisz do nas</h2>
+              <p className="mt-2 text-sm text-white/40">Odpowiadamy w 24h w dni robocze.</p>
+              <ul className="mt-6 space-y-4 text-sm">
+                <li className="flex gap-3"><Mail className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5"/><div><div className="text-white/80">kontakt@edunex.pl</div><div className="text-xs text-white/40">Sekretariat</div></div></li>
+                <li className="flex gap-3"><Phone className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5"/><div><div className="text-white/80">+48 22 100 12 34</div><div className="text-xs text-white/40">Pon–Pt, 8:00–16:00</div></div></li>
+              </ul>
             </div>
-          </form>
+            <form onSubmit={onSubmit} className="lg:col-span-3 grid sm:grid-cols-2 gap-3">
+              <input name="name" required placeholder="Imię i nazwisko" className="sm:col-span-2 px-5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-400/30 transition-all" />
+              <input name="email" type="email" required placeholder="E-mail" className="sm:col-span-2 px-5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-400/30 transition-all" />
+              <input name="subject" placeholder="Temat" className="sm:col-span-2 px-5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-400/30 transition-all" />
+              <textarea name="message" rows={4} required placeholder="Treść wiadomości" className="sm:col-span-2 px-5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-400/30 transition-all resize-none" />
+              <div className="sm:col-span-2 flex items-center justify-between gap-3">
+                <p className="text-xs text-white/40">Zgoda na kontakt zwrotny.</p>
+                <button disabled={busy} type="submit" className="btn-shine inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 disabled:opacity-50 transition-all">
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>} Wyślij
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/* ──── Footer ──── */
-function Footer() {
+function FooterFlow() {
   const [showTop, setShowTop] = useState(false);
   useEffect(() => { const f = () => setShowTop(window.scrollY > 400); window.addEventListener("scroll", f); return () => window.removeEventListener("scroll", f); }, []);
   return (
-    <footer className="border-t border-white/[0.05] pt-12 pb-6">
+    <footer className="relative border-t border-white/[0.06] pt-16 pb-8 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent" />
       {showTop && (
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-6 right-6 z-50 w-9 h-9 rounded-lg bg-white/[0.08] border border-white/[0.06] text-white/60 grid place-items-center hover:bg-white/[0.12] hover:text-white transition-all">
+          className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-white/[0.06] border border-white/[0.06] text-white/50 grid place-items-center hover:bg-white/[0.1] hover:text-white transition-all backdrop-blur-md">
           <ChevronUp className="w-4 h-4" />
         </button>
       )}
-      <div className="max-w-7xl mx-auto px-4 grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
-        <div className="lg:col-span-2">
-          <div className="flex items-center gap-2.5"><Mark /><div className="font-display text-base font-semibold">EduNex</div></div>
-          <p className="mt-3 text-xs text-white/40 leading-relaxed max-w-xs">Nowoczesna platforma egzaminacyjna dla polskich szkół. Zgodna z wytycznymi MEN.</p>
-          <div className="mt-4 flex items-center gap-2">
-            {[Github, MessageSquare].map((Icon, i) => (
-              <a key={i} href="#" className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] grid place-items-center text-white/30 hover:text-white hover:bg-white/[0.08] transition"><Icon className="w-3.5 h-3.5"/></a>
-            ))}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px]">
+                <div className="w-full h-full rounded-[10px] bg-[oklch(0.08_0.03_270)] grid place-items-center">
+                  <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>
+                  </svg>
+                </div>
+              </div>
+              <div className="font-semibold text-base">EduNex</div>
+            </div>
+            <p className="mt-3 text-xs text-white/40 leading-relaxed max-w-xs">Nowoczesna platforma egzaminacyjna dla polskich szkół. Zgodna z wytycznymi MEN i RODO.</p>
+            <div className="mt-4 flex items-center gap-2">
+              {[Github, MessageSquare].map((Icon, i) => (
+                <a key={i} href="#" className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] grid place-items-center text-white/30 hover:text-white hover:bg-white/[0.08] transition-all"><Icon className="w-3.5 h-3.5"/></a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="section-label text-white/30 mb-4">Platforma</div>
+            <ul className="space-y-2 text-sm text-white/40">
+              <li><Link to="/auth/student" className="hover:text-white transition-colors">Uczeń</Link></li>
+              <li><Link to="/auth/teacher" className="hover:text-white transition-colors">Nauczyciel</Link></li>
+              <li><a href="#funkcje" className="hover:text-white transition-colors">Funkcje</a></li>
+              <li><a href="#cennik" className="hover:text-white transition-colors">Cennik</a></li>
+            </ul>
+          </div>
+          <div>
+            <div className="section-label text-white/30 mb-4">Dokumenty</div>
+            <ul className="space-y-2 text-sm text-white/40">
+              <li><Link to="/dokumenty" className="hover:text-white transition-colors">Regulamin</Link></li>
+              <li><Link to="/dokumenty" className="hover:text-white transition-colors">Polityka prywatności</Link></li>
+              <li><Link to="/dokumenty" className="hover:text-white transition-colors">RODO</Link></li>
+            </ul>
+          </div>
+          <div>
+            <div className="section-label text-white/30 mb-4">Kontakt</div>
+            <ul className="space-y-2 text-sm text-white/40">
+              <li>kontakt@edunex.pl</li>
+              <li>+48 22 100 12 34</li>
+            </ul>
+            <div className="mt-4 text-[10px] text-white/20 font-mono">
+              <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>online</span>
+              <span className="ml-2">v8.0</span>
+            </div>
           </div>
         </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-white/30 mb-3">Platforma</div>
-          <ul className="space-y-1.5 text-sm text-white/50">
-            <li><Link to="/auth/student" className="hover:text-white transition">Uczeń</Link></li>
-            <li><Link to="/auth/teacher" className="hover:text-white transition">Nauczyciel</Link></li>
-            <li><a href="#funkcje" className="hover:text-white transition">Funkcje</a></li>
-            <li><a href="#cennik" className="hover:text-white transition">Cennik</a></li>
-          </ul>
+        <div className="mt-10 pt-6 border-t border-white/[0.06] text-center text-xs text-white/30">
+          &copy; {new Date().getFullYear()} EduNex · Projekt edukacyjny dla polskich szkół
         </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-white/30 mb-3">Dokumenty</div>
-          <ul className="space-y-1.5 text-sm text-white/50">
-            <li><Link to="/dokumenty" className="hover:text-white transition">Regulamin</Link></li>
-            <li><Link to="/dokumenty" className="hover:text-white transition">Polityka prywatności</Link></li>
-            <li><Link to="/dokumenty" className="hover:text-white transition">RODO</Link></li>
-          </ul>
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-white/30 mb-3">Kontakt</div>
-          <ul className="space-y-1.5 text-sm text-white/50">
-            <li>kontakt@edunex.pl</li>
-            <li>+48 22 100 12 34</li>
-          </ul>
-          <div className="mt-3 text-[10px] text-white/20 font-mono">
-            <span className="inline-flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-emerald-400"/>online</span>
-            <span className="ml-2">v7.0</span>
-          </div>
-        </div>
-      </div>
-      <div className="mt-8 pt-4 border-t border-white/[0.05] text-center text-xs text-white/30">
-        &copy; {new Date().getFullYear()} EduNex · Projekt edukacyjny dla polskich szkół
       </div>
     </footer>
   );
 }
-
-/* ──── Interactive Quiz Demo ──── */
-function InteractiveDemo() {
-  const [step, setStep] = useState<"start" | "q1" | "q2" | "q3" | "done">("start");
-  const [a1, setA1] = useState<number | null>(null);
-  const [a2, setA2] = useState<number | null>(null);
-  const [a3, setA3] = useState<number | null>(null);
-  const score = (a1 === 1 ? 1 : 0) + (a2 === 0 ? 1 : 0) + (a3 === 2 ? 1 : 0);
-  const restart = () => { setStep("start"); setA1(null); setA2(null); setA3(null); };
-  return (
-    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="reveal text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Demo</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Wypróbuj <span className="text-gradient-cyber">egzamin</span> na żywo</h2>
-          <p className="mt-3 text-white/50 text-sm">Zobacz jak działa platforma — rozwiąż krótki quiz z matematyki.</p>
-        </div>
-        <div className="reveal rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
-          {step === "start" && (
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center mb-5 shadow-lg"><Notebook className="w-7 h-7 text-black"/></div>
-              <h3 className="font-display text-xl font-semibold">Matematyka — Klasa 6</h3>
-              <p className="mt-2 text-sm text-white/50">3 pytania · bez limitu czasu</p>
-              <button onClick={() => setStep("q1")} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">Rozpocznij quiz <Play className="w-4 h-4"/></button>
-            </div>
-          )}
-          {step === "q1" && (
-            <div><div className="flex items-center gap-2 text-xs text-white/40 mb-5"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 1/3</div>
-              <p className="text-base sm:text-lg font-medium text-white/90">Ile wynosi pole kwadratu o boku 5 cm?</p>
-              <div className="mt-4 grid gap-2">{[["25 cm²", 1], ["20 cm²", 0], ["10 cm²", 0], ["30 cm²", 0]].map(([t, i]) => (
-                <button key={t as string} onClick={() => { setA1(i as number); setStep("q2"); }} className="text-left px-4 py-3 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white/70 hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-white transition-all">{t}</button>
-              ))}</div>
-            </div>
-          )}
-          {step === "q2" && (
-            <div><div className="flex items-center gap-2 text-xs text-white/40 mb-5"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 2/3</div>
-              <p className="text-base sm:text-lg font-medium text-white/90">Która liczba jest podzielna przez 3?</p>
-              <div className="mt-4 grid gap-2">{[["124", 0], ["327", 1], ["401", 0], ["550", 0]].map(([t, i]) => (
-                <button key={t as string} onClick={() => { setA2(i as number); setStep("q3"); }} className="text-left px-4 py-3 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white/70 hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-white transition-all">{t}</button>
-              ))}</div>
-            </div>
-          )}
-          {step === "q3" && (
-            <div><div className="flex items-center gap-2 text-xs text-white/40 mb-5"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 3/3</div>
-              <p className="text-base sm:text-lg font-medium text-white/90">Jaki jest pierwiastek kwadratowy z 144?</p>
-              <div className="mt-4 grid gap-2">{[["10", 0], ["14", 0], ["12", 1], ["16", 0]].map(([t, i]) => (
-                <button key={t as string} onClick={() => { setA3(i as number); setStep("done"); }} className="text-left px-4 py-3 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white/70 hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-white transition-all">{t}</button>
-              ))}</div>
-            </div>
-          )}
-          {step === "done" && (
-            <div className="text-center">
-              <div className={`w-16 h-16 mx-auto rounded-2xl grid place-items-center mb-5 shadow-lg ${score === 3 ? "bg-gradient-to-br from-emerald-400 to-teal-500" : "bg-gradient-to-br from-amber-400 to-orange-500"}`}>
-                {score === 3 ? <Award className="w-7 h-7 text-black"/> : <Target className="w-7 h-7 text-black"/>}
-              </div>
-              <h3 className="font-display text-xl font-semibold">{score === 3 ? "Celująco!" : score === 2 ? "Dobrze!" : "Spróbuj jeszcze raz"}</h3>
-              <p className="mt-2 text-sm text-white/50">Twój wynik: {score}/3</p>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-                <button onClick={restart} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium border border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.04] transition">Rozwiąż ponownie</button>
-                <Link to="/auth/teacher" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-white text-black hover:bg-white/90 transition shadow-sm">Załóż konto nauczyciela <ArrowRight className="w-4 h-4"/></Link>
-              </div>
-              <div className="mt-5 text-xs text-white/40">W rzeczywistym egzaminie AI sprawdza odpowiedzi otwarte i wykrywa ściąganie.</div>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ──── Product Showcase ──── */
-function ProductShowcase() {
-  return (
-    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="reveal text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Platforma</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Zobacz jak działa w praktyce</h2>
-        </div>
-        <div className="reveal grid lg:grid-cols-2 gap-8 items-center">
-          <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-r from-cyan-400/10 via-violet-400/10 to-fuchsia-400/10 rounded-3xl blur-2xl" />
-            <div className="relative rounded-2xl border border-white/[0.08] bg-[#0a0d18] overflow-hidden shadow-2xl">
-              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06]">
-                <span className="w-3 h-3 rounded-full bg-red-500/70"/><span className="w-3 h-3 rounded-full bg-amber-500/70"/><span className="w-3 h-3 rounded-full bg-emerald-500/70"/>
-                <span className="ml-3 text-[10px] text-white/30 font-mono">Panel nauczyciela · monitoring</span>
-              </div>
-              <div className="p-4 sm:p-6 space-y-3">
-                <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-soft"/><span className="text-xs text-white/60">Na żywo: <span className="text-white font-medium">24 uczniów</span></span></div>
-                  <div className="text-xs text-white/40">Średnia: <span className="text-cyan-300 font-mono">73%</span></div>
-                </div>
-                {[
-                  { n: "Kowalski J.", p: 88, b: "emerald" }, { n: "Nowak A.", p: 72, b: "cyan" },
-                  { n: "Wiśniewska Z.", p: 95, b: "emerald" }, { n: "Kamiński P.", p: 45, b: "rose" },
-                  { n: "Lewandowska M.", p: 68, b: "amber" },
-                ].map((s) => (
-                  <div key={s.n} className="flex items-center gap-3">
-                    <span className="text-xs text-white/50 w-24 truncate">{s.n}</span>
-                    <div className="flex-1 h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                      <div className={`h-full rounded-full bg-${s.b}-400/70 transition-all duration-1000`} style={{ width: `${s.p}%` }} />
-                    </div>
-                    <span className={`text-xs font-mono w-8 text-right text-${s.b}-300`}>{s.p}%</span>
-                  </div>
-                ))}
-                <div className="pt-2 text-[10px] text-white/30 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse-soft"/>AI wykrywa nieprawidłowości · auto-zapis co 5s
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="font-display text-2xl font-semibold">Panel monitoringu <span className="text-gradient-cyber">na żywo</span></h3>
-            <p className="text-sm text-white/50 leading-relaxed">Widzisz postęp każdego ucznia w czasie rzeczywistym. Kolorowe paski pokazują procent ukończenia, a system AI oznacza osoby wymagające uwagi.</p>
-            <ul className="space-y-2 text-sm text-white/60">
-              {[["Postęp na żywo", "Widzisz kto skończył, a kto utknął"], ["Wykrywanie ściągania", "AI analizuje ruchy myszy i ostrzega"], ["Alerty automatyczne", "Powiadomienia o podejrzanych zachowaniach"], ["Kontrola zdalna", "Możesz zatrzymać lub przedłużyć egzamin"]].map(([t, d]) => (
-                <li key={t} className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-400/60 shrink-0 mt-0.5"/><div><span className="text-white/80">{t}</span><span className="text-white/40"> — {d}</span></div></li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ──── Comparison ──── */
-function Comparison() {
-  const rows = [
-    { l: "Czas przygotowania egzaminu", t: "2–4 godziny", e: "3 minuty" },
-    { l: "Sprawdzanie prac", t: "5–15 godzin", e: "Automatyczne (0.3s)" },
-    { l: "Koszty druku/mies.", t: "200–500 zł", e: "0 zł" },
-    { l: "Ryzyko ściągania", t: "Wysokie", e: "AI wykrywa" },
-    { l: "Dostęp do wyników", t: "1–2 tygodnie", e: "Natychmiast" },
-    { l: "Archiwizacja", t: "Segregator", e: "Chmura · RODO" },
-    { l: "Certyfikaty", t: "Ręcznie", e: "PDF + QR auto" },
-    { l: "Analiza statystyk", t: "Excel ręcznie", e: "Automatyczne wykresy" },
-  ];
-  return (
-    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="reveal text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Porównanie</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Tradycyjnie vs <span className="text-gradient-cyber">EduNex</span></h2>
-        </div>
-        <div className="reveal overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06]">
-                <th className="text-left py-3 pr-4 text-white/40 font-medium">Obszar</th>
-                <th className="text-left py-3 px-4 text-rose-300/60 font-medium">Tradycyjnie</th>
-                <th className="text-left py-3 pl-4 text-cyan-300/80 font-medium">EduNex</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.l} className="border-b border-white/[0.03]">
-                  <td className="py-3 pr-4 text-white/70">{r.l}</td>
-                  <td className="py-3 px-4 text-rose-300/40"><X className="w-3.5 h-3.5 inline mr-1.5"/>{r.t}</td>
-                  <td className="py-3 pl-4 text-cyan-200/80"><CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 text-emerald-400"/>{r.e}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ──── Trust Bar ──── */
-function TrustBar() {
-  const badges = [
-    { n: "Zgodność z MEN", i: Scale, c: "from-blue-400 to-indigo-500" },
-    { n: "RODO compliant", i: Fingerprint, c: "from-emerald-400 to-teal-500" },
-    { n: "ISO 27001", i: ShieldCheck, c: "from-cyan-400 to-sky-500" },
-    { n: "Szyfrowanie TLS 1.3", i: Lock, c: "from-violet-400 to-fuchsia-500" },
-    { n: "Serwery w UE", i: Globe, c: "from-amber-400 to-orange-500" },
-    { n: "99.98% SLA", i: Activity, c: "from-rose-400 to-pink-500" },
-  ];
-  return (
-    <section className="py-12 border-t border-white/[0.05]">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="reveal text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Zaufanie</div>
-        </div>
-        <div className="reveal grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {badges.map((b) => (
-            <div key={b.n} className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all">
-              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${b.c} grid place-items-center`}><b.i className="w-5 h-5 text-black"/></div>
-              <span className="text-[10px] text-white/50 text-center font-medium leading-tight">{b.n}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ──── Security Section ──── */
-function SecuritySection() {
-  const items = [
-    { icon: Lock, title: "Szyfrowanie TLS 1.3", desc: "Wszystkie dane przesyłane są z szyfrowaniem klasy bankowej. Certyfikat SSL automatycznie odnawiany.", color: "from-cyan-400 to-blue-500" },
-    { icon: Shield, title: "Ochrona przed atakami", desc: "WAF (Web Application Firewall), ochrona DDoS, rate limiting. Monitorowanie 24/7 przez zespół bezpieczeństwa.", color: "from-violet-400 to-fuchsia-500" },
-    { icon: Fingerprint, title: "RODO — pełna zgodność", desc: "Umowa powierzenia danych, dziennik audytu, prawo do bycia zapomnianym. Eksport danych w 24h.", color: "from-emerald-400 to-teal-500" },
-    { icon: Database, title: "Backupy co 6h", desc: "Automatyczne kopie zapasowe na 3 niezależnych serwerach w różnych lokalizacjach w UE.", color: "from-amber-400 to-orange-500" },
-    { icon: ScanFace, title: "Tryb egzaminacyjny", desc: "Blokada skrótów (Ctrl+C, Alt+Tab), pełny ekran, monitoring aktywności, losowanie pytań.", color: "from-rose-400 to-pink-500" },
-    { icon: Building2, title: "Serwery w Polsce", desc: "Wszystkie dane przechowywane w centrach danych w Warszawie i Krakowie. Poza jurysdykcją CLOUD Act.", color: "from-sky-400 to-indigo-500" },
-    { icon: Users, title: "Kontrola dostępu RBAC", desc: "Role: admin, dyrektor, nauczyciel, uczeń. Dostęp tylko do własnych zasobów. 2FA dla admina.", color: "from-teal-400 to-emerald-500" },
-    { icon: Radio, title: "Monitoring 24/7", desc: "Automatyczne skanowanie podatności, testy penetracyjne co kwartał, SOC zewnętrzny.", color: "from-purple-400 to-violet-500" },
-  ];
-  return (
-    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="reveal text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Bezpieczeństwo</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Twoje dane są <span className="text-gradient-cyber">bezpieczne</span></h2>
-          <p className="mt-3 text-white/50 text-sm">Certyfikaty, szyfrowanie i procedury — wszystko, czego wymaga nowoczesna szkoła.</p>
-        </div>
-        <div className="reveal grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {items.map((it) => (
-            <div key={it.title} className="gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-200 hover-bounce">
-              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${it.color} grid place-items-center mb-3`}><it.icon className="w-5 h-5 text-black"/></div>
-              <h3 className="font-display text-sm font-semibold text-white/90">{it.title}</h3>
-              <p className="mt-1.5 text-xs text-white/50 leading-relaxed">{it.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ──── Integrations ──── */
-function Integrations() {
-  const partners = [
-    { n: "Vulcan", i: Computer, c: "from-blue-400 to-indigo-500" },
-    { n: "Librus", i: Globe2, c: "from-emerald-400 to-teal-500" },
-    { n: "Mobidziennik", i: Smartphone, c: "from-cyan-400 to-sky-500" },
-    { n: "Office 365", i: LayoutDashboard, c: "from-orange-400 to-red-500" },
-    { n: "Google Workspace", i: Search, c: "from-amber-400 to-yellow-500" },
-    { n: "API REST", i: GitBranch, c: "from-violet-400 to-fuchsia-500" },
-  ];
-  return (
-    <section className="py-16 border-t border-white/[0.05]">
-      <div className="max-w-7xl mx-auto px-4 text-center">
-        <div className="reveal">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Integracje</div>
-          <h2 className="mt-4 font-display text-2xl sm:text-3xl font-semibold tracking-tight">Łączy się z Twoimi <span className="text-gradient-cyber">systemami</span></h2>
-          <p className="mt-2 text-sm text-white/50">Współpracujemy z najpopularniejszymi dziennikami i narzędziami w polskich szkołach.</p>
-        </div>
-        <div className="reveal mt-8 grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {partners.map((p) => (
-            <div key={p.n} className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-cyan-400/20 transition-all">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${p.c} grid place-items-center shadow-sm`}><p.i className="w-6 h-6 text-black"/></div>
-              <span className="text-xs text-white/60 font-medium">{p.n}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ──── Blog Preview ──── */
-function BlogPreview() {
-  const posts = [
-    { t: "Jak AI zmienia egzaminy w polskich szkołach", d: "Sztuczna inteligencja automatyzuje ocenianie i wykrywa ściąganie. Sprawdź, co zmieniło się w 2025 roku.", tag: "AI", time: "5 min czytania" },
-    { t: "RODO w szkole — poradnik dla dyrektora", d: "Wszystko, co musisz wiedzieć o ochronie danych uczniowskich. Umowy, zgody, procedury krok po kroku.", tag: "RODO", time: "8 min czytania" },
-    { t: "Egzaminy online — jak przygotować szkołę", d: "Od wyboru platformy po pierwszy test. Praktyczny przewodnik dla nauczycieli i administratorów.", tag: "Poradnik", time: "6 min czytania" },
-  ];
-  return (
-    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="reveal text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Blog</div>
-          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Wiedza i <span className="text-gradient-cyber">aktualności</span></h2>
-          <p className="mt-3 text-white/50 text-sm">Porady, aktualności i best practices dla nowoczesnej szkoły.</p>
-        </div>
-        <div className="reveal grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {posts.map((p) => (
-            <div key={p.t} className="gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-200 hover-bounce cursor-pointer">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-400/10 text-cyan-300">{p.tag}</span>
-                <span className="text-[10px] text-white/30">{p.time}</span>
-              </div>
-              <h3 className="font-display text-sm font-semibold text-white/90">{p.t}</h3>
-              <p className="mt-2 text-xs text-white/50 leading-relaxed">{p.d}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ──── Mobile App CTA ──── */
-function MobileApp() {
-  return (
-    <section className="py-16 border-t border-white/[0.05]">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="reveal rounded-2xl border border-white/[0.06] bg-gradient-to-br from-cyan-950/30 via-violet-950/20 to-fuchsia-950/20 p-8 sm:p-12 text-center">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center mb-5 shadow-lg">
-            <SmartphoneNfc className="w-7 h-7 text-black"/>
-          </div>
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight">EduNex w <span className="text-gradient-cyber">Twojej kieszeni</span></h2>
-          <p className="mt-3 text-sm text-white/50 max-w-md mx-auto">Uczniowie wchodzą PIN-em z dowolnego telefonu. Nauczyciele zarządzają egzaminami z tabletu. Zero instalacji.</p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-white/[0.08] bg-white/[0.03] text-sm text-white/50"><Smartphone className="w-4 h-4"/>Android · wkrótce</div>
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-white/[0.08] bg-white/[0.03] text-sm text-white/50"><Monitor className="w-4 h-4"/>PWA · dostępne</div>
-            <Link to="/auth/student" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-white text-black hover:bg-white/90 transition shadow-sm">Wypróbuj w przeglądarce <ArrowRight className="w-4 h-4"/></Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-

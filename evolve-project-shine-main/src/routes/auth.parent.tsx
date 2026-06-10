@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Heart, ArrowLeft, Loader2, Mail, Lock, User, CheckCircle2,
-  ShieldCheck, Eye, BarChart3, Bell, LogIn,
+  ShieldCheck, Eye, EyeOff, BarChart3, Bell, LogIn,
   Phone,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -21,10 +21,23 @@ const PARENT_FEATURES = [
   { icon: ShieldCheck, title: "Bezpieczeństwo", desc: "Dane widoczne tylko dla Ciebie" },
 ];
 
+function strength(s: string): { level: number; label: string; cls: string } {
+  if (!s) return { level: 0, label: "", cls: "" };
+  let score = 0;
+  if (s.length >= 8) score++; if (s.length >= 12) score++;
+  if (/[A-Z]/.test(s)) score++; if (/[0-9]/.test(s)) score++;
+  if (/[^A-Za-z0-9]/.test(s)) score++;
+  if (score <= 1) return { level: 1, label: "Słabe", cls: "pw-weak" };
+  if (score === 2) return { level: 2, label: "Średnie", cls: "pw-fair" };
+  if (score <= 3) return { level: 3, label: "Dobre", cls: "pw-good" };
+  return { level: 4, label: "Silne", cls: "pw-strong" };
+}
+
 function ParentLogin() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -172,14 +185,34 @@ function ParentLogin() {
                 </div>
               )}
               <Field label="E-mail">
-                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="rodzic@email.pl" className={inp}/>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="rodzic@email.pl" className={`${inp} pl-10`}/>
+                </div>
               </Field>
               <Field label="Hasło">
-                <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} placeholder="••••••••" className={inp}/>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? "text" : "password"} required minLength={6} placeholder="••••••••" className={`${inp} pl-10 pr-10`}/>
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
+                    {showPassword ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                  </button>
+                </div>
+                {mode === "register" && password && (
+                  <div className="mt-2">
+                    <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-300 ${strength(password).cls}`} />
+                    </div>
+                    <div className="text-[10px] text-white/30 mt-0.5">{strength(password).label}</div>
+                  </div>
+                )}
               </Field>
               {mode === "register" && (
                 <Field label="Telefon (opcjonalnie)">
-                  <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="+48 600 000 000" className={inp}/>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="+48 600 000 000" className={`${inp} pl-10`}/>
+                  </div>
                 </Field>
               )}
               <button disabled={loading} className="relative w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-400 hover:to-amber-400 text-[#05080f] font-medium text-sm tracking-wide transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 overflow-hidden group">

@@ -3,11 +3,23 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Users, ArrowLeft, Loader2, Mail, Lock, User, CheckCircle2,
   Sparkles, ShieldCheck, BookOpen, BarChart3, LogIn,
-  BrainCircuit, GraduationCap, ChartLine, Eye,
+  BrainCircuit, GraduationCap, ChartLine, Eye, EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+
+function strength(s: string): { level: number; label: string; cls: string } {
+  if (!s) return { level: 0, label: "", cls: "" };
+  let score = 0;
+  if (s.length >= 8) score++; if (s.length >= 12) score++;
+  if (/[A-Z]/.test(s)) score++; if (/[0-9]/.test(s)) score++;
+  if (/[^A-Za-z0-9]/.test(s)) score++;
+  if (score <= 1) return { level: 1, label: "Słabe", cls: "pw-weak" };
+  if (score === 2) return { level: 2, label: "Średnie", cls: "pw-fair" };
+  if (score <= 3) return { level: 3, label: "Dobre", cls: "pw-good" };
+  return { level: 4, label: "Silne", cls: "pw-strong" };
+}
 
 export const Route = createFileRoute("/auth/teacher")({
   component: TeacherLogin,
@@ -25,6 +37,7 @@ function TeacherLogin() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -174,14 +187,31 @@ function TeacherLogin() {
                 </div>
               )}
               <Field label="E-mail">
-                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="nauczyciel@szkola.pl" className={inp}/>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="nauczyciel@szkola.pl" className={`${inp} pl-10`}/>
+                </div>
               </Field>
               <Field label="Hasło">
-                <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required minLength={6} placeholder="••••••••" className={inp}/>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? "text" : "password"} required minLength={6} placeholder="••••••••" className={`${inp} pl-10 pr-10`}/>
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
+                    {showPassword ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                  </button>
+                </div>
+                {mode === "register" && password && (
+                  <div className="mt-2">
+                    <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-300 ${strength(password).cls}`} />
+                    </div>
+                    <div className="text-[10px] text-white/30 mt-0.5">{strength(password).label}</div>
+                  </div>
+                )}
               </Field>
               <button disabled={loading} className="relative w-full h-11 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white font-medium text-sm tracking-wide transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 overflow-hidden group">
                 <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.15)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : null}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <LogIn className="w-4 h-4"/>}
                 {mode === "login" ? "Zaloguj się" : "Załóż konto"}
               </button>
               {mode === "login" && (

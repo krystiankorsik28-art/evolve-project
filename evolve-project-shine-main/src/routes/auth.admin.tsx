@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Shield, ArrowLeft, Loader2, Lock, Mail, KeyRound, CheckCircle2, AlertTriangle, Eye, Fingerprint, Server, History, Send, Smartphone } from "lucide-react";
+import { Shield, ArrowLeft, Loader2, Lock, Mail, KeyRound, CheckCircle2, AlertTriangle, Eye, EyeOff, Fingerprint, Server, History, Send, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,11 +25,40 @@ function AdminLogin() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const refs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => { if (step === 3) refs.current[0]?.focus(); }, [step]);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [countdown]);
+
+  // auto-submit OTP when all 6 digits entered
+  useEffect(() => {
+    if (otp.every(d => d !== "") && step === 3 && !loading) {
+      const verify = async () => {
+        setLoading(true);
+        try {
+          await verifyFn({ data: { code: otp.join("") } });
+          toast.success("Dostęp przyznany");
+          window.location.assign("/admin");
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Nieprawidłowy kod");
+          setOtp(["","","","","",""]);
+          refs.current[0]?.focus();
+          setLoading(false);
+        }
+      };
+      verify();
+    }
+  }, [otp.join("")]);
 
   const onCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +109,7 @@ function AdminLogin() {
     try {
       await sendOtpFn();
       toast.success("Nowy kod wysłany.");
+      setCountdown(30);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Błąd");
     } finally { setLoading(false); }
@@ -165,10 +195,19 @@ function AdminLogin() {
               <p className="text-white/40 text-sm mt-1">Podaj służbowy e-mail i hasło.</p>
               <form onSubmit={onCredentials} className="mt-6 space-y-4">
                 <Field label="E-mail">
-                  <input value={email} onChange={(e)=>setEmail(e.target.value)} type="email" required placeholder="admin@edunex.pl" className={inp}/>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input value={email} onChange={(e)=>setEmail(e.target.value)} type="email" required placeholder="admin@edunex.pl" className={`${inp} pl-10`}/>
+                  </div>
                 </Field>
                 <Field label="Hasło">
-                  <input value={password} onChange={(e)=>setPassword(e.target.value)} type="password" required placeholder="••••••••" className={inp}/>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input value={password} onChange={(e)=>setPassword(e.target.value)} type={showPassword ? "text" : "password"} required placeholder="••••••••" className={`${inp} pl-10 pr-10`}/>
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
+                      {showPassword ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                    </button>
+                  </div>
                 </Field>
                 <button disabled={loading} className="relative w-full h-11 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-medium text-sm tracking-wide transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-lg shadow-red-600/20 overflow-hidden group">
                   <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.15)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -200,8 +239,8 @@ function AdminLogin() {
                 <Smartphone className="w-4 h-4"/>Mam kod — weryfikuj
               </button>
               <div className="mt-4 flex items-center justify-between text-xs">
-                <button type="button" disabled={loading} onClick={resendOtp} className="text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
-                  {loading ? "Wysyłanie..." : "Wyślij ponownie"}
+                <button type="button" disabled={loading || countdown > 0} onClick={resendOtp} className="text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
+                  {loading ? "Wysyłanie..." : countdown > 0 ? `Wyślij ponownie (${countdown}s)` : "Wyślij ponownie"}
                 </button>
                 <button type="button" onClick={()=>{ setStep(1); setOtp(["","","","","",""]); }} className="text-white/40 hover:text-white/70 transition-colors">← Wstecz</button>
               </div>
@@ -225,8 +264,8 @@ function AdminLogin() {
                   {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <KeyRound className="w-4 h-4"/>}Zweryfikuj
                 </button>
                 <div className="flex items-center justify-between">
-                  <button type="button" disabled={loading} onClick={resendOtp} className="text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
-                    {loading ? "Wysyłanie..." : "Wyślij ponownie"}
+                  <button type="button" disabled={loading || countdown > 0} onClick={resendOtp} className="text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
+                    {loading ? "Wysyłanie..." : countdown > 0 ? `Wyślij ponownie (${countdown}s)` : "Wyślij ponownie"}
                   </button>
                   <button type="button" onClick={()=>{ setStep(2); setOtp(["","","","","",""]); }} className="text-xs text-white/40 hover:text-white/70 transition-colors">← Wstecz</button>
                 </div>

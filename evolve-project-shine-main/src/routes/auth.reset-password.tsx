@@ -13,6 +13,18 @@ export const Route = createFileRoute("/auth/reset-password")({
   head: () => ({ meta: [{ title: "Resetowanie hasła | EduNex" }] }),
 });
 
+function strength(s: string): { level: number; label: string; cls: string } {
+  if (!s) return { level: 0, label: "", cls: "" };
+  let score = 0;
+  if (s.length >= 8) score++; if (s.length >= 12) score++;
+  if (/[A-Z]/.test(s)) score++; if (/[0-9]/.test(s)) score++;
+  if (/[^A-Za-z0-9]/.test(s)) score++;
+  if (score <= 1) return { level: 1, label: "Słabe", cls: "pw-weak" };
+  if (score === 2) return { level: 2, label: "Średnie", cls: "pw-fair" };
+  if (score <= 3) return { level: 3, label: "Dobre", cls: "pw-good" };
+  return { level: 4, label: "Silne", cls: "pw-strong" };
+}
+
 function ResetPassword() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -21,6 +33,40 @@ function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // confetti on success
+  const fireConfetti = () => {
+    const c = document.createElement("canvas");
+    c.className = "fixed inset-0 pointer-events-none z-50";
+    c.style.width = "100vw"; c.style.height = "100vh";
+    document.body.appendChild(c);
+    const ctx = c.getContext("2d")!;
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const colors = ["#22d3ee","#67e8f9","#34d399","#fbbf24","#f472b6","#818cf8"];
+    const pieces: { x: number; y: number; vx: number; vy: number; w: number; h: number; c: string; r: number }[] = [];
+    for (let i = 0; i < 120; i++) {
+      pieces.push({
+        x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.5,
+        vx: (Math.random() - 0.5) * 6, vy: Math.random() * 3 + 2,
+        w: Math.random() * 8 + 4, h: Math.random() * 4 + 2, c: colors[Math.floor(Math.random() * colors.length)],
+        r: Math.random() * 360,
+      });
+    }
+    let frame = 0;
+    const anim = () => {
+      frame++;
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (const p of pieces) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.r += 5;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.r * Math.PI) / 180);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (frame < 200) requestAnimationFrame(anim);
+      else c.remove();
+    };
+    anim();
+  };
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -46,7 +92,8 @@ function ResetPassword() {
       if (error) throw error;
       setDone(true);
       toast.success("Hasło zmienione pomyślnie!");
-      setTimeout(() => navigate({ to: "/auth/teacher" }), 2000);
+      fireConfetti();
+      setTimeout(() => navigate({ to: "/auth/teacher" }), 2500);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Błąd");
     } finally { setLoading(false); }
@@ -105,10 +152,24 @@ function ResetPassword() {
                       {showPw ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
                     </button>
                   </div>
+                  {password && (
+                    <div className="mt-2">
+                      <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-300 ${strength(password).cls}`} />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-white/30 mt-0.5">
+                        <span>{strength(password).label}</span>
+                        <span>{password === confirm ? "✓ Hasła zgodne" : ""}</span>
+                      </div>
+                    </div>
+                  )}
                 </label>
                 <label className="block">
                   <div className="text-[11px] font-medium text-white/40 mb-1.5 tracking-wide">Potwierdź hasło</div>
-                  <input type={showPw ? "text" : "password"} value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} placeholder="••••••" className="w-full h-11 px-4 bg-white/[0.04] border border-white/[0.08] rounded-xl outline-none text-white text-sm placeholder:text-white/20 focus:border-cyan-400/40 focus:bg-white/[0.06]" />
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input type={showPw ? "text" : "password"} value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} placeholder="••••••" className="w-full h-11 pl-10 bg-white/[0.04] border border-white/[0.08] rounded-xl outline-none text-white text-sm placeholder:text-white/20 focus:border-cyan-400/40 focus:bg-white/[0.06]" />
+                  </div>
                 </label>
                 <button className="relative w-full h-11 rounded-xl bg-gradient-to-r from-cyan-400 to-violet-500 hover:from-cyan-300 hover:to-violet-400 text-slate-900 font-medium text-sm transition-all disabled:opacity-40 inline-flex items-center justify-center gap-2 shadow-lg shadow-cyan-400/20" disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Lock className="w-4 h-4"/>}

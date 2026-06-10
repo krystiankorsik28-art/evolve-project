@@ -52,6 +52,30 @@ function StudentLogin() {
 
   useEffect(() => { if (pinStep === 2) refs.current[0]?.focus(); }, [pinStep]);
 
+  // auto-submit PIN when all 6 digits entered
+  useEffect(() => {
+    if (pinReady && pinStep === 2 && !pinLoading) {
+      const submitPin = async () => {
+        setPinLoading(true);
+        try {
+          const timeout = new Promise<never>((_, rej) =>
+            setTimeout(() => rej(new Error("Serwer nie odpowiedział w 15s.")), 15000),
+          );
+          const res = await Promise.race([login({ data: { first_name: pinFirstName.trim(), last_name: pinLastName.trim(), pin } }), timeout]);
+          sessionStorage.setItem("edunex_student", JSON.stringify({ ...res }));
+          toast.success(`Witaj, ${pinFirstName}!`);
+          await navigate({ to: "/student/exam/$attemptId", params: { attemptId: res.attempt_id } });
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Błąd");
+          setPinDigits(["","","","","",""]);
+          refs.current[0]?.focus();
+          setPinLoading(false);
+        }
+      };
+      submitPin();
+    }
+  }, [pin]);
+
   const setDigit = (i: number, v: string) => {
     const d = v.replace(/\D/g, "").slice(-1);
     const next = [...pinDigits]; next[i] = d; setPinDigits(next);
@@ -69,6 +93,39 @@ function StudentLogin() {
     }
   };
 
+  const fireConfetti = () => {
+    const c = document.createElement("canvas");
+    c.className = "fixed inset-0 pointer-events-none z-50";
+    c.style.width = "100vw"; c.style.height = "100vh";
+    document.body.appendChild(c);
+    const ctx = c.getContext("2d")!;
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const colors = ["#22d3ee","#67e8f9","#34d399","#fbbf24","#f472b6","#818cf8"];
+    const pieces: { x: number; y: number; vx: number; vy: number; w: number; h: number; c: string; r: number }[] = [];
+    for (let i = 0; i < 120; i++) {
+      pieces.push({
+        x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.5,
+        vx: (Math.random() - 0.5) * 6, vy: Math.random() * 3 + 2,
+        w: Math.random() * 8 + 4, h: Math.random() * 4 + 2, c: colors[Math.floor(Math.random() * colors.length)],
+        r: Math.random() * 360,
+      });
+    }
+    let frame = 0;
+    const anim = () => {
+      frame++;
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (const p of pieces) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.r += 5;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.r * Math.PI) / 180);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (frame < 200) requestAnimationFrame(anim);
+      else c.remove();
+    };
+    anim();
+  };
+
   const onAccountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -77,6 +134,7 @@ function StudentLogin() {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (!data.session) throw new Error("Brak sesji po zalogowaniu");
+        fireConfetti();
         toast.custom(() => (
           <div className="flex items-center gap-4 bg-[#0d1f40] border border-cyan-400/30 rounded-2xl px-5 py-4 shadow-[0_12px_40px_-12px_rgba(34,211,238,0.4)] backdrop-blur-xl">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 grid place-items-center">

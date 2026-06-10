@@ -35,29 +35,58 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const { setTheme } = useTheme();
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => { setTheme("dark") }, []);
   useScrollReveal();
   return (
-    <div className="min-h-screen selection:bg-cyan-400/30 selection:text-white overflow-x-clip antialiased">
-      <Toaster theme="dark" />
-      <CursorGlow />
-      <SocialProof />
-      <CookieBanner />
-      <BackgroundFX />
-      <NavBar />
-      <Hero />
-      <Stats />
-      <Marquee />
-      <BentoFeatures />
-      <ForWhom />
-      <Process />
-      <Achievements />
-      <Testimonials />
-      <Pricing />
-      <FAQSection />
-      <Newsletter />
-      <Contact />
-      <Footer />
+    <>
+      <SplashScreen onDone={() => setLoaded(true)} />
+      <div className={`min-h-screen selection:bg-cyan-400/30 selection:text-white overflow-x-clip antialiased transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}>
+        <Toaster theme="dark" />
+        <CursorGlow />
+        <SocialProof />
+        <CookieBanner />
+        <BackgroundFX />
+        <NavBar />
+        <Hero />
+        <Stats />
+        <Marquee />
+        <BentoFeatures />
+        <ForWhom />
+        <Process />
+        <Achievements />
+        <Testimonials />
+        <Pricing />
+        <FAQSection />
+        <Newsletter />
+        <Contact />
+        <Footer />
+      </div>
+    </>
+  );
+}
+
+/* ──── Splash screen ──── */
+function SplashScreen({ onDone }: { onDone: () => void }) {
+  const [exiting, setExiting] = useState(false);
+  useEffect(() => {
+    const t1 = setTimeout(() => setExiting(true), 1800);
+    const t2 = setTimeout(() => onDone(), 2400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [onDone]);
+  return (
+    <div className={`splash-overlay ${exiting ? "exit" : ""}`}>
+      <div className="text-center">
+        <div className="splash-logo mx-auto">
+          <div className="splash-logo-inner">
+            <svg viewBox="0 0 24 24" className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>
+            </svg>
+          </div>
+        </div>
+        <div className="splash-text">EduNex</div>
+        <div className="splash-loader"><div className="splash-loader-bar" /></div>
+      </div>
     </div>
   );
 }
@@ -247,6 +276,18 @@ function Mark() {
 
 /* ──── Hero ──── */
 function Hero() {
+  const headlines = ["w jednym miejscu.", "bez instalacji.", "zgodnie z MEN.", "z monitoringiem AI.", "dla każdej szkoły."];
+  const [text, setText] = useState("");
+  const [idx, setIdx] = useState(0);
+  const [char, setChar] = useState(0);
+  useEffect(() => {
+    if (char < headlines[idx].length) {
+      const t = setTimeout(() => { setText(headlines[idx].slice(0, char + 1)); setChar((c) => c + 1); }, 50);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => { setIdx((i) => (i + 1) % headlines.length); setChar(0); setText(""); }, 3000);
+    return () => clearTimeout(t);
+  }, [char, idx]);
   return (
     <section className="relative pt-36 sm:pt-44 pb-20 sm:pb-28">
       <div className="max-w-6xl mx-auto px-4 text-center">
@@ -258,8 +299,8 @@ function Hero() {
           <span className="text-white">Egzaminy bez<br/></span>
           <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent">tarcia i papieru.</span>
         </h1>
-        <p className="mt-5 text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
-          Certyfikowana platforma egzaminacyjna dla polskich szkół. Twórz sprawdziany, zarządzaj klasami i monitoruj wyniki na żywo — w jednym miejscu.
+        <p className="mt-5 text-lg text-white/50 max-w-2xl mx-auto leading-relaxed min-h-[1.8em]">
+          Certyfikowana platforma egzaminacyjna dla polskich szkół. Twórz sprawdziany, zarządzaj klasami i monitoruj wyniki na żywo — <span className="text-white/80">{text}<span className="typewriter-cursor" /></span>
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link to="/auth/teacher" className="group inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">
@@ -283,19 +324,44 @@ function Hero() {
 
 /* ──── Stats ──── */
 const STATS = [
-  { v: "3 752+", l: "Przeprowadzonych egzaminów", c: "from-cyan-400 to-blue-400" },
-  { v: "829+", l: "Aktywnych nauczycieli", c: "from-violet-400 to-fuchsia-400" },
-  { v: "36 140+", l: "Uczniów w systemie", c: "from-emerald-400 to-teal-400" },
-  { v: "99.98%", l: "Dostępność", c: "from-amber-400 to-orange-400" },
-  { v: "18 920+", l: "Certyfikatów wydanych", c: "from-emerald-400 to-cyan-400" },
+  { v: 3752, l: "Przeprowadzonych egzaminów", c: "from-cyan-400 to-blue-400", s: "+" },
+  { v: 829, l: "Aktywnych nauczycieli", c: "from-violet-400 to-fuchsia-400", s: "+" },
+  { v: 36140, l: "Uczniów w systemie", c: "from-emerald-400 to-teal-400", s: "+" },
+  { v: 99.98, l: "Dostępność", c: "from-amber-400 to-orange-400", s: "%" },
+  { v: 18920, l: "Certyfikatów wydanych", c: "from-emerald-400 to-cyan-400", s: "+" },
 ];
+function CountUp({ target, suffix, duration = 2000 }: { target: number; suffix: string; duration?: number }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const [started, setStarted] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting && !started) setStarted(true); }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [started]);
+  useEffect(() => {
+    if (!started) return;
+    const startTime = performance.now();
+    const step = (now: number) => {
+      const pct = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - pct, 3);
+      const current = Math.round(eased * target);
+      setVal(target > 1000 ? current : parseFloat((eased * target).toFixed(1)));
+      if (pct < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [started, target, duration]);
+  return <div ref={ref} className="tabular-nums">{val.toLocaleString()}{suffix}</div>;
+}
 function Stats() {
   return (
     <section className="border-y border-white/[0.05] py-10">
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
         {STATS.map((s, i) => (
           <div key={s.l} className="text-center reveal" style={{ animationDelay: `${i * 0.1}s` }}>
-            <div className={`text-2xl sm:text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r ${s.c} bg-clip-text text-transparent tabular-nums`}>{s.v}</div>
+            <div className={`text-2xl sm:text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r ${s.c} bg-clip-text text-transparent`}>
+              <CountUp target={s.v} suffix={s.s} />
+            </div>
             <div className="text-xs text-white/40 mt-1">{s.l}</div>
           </div>
         ))}
@@ -381,6 +447,23 @@ const FEATURE_CATEGORIES = [
       { title: "Eksport i import", bullets: ["Import z Word, PDF, Excel", "Export do PDF, Excel, CSV", "API REST dla integracji"] },
     ],
   },
+  {
+    id: "szkola", label: "Dla szkoły", icon: School, gradient: "from-teal-400 to-emerald-500",
+    items: [
+      { title: "Organizacja roku", bullets: ["Kalendarz roku szkolnego", " Planowanie ferii i przerw", "Zarządzanie zastępstwami", "Dyżury nauczycielskie"] },
+      { title: "Dokumentacja", bullets: ["Dzienniki lekcyjne online", "Arkusze ocen i świadectwa", "Druki MEN gotowe do wydruku", "Archiwum elektroniczne"] },
+      { title: "Statystyki szkoły", bullets: ["Wskaźniki zdawalności", "Frekwencja klas", "Porównanie oddziałów", "Raporty dla organu prowadzącego"] },
+      { title: "Komunikacja z rodzicami", bullets: ["Masowe powiadomienia e-mail", "Kontakt przez dziennik", "Wywieszki i ogłoszenia", "Konsultacje online"] },
+    ],
+  },
+  {
+    id: "wsparcie", label: "Wsparcie", icon: LifeBuoy, gradient: "from-cyan-400 to-sky-500",
+    items: [
+      { title: "Pomoc techniczna", bullets: ["Chat na żywo — odpowiedź w 2 min", "Baza wiedzy z video poradnikami", "Ticket system dla szkół", "Zdalna pomoc przez TeamViewer"] },
+      { title: "Szkolenia", bullets: ["Webinary na żywo co tydzień", "Materiały video krok po kroku", "Certyfikat ukończenia szkolenia", "Szkolenia stacjonarne dla rady"] },
+      { title: "Wdrożenie", bullets: ["Asysta przy pierwszym logowaniu", "Import danych z poprzedniego systemu", "Konfiguracja API i SSO", "Testy akceptacyjne z raportem"] },
+    ],
+  },
 ];
 
 function BentoFeatures() {
@@ -413,7 +496,7 @@ function BentoFeatures() {
         <div key={key} style={{ animation: "fadeIn 0.3s ease-out" }}>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {cat.items.map((item, i) => (
-              <div key={item.title} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-200">
+              <div key={item.title} className="gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-all duration-200 hover-bounce">
                 <h3 className="font-display text-sm font-semibold text-white/90 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"/>
                   {item.title}
@@ -452,7 +535,7 @@ function ForWhom() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {cards.map((c, i) => (
-            <Link key={c.title} to={c.to} className="reveal group rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-200" style={{ animationDelay: `${i * 0.1}s` }}>
+            <Link key={c.title} to={c.to} className="reveal group gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-200 hover-bounce" style={{ animationDelay: `${i * 0.1}s` }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${c.accent} grid place-items-center shadow-sm`}>
                   <c.icon className="w-5 h-5 text-black" />
@@ -534,7 +617,7 @@ function Achievements() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {ACHIEVEMENTS.map((a, i) => (
-            <div key={a.label} className="reveal rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-center hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-200" style={{ animationDelay: `${i * 0.08}s` }}>
+            <div key={a.label} className="reveal gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-center hover:bg-white/[0.04] transition-all duration-200 hover-bounce" style={{ animationDelay: `${i * 0.08}s` }}>
               <div className={`w-10 h-10 mx-auto rounded-lg bg-gradient-to-br ${a.color} grid place-items-center mb-3 shadow-sm`}>
                 <a.icon className="w-5 h-5 text-black" />
               </div>
@@ -568,7 +651,7 @@ function Testimonials() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Opinie</div>
           <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Co mówią nauczyciele</h2>
         </div>
-        <div key={idx} className="reveal rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8" style={{ animation: "fadeIn 0.4s ease-out" }}>
+        <div key={idx} className="reveal gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8" style={{ animation: "fadeIn 0.4s ease-out" }}>
           <div className="text-4xl text-cyan-300/30 font-display leading-none mb-3">"</div>
           <blockquote className="text-white/80 text-base sm:text-lg leading-relaxed">{NOTES[idx].text}</blockquote>
           <div className="mt-5 flex items-center justify-center gap-3">

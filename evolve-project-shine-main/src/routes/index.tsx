@@ -34,15 +34,154 @@ export const Route = createFileRoute("/")({
   }),
 });
 
+/* ──── Confetti ──── */
+function burstConfetti(e: React.MouseEvent) {
+  const colors = ["#22d3ee", "#a78bfa", "#f472b6", "#34d399", "#fbbf24", "#f97316"];
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    el.style.cssText = `left:${e.clientX}px;top:${e.clientY}px;width:${4 + Math.random() * 4}px;height:${4 + Math.random() * 4}px;background:${color};animation-delay:${Math.random() * 0.2}s;animation-duration:${1.2 + Math.random() * 0.8}s`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  }
+}
+
+/* ──── Ripple ──── */
+function addRipple(e: React.MouseEvent) {
+  const t = e.currentTarget as HTMLElement;
+  const r = document.createElement("span");
+  r.className = "ripple-effect";
+  const rect = t.getBoundingClientRect();
+  r.style.left = `${e.clientX - rect.left}px`;
+  r.style.top = `${e.clientY - rect.top}px`;
+  t.appendChild(r);
+  setTimeout(() => r.remove(), 700);
+}
+
+/* ──── Text Reveal ──── */
+function TextReveal({ text, className = "" }: { text: string; className?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setRevealed(true); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <span ref={ref} className={className} style={{ display: "inline" }}>
+      {text.split(" ").map((w, i) => (
+        <span key={i} className="inline-block" style={{
+          opacity: revealed ? 1 : 0,
+          transform: revealed ? "translateY(0) rotate(0deg)" : "translateY(40px) rotate(4deg)",
+          transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${i * 0.06}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${i * 0.06}s`
+        }}>
+          {w}{i < text.split(" ").length - 1 ? "\u00A0" : ""}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/* ──── Parallax Orb Wrapper ──── */
+function ParallaxOrbs() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      el.style.setProperty("--px", `${x * 8}px`);
+      el.style.setProperty("--py", `${y * 8}px`);
+      el.querySelectorAll(".parallax-layer").forEach((l, i) => {
+        const f = 3 + i * 2;
+        (l as HTMLElement).style.transform = `translate(${x * f}px, ${y * f}px)`;
+      });
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+  return <div ref={ref} />;
+}
+
+/* ──── Particle Background ──── */
+function ParticleBg() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    if (!c) return;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    let animId: number;
+    const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+    const count = Math.min(60, Math.floor((window.innerWidth * window.innerHeight) / 15000));
+    const particles = Array.from({ length: count }, () => ({
+      x: Math.random() * (c?.width ?? window.innerWidth),
+      y: Math.random() * (c?.height ?? window.innerHeight),
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: 1 + Math.random() * 1.5,
+      o: 0.2 + Math.random() * 0.4,
+    }));
+    const draw = () => {
+      if (!c || !ctx) return;
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = c.width;
+        if (p.x > c.width) p.x = 0;
+        if (p.y < 0) p.y = c.height;
+        if (p.y > c.height) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `oklch(0.75 0.18 200 / ${p.o})`;
+        ctx.fill();
+      }
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `oklch(0.75 0.18 200 / ${0.06 * (1 - dist / 120)})`;
+            ctx.stroke();
+          }
+        }
+      }
+      animId = requestAnimationFrame(draw);
+    };
+    animId = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={ref} id="particle-canvas" />;
+}
+
 function Landing() {
   const { setTheme } = useTheme();
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { setTheme("dark") }, []);
+
+  /* ──── IntersectionObserver with stagger ──── */
   useEffect(() => {
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting) {
           e.target.classList.add("revealed");
+          const children = e.target.querySelectorAll(".stagger-item");
+          children.forEach((c, i) => {
+            const delay = Math.min(i, 12);
+            (c as HTMLElement).style.transitionDelay = `${delay * 0.06}s`;
+          });
         }
       });
     }, { threshold: 0.08, rootMargin: "0px 0px -60px 0px" });
@@ -56,11 +195,39 @@ function Landing() {
     }, 100);
     return () => obs.disconnect();
   }, []);
+
+  /* ──── Scroll Progress ──── */
+  const progRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const f = () => {
+      if (!progRef.current) return;
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      progRef.current.style.transform = `scaleX(${Math.min(window.scrollY / h, 1)})`;
+    };
+    window.addEventListener("scroll", f, { passive: true });
+    return () => window.removeEventListener("scroll", f);
+  }, []);
+
+  /* ──── Cursor Glow ──── */
+  const glowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const f = (e: MouseEvent) => {
+      if (!glowRef.current) return;
+      glowRef.current.style.left = `${e.clientX}px`;
+      glowRef.current.style.top = `${e.clientY}px`;
+    };
+    window.addEventListener("mousemove", f, { passive: true });
+    return () => window.removeEventListener("mousemove", f);
+  }, []);
+
   return (
     <>
       <SplashScreen onDone={() => setLoaded(true)} />
       <div className={`min-h-screen bg-canvas selection:bg-cyan-400/20 selection:text-white ${loaded ? "opacity-100" : "opacity-0"} transition-opacity duration-700`}>
         <div className="bg-noise" />
+        <div ref={progRef} className="scroll-progress" />
+        <div ref={glowRef} className="cursor-glow max-lg:hidden" />
+        <ParticleBg />
         <Toaster theme="dark" />
         <SocialProof />
         <CookieBanner />
@@ -68,6 +235,7 @@ function Landing() {
         <main className="relative z-10">
           <Hero />
           <StatsMarquee />
+          <HowItWorks />
           <FeaturesFlow />
           <DemoShowcase />
           <ForWhomFlow />
@@ -82,6 +250,7 @@ function Landing() {
           <NewsletterFlow />
           <ContactFlow />
         </main>
+        <StickyCta />
         <FooterFlow />
       </div>
     </>
@@ -212,7 +381,7 @@ function NavBar() {
             <Link to="/auth/student" className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm text-white/50 hover:text-white rounded-full hover:bg-white/[0.04] transition-colors">
               <GraduationCap className="w-4 h-4"/>Uczeń
             </Link>
-            <Link to="/auth/teacher" className="btn-shine inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-full bg-white text-black hover:bg-white/90 transition-all shadow-sm">
+            <Link to="/auth/teacher" onClick={(e) => burstConfetti(e)} className="btn-shine inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-full bg-white text-black hover:bg-white/90 transition-all shadow-sm">
               Zaloguj <ArrowRight className="w-4 h-4"/>
             </Link>
             <button onClick={() => setOpen(!open)} className="lg:hidden p-2 rounded-full hover:bg-white/[0.04]" aria-label="Menu">
@@ -250,23 +419,26 @@ function Hero() {
   }, [char, idx]);
   return (
     <section className="relative pt-32 sm:pt-40 pb-24 sm:pb-32 overflow-hidden">
+      <div className="gradient-mesh" />
       <div className="absolute inset-0 bg-dots" />
-      <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full glass-orb floating-2" />
-      <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full glass-orb floating-1" style={{ animationDelay: "2s" }} />
+      <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full glass-orb floating-2 parallax-layer" style={{ animationDuration: "12s" }} />
+      <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full glass-orb floating-1 parallax-layer" style={{ animationDelay: "2s", animationDuration: "15s" }} />
+      <div className="absolute top-1/3 left-1/4 w-[200px] h-[200px] rounded-full glass-orb floating-3 parallax-layer" style={{ animationDuration: "8s", animationDelay: "1s" }} />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center relative">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 mb-8 backdrop-blur-sm">
+        <div className="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 mb-8 backdrop-blur-sm">
           <span className="pulse-dot"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block" /></span>
           Platforma zatwierdzona przez MEN
         </div>
         <h1 className="hero-giant font-bold text-white mb-4">
-          Egzaminy<br />
-          <span className="bg-gradient-to-r from-cyan-200 via-violet-200 to-fuchsia-200 bg-clip-text text-transparent">bez tarcia.</span>
+          <TextReveal text="Egzaminy" /><br />
+          <span className="bg-gradient-to-r from-cyan-200 via-violet-200 to-fuchsia-200 bg-clip-text text-transparent"><TextReveal text="bez tarcia." /></span>
         </h1>
         <p className="text-base sm:text-lg text-white/40 max-w-2xl mx-auto leading-relaxed min-h-[1.8em]">
           Certyfikowana platforma egzaminacyjna. Twórz sprawdziany, zarządzaj klasami i monitoruj wyniki — <span className="text-white/70">{text}<span className="type-cursor" /></span>
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link to="/auth/teacher" className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm glow-pulse">
+          <Link to="/auth/teacher" onClick={(e) => { burstConfetti(e); addRipple(e); }}
+            className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm glow-pulse relative">
             Rozpocznij za darmo <ArrowRight className="w-4 h-4"/>
           </Link>
           <Link to="/auth/student" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.04] transition-all">
@@ -334,6 +506,44 @@ function StatsMarquee() {
   );
 }
 
+const STEPS = [
+  { n: "1", t: "Zarejestruj się", d: "2 minuty i gotowe — bez karty, bez zobowiązań. Plan Klasa jest za darmo.", icon: GraduationCap },
+  { n: "2", t: "Dodaj klasę i uczniów", d: "Import z CSV, Vulcan lub Librus. Albo dodaj ręcznie — 3 kliknięcia.", icon: Users },
+  { n: "3", t: "Stwórz egzamin z AI", d: "Wpisz temat, AI generuje pytania. Albo wczytaj zdjęcie — gotowe w 10 sekund.", icon: Sparkles },
+  { n: "4", t: "Monitoruj i analizuj", d: "Wyniki na żywo, alerty o ściąganiu, certyfikaty PDF i raporty automatycznie.", icon: Activity },
+];
+function HowItWorks() {
+  return (
+    <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-16">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Jak to działa</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+            <TextReveal text="Zaczynasz w 2 minuty" />
+          </h2>
+          <p className="mt-4 text-white/40 text-sm max-w-lg mx-auto">Cztery proste kroki dzielą Cię od nowoczesnych egzaminów w Twojej szkole.</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {STEPS.map((s, i) => (
+            <div key={s.n} className="reveal relative" style={{ animationDelay: `${i * 0.12}s` }}>
+              {i < STEPS.length - 1 && <div className="step-connector max-lg:hidden" />}
+              <div className="org-card rounded-3xl p-6 text-center hover:-translate-y-1">
+                <div className="step-number mx-auto mb-4">{s.n}</div>
+                <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-cyan-400/10 to-violet-400/10 grid place-items-center mb-3">
+                  <s.icon className="w-5 h-5 text-cyan-300" />
+                </div>
+                <h3 className="font-semibold text-sm text-white/90">{s.t}</h3>
+                <p className="mt-2 text-xs text-white/50 leading-relaxed">{s.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── FEATURES ──── */
 const FEATURE_CATEGORIES = [
   {
     id: "egzaminy", label: "Egzaminy", icon: FileText, gradient: "from-cyan-400 to-blue-500",
@@ -415,7 +625,7 @@ function FeaturesFlow() {
   useEffect(() => setKey((k) => k + 1), [active]);
   return (
     <section id="funkcje" className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="absolute top-0 left-1/3 w-[600px] h-[600px] rounded-full glass-orb floating-3 opacity-40" />
+      <div className="absolute top-0 left-1/3 w-[600px] h-[600px] rounded-full glass-orb floating-3 parallax-layer opacity-40" style={{ animationDuration: "14s" }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center max-w-2xl mx-auto mb-16">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Funkcje</span>
@@ -436,8 +646,8 @@ function FeaturesFlow() {
           })}
         </div>
         <div key={key} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" style={{ animation: "fadeUp 0.35s ease-out" }}>
-          {cat.items.map((item) => (
-            <div key={item.title} className="org-card rounded-2xl p-6 hover:-translate-y-1">
+          {cat.items.map((item, i) => (
+            <div key={item.title} className="org-card rounded-2xl p-6 hover:-translate-y-1 stagger-item" style={{ transitionDelay: `${i * 0.04}s` }}>
               <h3 className="font-semibold text-sm text-white/90 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"/>
                 {item.title}
@@ -458,6 +668,7 @@ function FeaturesFlow() {
   );
 }
 
+/* ──── DEMO ──── */
 function DemoShowcase() {
   const [step, setStep] = useState<"start" | "q1" | "q2" | "q3" | "done">("start");
   const [a1, setA1] = useState<number | null>(null);
@@ -467,11 +678,11 @@ function DemoShowcase() {
   const restart = () => { setStep("start"); setA1(null); setA2(null); setA3(null); };
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="absolute top-1/2 -translate-y-1/2 -right-60 w-[500px] h-[500px] rounded-full glass-orb floating-1 opacity-30" />
+      <div className="absolute top-1/2 -translate-y-1/2 -right-60 w-[500px] h-[500px] rounded-full glass-orb floating-1 parallax-layer opacity-30" style={{ animationDuration: "18s" }} />
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Demo na żywo</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Rozwiąż <span className="shimmer">mini egzamin</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Rozwiąż mini egzamin" /></h2>
           <p className="mt-3 text-white/40 text-sm">Zobacz jak działa platforma — 3 pytania z matematyki.</p>
         </div>
         <div className="reveal-scale max-w-xl mx-auto">
@@ -572,6 +783,7 @@ function DemoShowcase() {
   );
 }
 
+/* ──── FOR WHOM ──── */
 function ForWhomFlow() {
   const cards = [
     { icon: GraduationCap, accent: "from-cyan-400 to-blue-500", to: "/auth/student", title: "Uczeń", lines: ["Wejście PIN-em bez konta", "Czysty interfejs egzaminu", "Wynik widoczny od razu", "Certyfikat PDF + QR"] },
@@ -581,15 +793,15 @@ function ForWhomFlow() {
   ];
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="absolute -left-40 top-1/3 w-[400px] h-[400px] rounded-full glass-orb floating-2" />
+      <div className="absolute -left-40 top-1/3 w-[400px] h-[400px] rounded-full glass-orb floating-2 parallax-layer" style={{ animationDuration: "16s" }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Dla kogo</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Cztery perspektywy, <span className="shimmer">jedna platforma</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Cztery perspektywy, jedna platforma" /></h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map((c, i) => (
-            <Link key={c.title} to={c.to} className="reveal group org-card rounded-3xl p-6 hover:-translate-y-1" style={{ animationDelay: `${i * 0.1}s` }}>
+            <Link key={c.title} to={c.to} className="reveal group org-card rounded-3xl p-6 hover:-translate-y-1 stagger-item" style={{ animationDelay: `${i * 0.1}s` }}>
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${c.accent} grid place-items-center mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110`}>
                 <c.icon className="w-6 h-6 text-black" />
               </div>
@@ -610,6 +822,7 @@ function ForWhomFlow() {
   );
 }
 
+/* ──── COMPARISON with slider ──── */
 function ComparisonShowcase() {
   const rows = [
     { l: "Czas przygotowania egzaminu", t: "2–4 godziny", e: "3 minuty" },
@@ -628,7 +841,7 @@ function ComparisonShowcase() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Porównanie</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Tradycyjnie vs <span className="shimmer">EduNex</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Tradycyjnie vs EduNex" /></h2>
         </div>
         <div className="reveal">
           <div className="org-card rounded-3xl p-6 sm:p-8 overflow-hidden">
@@ -659,6 +872,7 @@ function ComparisonShowcase() {
   );
 }
 
+/* ──── ACHIEVEMENTS ──── */
 const ACHIEVEMENTS = [
   { icon: Trophy, value: "847+", label: "Egzaminów dziennie", color: "from-amber-400 to-orange-500" },
   { icon: School, value: "128+", label: "Aktywnych szkół", color: "from-cyan-400 to-blue-500" },
@@ -672,16 +886,16 @@ const ACHIEVEMENTS = [
 function AchievementsFlow() {
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full glass-orb floating-3 opacity-20" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full glass-orb floating-3 opacity-20 parallax-layer" style={{ animationDuration: "20s" }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Osiągnięcia</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Platforma w <span className="shimmer">liczbach</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Platforma w liczbach" /></h2>
           <p className="mt-3 text-white/40 text-sm">Ponad 36 000 użytkowników i ciągle rośniemy.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {ACHIEVEMENTS.map((a, i) => (
-            <div key={a.label} className={`reveal org-card rounded-2xl p-6 text-center hover:-translate-y-1 ${i === 0 || i === 5 ? "sm:col-span-1" : ""}`} style={{ animationDelay: `${i * 0.06}s` }}>
+            <div key={a.label} className={`reveal org-card rounded-2xl p-6 text-center hover:-translate-y-1 stagger-item ${i === 0 || i === 5 ? "sm:col-span-1" : ""}`} style={{ animationDelay: `${i * 0.06}s` }}>
               <div className={`w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br ${a.color} grid place-items-center mb-4`}>
                 <a.icon className="w-6 h-6 text-black" />
               </div>
@@ -697,6 +911,7 @@ function AchievementsFlow() {
   );
 }
 
+/* ──── SECURITY ──── */
 const SECURITY_ITEMS = [
   { icon: Lock, title: "Szyfrowanie TLS 1.3", desc: "Dane przesyłane z szyfrowaniem klasy bankowej. Certyfikat SSL automatycznie odnawiany.", color: "from-cyan-400 to-blue-500" },
   { icon: Shield, title: "Ochrona przed atakami", desc: "WAF, DDoS protection, rate limiting. Monitoring 24/7 przez zespół bezpieczeństwa.", color: "from-violet-400 to-fuchsia-500" },
@@ -710,11 +925,11 @@ const SECURITY_ITEMS = [
 function SecurityFlow() {
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full glass-orb floating-1" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full glass-orb floating-1 parallax-layer" style={{ animationDuration: "14s" }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Bezpieczeństwo</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Dane <span className="shimmer">bezpieczne</span> jak w banku</h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Dane bezpieczne jak w banku" /></h2>
           <p className="mt-3 text-white/40 text-sm">Certyfikaty, szyfrowanie i procedury — wszystko, czego wymaga nowoczesna szkoła.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -738,6 +953,7 @@ function SecurityFlow() {
   );
 }
 
+/* ──── TESTIMONIALS ──── */
 const TESTIMONIALS = [
   { n: "Katarzyna Mazurek", r: "Matematyka · XIV LO Warszawa", t: "Przed EduNex układałam testy w Wordzie. Teraz robię to dwa razy szybciej. Generator AI to game changer." },
   { n: "Paweł Górski", r: "Wicedyrektor · III LO Gdynia", t: "Monitoring na żywo to przełom — od razu widzę, kto potrzebuje pomocy, a kto ściąga." },
@@ -751,11 +967,11 @@ function TestimonialsFlow() {
   useEffect(() => { const iv = setInterval(() => setIdx((i) => (i + 1) % TESTIMONIALS.length), 5000); return () => clearInterval(iv); }, []);
   return (
     <section id="opinie" className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="absolute top-1/2 -translate-y-1/2 right-0 w-[400px] h-[400px] rounded-full glass-orb floating-2" />
+      <div className="absolute top-1/2 -translate-y-1/2 right-0 w-[400px] h-[400px] rounded-full glass-orb floating-2 parallax-layer" style={{ animationDuration: "15s" }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
         <div className="reveal mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Opinie</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Co mówią <span className="shimmer">nauczyciele</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Co mówią nauczyciele" /></h2>
         </div>
         <div key={idx} className="reveal-scale">
           <div className="org-card rounded-3xl p-8 sm:p-10">
@@ -780,6 +996,7 @@ function TestimonialsFlow() {
   );
 }
 
+/* ──── PRICING ──── */
 const PLANS = [
   { name: "Klasa", price: "0", sub: "na zawsze", lines: ["Do 35 uczniów", "Bank pytań 300+", "15 egzaminów/mies", "Podstawowe raporty", "Wsparcie e-mail"], feat: false },
   { name: "Nauczyciel", price: "99", sub: "/mies", lines: ["Do 60 uczniów", "Bank pytań 3000+", "Egzaminy bez limitu", "Generator AI 200 zapytań", "Monitoring na żywo", "Wsparcie priorytetowe"], feat: false },
@@ -794,11 +1011,11 @@ function PricingFlow() {
   const isFree = (p: string) => p === "0";
   return (
     <section id="cennik" className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="absolute -left-40 top-1/2 w-[400px] h-[400px] rounded-full glass-orb floating-3" />
+      <div className="absolute -left-40 top-1/2 w-[400px] h-[400px] rounded-full glass-orb floating-3 parallax-layer" style={{ animationDuration: "12s" }} />
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Cennik</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Wybierz <span className="shimmer">swój plan</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Wybierz swój plan" /></h2>
           <p className="mt-3 text-white/40 text-sm">Płatność kartą, przelewem lub krypto · bez ukrytych kosztów</p>
         </div>
         <div className="flex items-center justify-center gap-4 mb-10">
@@ -847,6 +1064,7 @@ function PricingFlow() {
   );
 }
 
+/* ──── FAQ ──── */
 const FAQ = [
   { q: "Czy uczniowie muszą zakładać konto?", a: "Nie. Uczeń wchodzi przeglądarką, wpisuje PIN i imię. Konto nie jest wymagane — zero rejestracji." },
   { q: "Czy mogę wgrać pytania z dokumentu?", a: "Tak. Wspieramy import z Worda, PDF oraz Excel. Możesz też wczytać zdjęcie — AI odczyta pytania automatycznie." },
@@ -868,7 +1086,7 @@ function FAQFlow() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">FAQ</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Wątpliwości? <span className="shimmer">Wyjaśniamy</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Wątpliwości? Wyjaśniamy" /></h2>
         </div>
         <div className="reveal space-y-3">
           {FAQ.map((it, i) => (
@@ -890,7 +1108,14 @@ function FAQFlow() {
   );
 }
 
+/* ──── BLOG + MARQUEE PARTNERS ──── */
 const PARTNERS = [
+  { n: "Vulcan", i: Computer, c: "from-blue-400 to-indigo-500" },
+  { n: "Librus", i: Globe2, c: "from-emerald-400 to-teal-500" },
+  { n: "Mobidziennik", i: Smartphone, c: "from-cyan-400 to-sky-500" },
+  { n: "Office 365", i: LayoutDashboard, c: "from-orange-400 to-red-500" },
+  { n: "Google Workspace", i: Search, c: "from-amber-400 to-yellow-500" },
+  { n: "API REST", i: GitBranch, c: "from-violet-400 to-fuchsia-500" },
   { n: "Vulcan", i: Computer, c: "from-blue-400 to-indigo-500" },
   { n: "Librus", i: Globe2, c: "from-emerald-400 to-teal-500" },
   { n: "Mobidziennik", i: Smartphone, c: "from-cyan-400 to-sky-500" },
@@ -907,15 +1132,16 @@ function BlogFlow() {
   ];
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
+      <div className="absolute -right-40 top-1/2 w-[400px] h-[400px] rounded-full glass-orb floating-2 parallax-layer opacity-30" style={{ animationDuration: "17s" }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Blog</span>
-          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">Wiedza i <span className="shimmer">aktualności</span></h2>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Wiedza i aktualności" /></h2>
           <p className="mt-3 text-white/40 text-sm">Porady, aktualności i best practices dla nowoczesnej szkoły.</p>
         </div>
         <div className="reveal grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {posts.map((p) => (
-            <div key={p.t} className="org-card rounded-2xl p-6 hover:-translate-y-1 cursor-pointer">
+          {posts.map((p, i) => (
+            <div key={p.t} className="org-card rounded-2xl p-6 hover:-translate-y-1 cursor-pointer stagger-item" style={{ transitionDelay: `${i * 0.06}s` }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-300/80">{p.tag}</span>
                 <span className="text-[10px] text-white/30">{p.time}</span>
@@ -925,19 +1151,25 @@ function BlogFlow() {
             </div>
           ))}
         </div>
-        <div className="reveal mt-8 flex items-center justify-center gap-2">
-          {PARTNERS.map((p) => (
-            <div key={p.n} className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.02] border border-white/[0.06] text-xs text-white/40">
-              <div className={`w-5 h-5 rounded-md bg-gradient-to-br ${p.c} grid place-items-center`}><p.i className="w-2.5 h-2.5 text-black"/></div>
-              {p.n}
+        <div className="reveal mt-12">
+          <span className="section-label block text-center mb-6 text-white/30">Zintegrowany z</span>
+          <div className="overflow-hidden mask-image-[linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+            <div className="marquee-track">
+              {PARTNERS.map((p, i) => (
+                <div key={`${p.n}-${i}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.02] border border-white/[0.06] text-xs text-white/40 shrink-0">
+                  <div className={`w-5 h-5 rounded-md bg-gradient-to-br ${p.c} grid place-items-center`}><p.i className="w-2.5 h-2.5 text-black"/></div>
+                  {p.n}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+/* ──── MOBILE ──── */
 function MobileCtaFlow() {
   return (
     <section className="relative py-16 overflow-hidden">
@@ -964,6 +1196,7 @@ function MobileCtaFlow() {
   );
 }
 
+/* ──── NEWSLETTER ──── */
 function NewsletterFlow() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -991,6 +1224,7 @@ function NewsletterFlow() {
   );
 }
 
+/* ──── CONTACT ──── */
 function ContactFlow() {
   const submit = useServerFn(submitContact);
   const [busy, setBusy] = useState(false);
@@ -1025,7 +1259,7 @@ function ContactFlow() {
               <textarea name="message" rows={4} required placeholder="Treść wiadomości" className="sm:col-span-2 px-5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-400/30 transition-all resize-none" />
               <div className="sm:col-span-2 flex items-center justify-between gap-3">
                 <p className="text-xs text-white/40">Zgoda na kontakt zwrotny.</p>
-                <button disabled={busy} type="submit" className="btn-shine inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 disabled:opacity-50 transition-all">
+                <button disabled={busy} type="submit" className="btn-shine inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 disabled:opacity-50 transition-all relative">
                   {busy ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>} Wyślij
                 </button>
               </div>
@@ -1037,6 +1271,45 @@ function ContactFlow() {
   );
 }
 
+/* ──── STICKY CTA ──── */
+function StickyCta() {
+  const [visible, setVisible] = useState(false);
+  const [last, setLast] = useState(0);
+  useEffect(() => {
+    const f = () => {
+      const s = window.scrollY;
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = s / h;
+      if (pct > 0.15 && pct < 0.85) {
+        if (s > last) setVisible(true);
+        else setVisible(false);
+      } else {
+        setVisible(false);
+      }
+      setLast(s);
+    };
+    window.addEventListener("scroll", f, { passive: true });
+    return () => window.removeEventListener("scroll", f);
+  }, [last]);
+  return (
+    <div className={`sticky-cta-wrap ${visible ? "visible" : ""}`}>
+      <div className="bg-black/70 backdrop-blur-2xl border-t border-white/[0.06] py-3 px-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="pulse-dot"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block" /></span>
+            <span className="text-sm text-white/60 max-sm:hidden"><span className="text-white font-medium">Ponad 36 000</span> użytkowników już korzysta</span>
+            <span className="text-sm text-white/60 sm:hidden">36 000+ użytkowników</span>
+          </div>
+          <Link to="/auth/teacher" className="btn-shine inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 transition-all shadow-sm shrink-0">
+            Rozpocznij za darmo <ArrowRight className="w-4 h-4"/>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──── FOOTER ──── */
 function FooterFlow() {
   const [showTop, setShowTop] = useState(false);
   useEffect(() => { const f = () => setShowTop(window.scrollY > 400); window.addEventListener("scroll", f); return () => window.removeEventListener("scroll", f); }, []);
@@ -1094,7 +1367,7 @@ function FooterFlow() {
             </ul>
             <div className="mt-4 text-[10px] text-white/20 font-mono">
               <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>online</span>
-              <span className="ml-2">v8.0</span>
+              <span className="ml-2">v9.0</span>
             </div>
           </div>
         </div>

@@ -34,6 +34,27 @@ html { scroll-behavior: smooth; scroll-padding-top: 100px; }
     oklch(0.08 0.03 270);
 }
 
+/* ──── Animated Gradient Mesh ──── */
+.gradient-mesh {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
+}
+.gradient-mesh::before {
+  content: ''; position: absolute; width: 200%; height: 200%; top: -50%; left: -50%;
+  background:
+    radial-gradient(ellipse at 20% 50%, oklch(0.65 0.22 280 / 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, oklch(0.7 0.18 200 / 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, oklch(0.7 0.2 330 / 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 40%, oklch(0.6 0.15 180 / 0.08) 0%, transparent 50%);
+  animation: meshDrift 25s ease-in-out infinite;
+}
+@keyframes meshDrift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(3%, -2%) rotate(1.5deg); }
+  50% { transform: translate(-2%, 3%) rotate(-1deg); }
+  75% { transform: translate(2%, -3%) rotate(0.5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
 /* ──── Noise overlay ──── */
 .bg-noise::after {
   content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -106,6 +127,31 @@ html { scroll-behavior: smooth; scroll-padding-top: 100px; }
 .reveal-right { opacity: 0; transform: translateX(30px); transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1); }
 .reveal-right.revealed { opacity: 1; transform: translateX(0); }
 
+/* ──── Stagger Reveal ──── */
+.stagger-1 { transition-delay: 0.04s !important; }
+.stagger-2 { transition-delay: 0.08s !important; }
+.stagger-3 { transition-delay: 0.12s !important; }
+.stagger-4 { transition-delay: 0.16s !important; }
+.stagger-5 { transition-delay: 0.2s !important; }
+.stagger-6 { transition-delay: 0.24s !important; }
+.stagger-7 { transition-delay: 0.28s !important; }
+.stagger-8 { transition-delay: 0.32s !important; }
+.stagger-9 { transition-delay: 0.36s !important; }
+.stagger-10 { transition-delay: 0.4s !important; }
+.stagger-11 { transition-delay: 0.44s !important; }
+.stagger-12 { transition-delay: 0.48s !important; }
+
+/* ──── Text Reveal (word by word) ──── */
+.text-reveal-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(40px) rotate(4deg);
+  animation: textReveal 0.7s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes textReveal {
+  to { opacity: 1; transform: translateY(0) rotate(0deg); }
+}
+
 /* ──── Floating animations ──── */
 @keyframes float1 { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 33% { transform: translate(8px, -12px) rotate(2deg); } 66% { transform: translate(-4px, -6px) rotate(-1deg); } }
 @keyframes float2 { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 33% { transform: translate(-10px, 8px) rotate(-2deg); } 66% { transform: translate(6px, -4px) rotate(1deg); } }
@@ -168,6 +214,114 @@ html { scroll-behavior: smooth; scroll-padding-top: 100px; }
 
 /* ──── List item gradient dot ──── */
 .grad-dot { width: 6px; height: 6px; border-radius: 50%; background: linear-gradient(135deg, #22d3ee, #a78bfa); flex-shrink: 0; margin-top: 6px; }
+
+/* ──── Scroll Progress ──── */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 9999;
+  background: linear-gradient(90deg, oklch(0.75 0.18 200), oklch(0.65 0.2 280), oklch(0.7 0.2 330));
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  transition: transform 0.15s linear;
+}
+
+/* ──── Cursor Glow ──── */
+.cursor-glow {
+  position: fixed; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.75 0.18 200 / 0.06), oklch(0.65 0.2 280 / 0.03), transparent 70%);
+  pointer-events: none; z-index: 1;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s;
+}
+
+/* ──── Confetti ──── */
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+}
+.confetti-piece {
+  position: fixed; z-index: 9999; pointer-events: none; border-radius: 2px;
+  animation: confettiFall 1.8s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+/* ──── Ripple ──── */
+@keyframes rippleEffect {
+  0% { width: 0; height: 0; opacity: 0.5; }
+  100% { width: 400px; height: 400px; opacity: 0; }
+}
+.ripple-effect {
+  position: absolute; border-radius: 50%; background: oklch(1 0 0 / 0.2);
+  transform: translate(-50%, -50%);
+  animation: rippleEffect 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ──── Marquee ──── */
+.marquee-track {
+  display: flex; gap: 3rem;
+  animation: marquee 40s linear infinite;
+  width: max-content;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ──── Parallax Container ──── */
+.parallax-layer { will-change: transform; }
+
+/* ──── Sticky CTA ──── */
+.sticky-cta-wrap {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+  transform: translateY(100%);
+  transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.sticky-cta-wrap.visible { transform: translateY(0); }
+
+/* ──── Particle Canvas ──── */
+#particle-canvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+
+/* ──── Comparison slider ──── */
+.comp-slider { position: relative; overflow: hidden; cursor: ew-resize; user-select: none; }
+.comp-slider .comp-before { position: absolute; left: 0; top: 0; bottom: 0; overflow: hidden; }
+.comp-slider .comp-handle {
+  position: absolute; top: 0; bottom: 0; width: 3px;
+  background: oklch(0.75 0.18 200 / 0.5);
+  transform: translateX(-50%); z-index: 2;
+}
+.comp-slider .comp-handle::before {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px; height: 36px; border-radius: 50%;
+  background: oklch(0.2 0.05 270 / 0.8);
+  backdrop-filter: blur(8px);
+  border: 2px solid oklch(0.75 0.18 200 / 0.6);
+}
+.comp-slider .comp-handle::after {
+  content: '↔'; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); z-index: 3;
+  color: oklch(0.75 0.18 200); font-size: 14px; font-weight: bold;
+}
+
+/* ──── How it works steps ──── */
+.step-connector { position: absolute; top: 2rem; left: 50%; width: 100%; height: 2px; background: linear-gradient(90deg, oklch(0.75 0.18 200 / 0.2), oklch(0.65 0.2 280 / 0.2)); }
+.step-number {
+  width: 3rem; height: 3rem; border-radius: 50%;
+  background: linear-gradient(135deg, oklch(0.75 0.18 200 / 0.15), oklch(0.65 0.2 280 / 0.15));
+  border: 1px solid oklch(0.75 0.18 200 / 0.2);
+  display: grid; place-items: center;
+  font-size: 1rem; font-weight: 700;
+  color: oklch(0.75 0.18 200);
+}
+
+/* ──── Interactive hover tilt for cards ──── */
+.hover-tilt {
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
 
 /* ──── Light mode overrides ──── */
 .light { --background: oklch(0.97 0.01 260); --foreground: oklch(0.12 0.04 264); --primary: oklch(0.65 0.18 200); --muted: oklch(0.9 0.01 260); --muted-foreground: oklch(0.5 0.04 257); --border: oklch(0.85 0.01 260); }

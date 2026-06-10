@@ -360,10 +360,11 @@ function NavBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between gap-4 h-16 sm:h-20">
           <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px] shadow-sm transition-transform duration-300 group-hover:scale-105">
-              <div className="w-full h-full rounded-[10px] bg-[oklch(0.08_0.03_270)] grid place-items-center">
-                <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>
+            <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px] shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_-8px_rgba(34,211,238,0.4)]" style={{ animation: "logoPulse 3s ease-in-out infinite" }}>
+              <div className="w-full h-full rounded-[12px] bg-[oklch(0.06_0.03_270)] grid place-items-center backdrop-blur-sm">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="url(#logoGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="24" y2="24"><stop offset="0%" stopColor="#22d3ee"/><stop offset="50%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient></defs>
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
                 </svg>
               </div>
             </div>
@@ -523,20 +524,31 @@ function HowItWorks() {
           </h2>
           <p className="mt-4 text-white/40 text-sm max-w-lg mx-auto">Cztery proste kroki dzielą Cię od nowoczesnych egzaminów w Twojej szkole.</p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {STEPS.map((s, i) => (
-            <div key={s.n} className="reveal relative" style={{ animationDelay: `${i * 0.12}s` }}>
-              {i < STEPS.length - 1 && <div className="step-connector max-lg:hidden" />}
-              <div className="org-card rounded-3xl p-6 text-center hover:-translate-y-1">
-                <div className="step-number mx-auto mb-4">{s.n}</div>
-                <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-cyan-400/10 to-violet-400/10 grid place-items-center mb-3">
-                  <s.icon className="w-5 h-5 text-cyan-300" />
+        <div className="relative">
+          <svg className="absolute top-8 left-0 w-full h-8 max-lg:hidden pointer-events-none" viewBox="0 0 1000 32" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="stepLine" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="oklch(0.75 0.18 200 / 0.15)" />
+                <stop offset="50%" stopColor="oklch(0.65 0.2 280 / 0.3)" />
+                <stop offset="100%" stopColor="oklch(0.75 0.18 200 / 0.05)" />
+              </linearGradient>
+            </defs>
+            <line x1="12" y1="16" x2="988" y2="16" stroke="url(#stepLine)" strokeWidth="1.5" strokeDasharray="6 6" />
+          </svg>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {STEPS.map((s, i) => (
+              <div key={s.n} className="reveal relative" style={{ animationDelay: `${i * 0.12}s` }}>
+                <div className="org-card rounded-3xl p-6 text-center hover:-translate-y-1">
+                  <div className="step-number mx-auto mb-4">{s.n}</div>
+                  <div className="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-cyan-400/10 to-violet-400/10 grid place-items-center mb-3">
+                    <s.icon className="w-5 h-5 text-cyan-300" />
+                  </div>
+                  <h3 className="font-semibold text-sm text-white/90">{s.t}</h3>
+                  <p className="mt-2 text-xs text-white/50 leading-relaxed">{s.d}</p>
                 </div>
-                <h3 className="font-semibold text-sm text-white/90">{s.t}</h3>
-                <p className="mt-2 text-xs text-white/50 leading-relaxed">{s.d}</p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -669,13 +681,39 @@ function FeaturesFlow() {
 }
 
 /* ──── DEMO ──── */
+const QUIZ_DATA = [
+  { q: "Ile wynosi pole kwadratu o boku 5 cm?", opts: [["25 cm²", true], ["20 cm²", false], ["10 cm²", false], ["30 cm²", false]], explain: "Pole = 5 × 5 = 25 cm²" },
+  { q: "Która liczba jest podzielna przez 3?", opts: [["124", false], ["327", true], ["401", false], ["550", false]], explain: "3+2+7=12, a 12 dzieli się przez 3" },
+  { q: "Jaki jest pierwiastek kwadratowy z 144?", opts: [["10", false], ["14", false], ["12", true], ["16", false]], explain: "12 × 12 = 144" },
+];
 function DemoShowcase() {
   const [step, setStep] = useState<"start" | "q1" | "q2" | "q3" | "done">("start");
-  const [a1, setA1] = useState<number | null>(null);
-  const [a2, setA2] = useState<number | null>(null);
-  const [a3, setA3] = useState<number | null>(null);
-  const score = (a1 === 1 ? 1 : 0) + (a2 === 0 ? 1 : 0) + (a3 === 2 ? 1 : 0);
-  const restart = () => { setStep("start"); setA1(null); setA2(null); setA3(null); };
+  const [answers, setAnswers] = useState<boolean[]>([false, false, false]);
+  const [correct, setCorrect] = useState<boolean | null>(null);
+  const [showExplain, setShowExplain] = useState(false);
+  const [totalTime, setTotalTime] = useState(0);
+  const startTime = useRef(0);
+  const qi = step === "q1" ? 0 : step === "q2" ? 1 : step === "q3" ? 2 : 0;
+  const qData = step.startsWith("q") ? QUIZ_DATA[qi] : null;
+  const score = answers.filter(Boolean).length;
+  const pick = (isCorrect: boolean) => {
+    const now = Date.now();
+    if (startTime.current) setTotalTime((t) => t + (now - startTime.current));
+    setCorrect(isCorrect);
+    setShowExplain(true);
+    setTimeout(() => {
+      const newAnswers = [...answers];
+      newAnswers[qi] = isCorrect;
+      setAnswers(newAnswers);
+      setCorrect(null);
+      setShowExplain(false);
+      if (step === "q1") setStep("q2");
+      else if (step === "q2") setStep("q3");
+      else if (step === "q3") { setStep("done"); burstConfetti({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 } as React.MouseEvent); }
+      startTime.current = Date.now();
+    }, 900);
+  };
+  const restart = () => { setStep("start"); setAnswers([false, false, false]); setCorrect(null); setShowExplain(false); setTotalTime(0); };
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
       <div className="absolute top-1/2 -translate-y-1/2 -right-60 w-[500px] h-[500px] rounded-full glass-orb floating-1 parallax-layer opacity-30" style={{ animationDuration: "18s" }} />
@@ -683,50 +721,75 @@ function DemoShowcase() {
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Demo na żywo</span>
           <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Rozwiąż mini egzamin" /></h2>
-          <p className="mt-3 text-white/40 text-sm">Zobacz jak działa platforma — 3 pytania z matematyki.</p>
+          <p className="mt-3 text-white/40 text-sm">Zobacz jak działa platforma — 3 pytania z matematyki pod presją czasu.</p>
         </div>
         <div className="reveal-scale max-w-xl mx-auto">
-          <div className="org-card rounded-3xl p-8 sm:p-10">
+          <div className="org-card rounded-3xl p-8 sm:p-10 relative overflow-hidden">
             {step === "start" && (
-              <div className="text-center">
+              <div className="text-center" style={{ animation: "quizFade 0.4s ease-out" }}>
                 <div className="w-20 h-20 mx-auto rounded-[24px] bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center mb-6 shadow-lg floating-3"><Notebook className="w-8 h-8 text-black"/></div>
                 <h3 className="text-2xl font-bold">Matematyka — Klasa 6</h3>
-                <p className="mt-2 text-white/40 text-sm">3 pytania · bez limitu czasu · sprawdź swoją wiedzę</p>
-                <button onClick={() => setStep("q1")} className="mt-8 btn-shine inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">Rozpocznij quiz <Play className="w-4 h-4"/></button>
+                <div className="mt-3 flex justify-center gap-4 text-xs text-white/40">
+                  <span className="flex items-center gap-1"><Timer className="w-3.5 h-3.5"/>~30s na pytanie</span>
+                  <span className="flex items-center gap-1"><Target className="w-3.5 h-3.5"/>3 pytania</span>
+                </div>
+                <button onClick={() => { startTime.current = Date.now(); setStep("q1"); }} className="mt-8 btn-shine inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">Rozpocznij quiz <Play className="w-4 h-4"/></button>
               </div>
             )}
-            {step === "q1" && (
-              <div><div className="flex items-center gap-2 text-xs text-white/40 mb-6"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 1/3</div>
-                <p className="text-lg sm:text-xl font-medium text-white/90">Ile wynosi pole kwadratu o boku 5 cm?</p>
-                <div className="mt-5 grid gap-2.5">{[["25 cm²", 1], ["20 cm²", 0], ["10 cm²", 0], ["30 cm²", 0]].map(([t, i]) => (
-                  <button key={t as string} onClick={() => { setA1(i as number); setStep("q2"); }} className="text-left px-5 py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-sm text-white/60 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] hover:text-white transition-all">{t}</button>
-                ))}</div>
-              </div>
-            )}
-            {step === "q2" && (
-              <div><div className="flex items-center gap-2 text-xs text-white/40 mb-6"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 2/3</div>
-                <p className="text-lg sm:text-xl font-medium text-white/90">Która liczba jest podzielna przez 3?</p>
-                <div className="mt-5 grid gap-2.5">{[["124", 0], ["327", 1], ["401", 0], ["550", 0]].map(([t, i]) => (
-                  <button key={t as string} onClick={() => { setA2(i as number); setStep("q3"); }} className="text-left px-5 py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-sm text-white/60 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] hover:text-white transition-all">{t}</button>
-                ))}</div>
-              </div>
-            )}
-            {step === "q3" && (
-              <div><div className="flex items-center gap-2 text-xs text-white/40 mb-6"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 3/3</div>
-                <p className="text-lg sm:text-xl font-medium text-white/90">Jaki jest pierwiastek kwadratowy z 144?</p>
-                <div className="mt-5 grid gap-2.5">{[["10", 0], ["14", 0], ["12", 1], ["16", 0]].map(([t, i]) => (
-                  <button key={t as string} onClick={() => { setA3(i as number); setStep("done"); }} className="text-left px-5 py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-sm text-white/60 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] hover:text-white transition-all">{t}</button>
-                ))}</div>
+            {qData && (step === "q1" || step === "q2" || step === "q3") && (
+              <div key={step} style={{ animation: "quizFade 0.35s ease-out" }}>
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-2 text-xs text-white/40">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400"/>
+                    Pytanie {qi + 1}/3
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-white/30 font-mono">
+                    <Timer className="w-3 h-3"/> {totalTime > 0 ? `${Math.round(totalTime / 1000)}s` : "00s"}
+                  </div>
+                </div>
+                <div className="flex gap-1 mb-6">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="flex-1 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-700 ${i < qi ? "bg-cyan-400" : i === qi && correct === true ? "bg-emerald-400" : i === qi && correct === false ? "bg-rose-400" : i === qi ? "bg-white/20" : ""}`}
+                        style={{ width: i === qi ? "100%" : i < qi ? "100%" : "0%" }} />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-lg sm:text-xl font-medium text-white/90 leading-relaxed">{qData.q}</p>
+                <div className="mt-5 grid gap-2.5">
+                  {qData.opts.map(([t, isC]) => {
+                    const selected = correct !== null;
+                    const isThis = selected && isC;
+                    const isWrong = selected && correct === false && (t as string) === qData.opts.find((o) => !o[1])?.[0];
+                    return (
+                      <button key={t as string} disabled={selected}
+                        onClick={() => pick(isC as boolean)}
+                        className={`text-left px-5 py-3.5 rounded-xl border text-sm transition-all duration-300 ${selected ? (isThis ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-200" : "border-white/[0.04] bg-white/[0.01] text-white/30") : "border-white/[0.06] bg-white/[0.02] text-white/60 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] hover:text-white hover:scale-[1.01]"}`}>
+                        <span className="flex items-center gap-3">
+                          {selected && isThis && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
+                          {selected && !isThis && !isC && <X className="w-4 h-4 text-rose-400/50 shrink-0" />}
+                          {t as string}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {showExplain && <div className="mt-4 text-xs text-cyan-300/60 animate-pulse">{qData.explain}</div>}
               </div>
             )}
             {step === "done" && (
-              <div className="text-center">
-                <div className={`w-20 h-20 mx-auto rounded-[24px] grid place-items-center mb-6 shadow-lg floating-3 ${score === 3 ? "bg-gradient-to-br from-emerald-400 to-teal-500" : "bg-gradient-to-br from-amber-400 to-orange-500"}`}>
-                  {score === 3 ? <Award className="w-8 h-8 text-black"/> : <Target className="w-8 h-8 text-black"/>}
+              <div className="text-center" style={{ animation: "quizFade 0.5s ease-out" }}>
+                <div className={`w-24 h-24 mx-auto rounded-[28px] grid place-items-center mb-6 shadow-lg ${score === 3 ? "bg-gradient-to-br from-emerald-400 to-teal-500" : score >= 2 ? "bg-gradient-to-br from-cyan-400 to-blue-500" : "bg-gradient-to-br from-amber-400 to-orange-500"}`}
+                  style={{ animation: "splashPulse 1.5s ease-in-out infinite" }}>
+                  {score === 3 ? <Award className="w-10 h-10 text-black"/> : score >= 2 ? <Star className="w-10 h-10 text-black"/> : <Target className="w-10 h-10 text-black"/>}
                 </div>
-                <h3 className="text-2xl font-bold">{score === 3 ? "Celująco! 🎉" : score === 2 ? "Dobrze! 👍" : "Spróbuj jeszcze raz 💪"}</h3>
-                <p className="mt-2 text-white/40 text-sm">Twój wynik: <span className="text-white font-mono font-bold">{score}/3</span></p>
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <h3 className="text-2xl font-bold">{score === 3 ? "Perfect! 🎉" : score >= 2 ? "Dobra robota! 👏" : "Spróbuj jeszcze raz 💪"}</h3>
+                <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-sm">
+                  <span className="text-white/40">Wynik:</span>
+                  <span className={`font-bold font-mono ${score === 3 ? "text-emerald-300" : score >= 2 ? "text-cyan-300" : "text-amber-300"}`}>{score}/3</span>
+                </div>
+                {totalTime > 0 && <p className="mt-2 text-xs text-white/30 font-mono">Czas: {Math.round(totalTime / 1000)}s</p>}
+                <div className="mt-6 flex items-center justify-center gap-3">
                   <button onClick={restart} className="px-6 py-2.5 rounded-full text-sm font-medium border border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.04] transition-all">Rozwiąż ponownie</button>
                   <Link to="/auth/teacher" className="btn-shine inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 transition-all shadow-sm">Załóż konto <ArrowRight className="w-4 h-4"/></Link>
                 </div>
@@ -735,6 +798,7 @@ function DemoShowcase() {
           </div>
           <div className="mt-4 text-center text-xs text-white/30">W rzeczywistym egzaminie AI sprawdza odpowiedzi otwarte i wykrywa ściąganie.</div>
         </div>
+        <style>{`@keyframes quizFade { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }`}</style>
         <div className="mt-16 reveal">
           <div className="org-card rounded-3xl p-6 sm:p-8">
             <div className="grid lg:grid-cols-2 gap-6 items-center">
@@ -822,49 +886,54 @@ function ForWhomFlow() {
   );
 }
 
-/* ──── COMPARISON with slider ──── */
+/* ──── COMPARISON ──── */
 function ComparisonShowcase() {
   const rows = [
-    { l: "Czas przygotowania egzaminu", t: "2–4 godziny", e: "3 minuty" },
-    { l: "Sprawdzanie prac", t: "5–15 godzin", e: "Automatyczne (0.3s)" },
-    { l: "Koszty druku / mies.", t: "200–500 zł", e: "0 zł" },
-    { l: "Ryzyko ściągania", t: "Wysokie", e: "AI wykrywa" },
-    { l: "Dostęp do wyników", t: "1–2 tygodnie", e: "Natychmiast" },
-    { l: "Archiwizacja", t: "Segregator", e: "Chmura · RODO" },
-    { l: "Certyfikaty", t: "Ręcznie", e: "PDF + QR auto" },
-    { l: "Analiza statystyk", t: "Excel ręcznie", e: "Automatyczne wykresy" },
-    { l: "Kontrola postępów", t: "Brak", e: "Na żywo · dashboard" },
-    { l: "Migracja danych", t: "Godziny", e: "Import 1 klik" },
+    { l: "Czas przygotowania egzaminu", t: "2–4 godziny", e: "3 minuty", icon: Timer },
+    { l: "Sprawdzanie prac", t: "5–15 godzin", e: "0.3s (automat)", icon: FileText },
+    { l: "Koszty druku / mies.", t: "200–500 zł", e: "0 zł", icon: DollarSign },
+    { l: "Ryzyko ściągania", t: "Wysokie", e: "AI wykrywa", icon: ShieldCheck },
+    { l: "Dostęp do wyników", t: "1–2 tygodnie", e: "Natychmiast", icon: Zap },
+    { l: "Archiwizacja", t: "Segregator", e: "Chmura · RODO", icon: Database },
+    { l: "Certyfikaty", t: "Ręcznie", e: "PDF + QR auto", icon: ScrollText },
+    { l: "Analiza statystyk", t: "Excel ręcznie", e: "Automatyczne wykresy", icon: BarChart3 },
+    { l: "Kontrola postępów", t: "Brak", e: "Na żywo · dashboard", icon: Activity },
+    { l: "Migracja danych", t: "Godziny", e: "Import 1 klik", icon: Upload },
   ];
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Porównanie</span>
           <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Tradycyjnie vs EduNex" /></h2>
         </div>
-        <div className="reveal">
-          <div className="org-card rounded-3xl p-6 sm:p-8 overflow-hidden">
-            <div className="overflow-x-auto -mx-2">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/[0.06]">
-                    <th className="text-left py-3 pr-4 text-white/40 font-medium">Obszar</th>
-                    <th className="text-left py-3 px-4 text-rose-300/50 font-medium">Tradycyjnie</th>
-                    <th className="text-left py-3 pl-4 text-cyan-300/70 font-medium">EduNex</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r, i) => (
-                    <tr key={r.l} className={`${i < rows.length - 1 ? "border-b border-white/[0.03]" : ""} hover:bg-white/[0.02] transition-colors`}>
-                      <td className="py-3 pr-4 text-white/60">{r.l}</td>
-                      <td className="py-3 px-4 text-rose-300/40"><X className="w-3.5 h-3.5 inline mr-1.5 opacity-50"/>{r.t}</td>
-                      <td className="py-3 pl-4 text-cyan-200/70"><CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 text-emerald-400/70"/>{r.e}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="reveal space-y-3">
+          <div className="flex items-center gap-3 px-4 sm:px-6 py-2 text-xs text-white/40 font-medium">
+            <span className="w-8 shrink-0" />
+            <span className="flex-1">Obszar</span>
+            <span className="w-28 sm:w-36 text-right text-rose-300/50">Tradycyjnie</span>
+            <span className="w-28 sm:w-40 text-right text-cyan-300/70">EduNex</span>
+          </div>
+          {rows.map((r, i) => (
+            <div key={r.l} className="org-card rounded-2xl px-4 sm:px-6 py-3 hover:-translate-y-[1px] transition-all cursor-default stagger-item" style={{ animationDelay: `${i * 0.04}s` }}>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400/10 to-violet-400/10 grid place-items-center shrink-0">
+                  <r.icon className="w-3.5 h-3.5 text-cyan-400/60" />
+                </div>
+                <span className="flex-1 text-white/70 text-xs sm:text-sm font-medium">{r.l}</span>
+                <span className="w-28 sm:w-36 text-right text-rose-300/40 text-xs sm:text-sm flex items-center justify-end gap-1">
+                  <X className="w-3 h-3 opacity-50 shrink-0"/>{r.t}
+                </span>
+                <span className="w-28 sm:w-40 text-right text-cyan-200/80 text-xs sm:text-sm flex items-center justify-end gap-1 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400/70 shrink-0"/>{r.e}
+                </span>
+              </div>
             </div>
+          ))}
+          <div className="text-center pt-2">
+            <Link to="/auth/teacher" className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-medium text-cyan-300/70 hover:text-cyan-200 transition-colors">
+              Zobacz pełne porównanie <ArrowRight className="w-3 h-3"/>
+            </Link>
           </div>
         </div>
       </div>
@@ -1326,10 +1395,11 @@ function FooterFlow() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px]">
-                <div className="w-full h-full rounded-[10px] bg-[oklch(0.08_0.03_270)] grid place-items-center">
-                  <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>
+              <div className="w-9 h-9 rounded-[12px] bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 p-[1.5px] shadow-lg">
+                <div className="w-full h-full rounded-[10px] bg-[oklch(0.06_0.03_270)] grid place-items-center">
+                  <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="url(#logoGradF)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <defs><linearGradient id="logoGradF" x1="0" y1="0" x2="24" y2="24"><stop offset="0%" stopColor="#22d3ee"/><stop offset="50%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient></defs>
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
                   </svg>
                 </div>
               </div>

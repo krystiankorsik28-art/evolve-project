@@ -235,3 +235,38 @@
 }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+/* ──── Animated border glow ──── */
+@keyframes borderGlow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.glow-border { animation: borderGlow 3s ease-in-out infinite; }
+
+/* ──── Digital counter ──── */
+.digital-counter {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ──── Shimmer button ──── */
+.shimmer-button {
+  background: linear-gradient(110deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0) 80%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ──── Progress bar ──── */
+.progress-bar-fill {
+  transition: width 1.5s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ──── New keyframes ──── */
+@keyframes countUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleGlow { 0%, 100% { transform: scale(1); box-shadow: 0 0 20px -8px rgba(34,211,238,0.3); } 50% { transform: scale(1.05); box-shadow: 0 0 40px -8px rgba(34,211,238,0.5); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+.animate-scale-glow { animation: scaleGlow 4s ease-in-out infinite; }
+.animate-slide-right { animation: slideInRight 0.5s ease-out; }
+.animate-slide-left { animation: slideInLeft 0.5s ease-out; }

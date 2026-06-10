@@ -14,7 +14,10 @@ import {
   Laptop, Rocket, Flag, Compass, PenTool,
   ArrowLeft, Play, ChevronRight, ChevronDown, Plus, Tablet, Headphones, Bell,
   Lightbulb, Cable, Workflow, GripVertical, Puzzle, ScrollText, Heart, KeyRound, Video,
-  Infinity,
+  Infinity, Computer, SmartphoneNfc, Newspaper, Radio, GitBranch,
+  ScanFace, Building2, Scale, Fingerprint, Tv, Globe, Paintbrush,
+  Sigma, Orbit, Handshake, Coins, Notebook, SigmaSquare, ListChecks,
+  HandMetal, AlarmCheck, Goal, CandlestickChart,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -52,12 +55,20 @@ function Landing() {
         <Stats />
         <Marquee />
         <BentoFeatures />
+        <InteractiveDemo />
         <ForWhom />
         <Process />
+        <ProductShowcase />
         <Achievements />
+        <Comparison />
+        <TrustBar />
+        <SecuritySection />
         <Testimonials />
         <Pricing />
         <FAQSection />
+        <Integrations />
+        <BlogPreview />
+        <MobileApp />
         <Newsletter />
         <Contact />
         <Footer />
@@ -744,6 +755,11 @@ const FAQ = [
   { q: "Jak wygląda umowa ze szkołą?", a: "Umowa powierzenia danych zgodna z RODO oraz faktura VAT. Proces do trzech dni." },
   { q: "Czy są zniżki dla placówek publicznych?", a: "Tak. Szkoły publiczne otrzymują 30% rabatu na plan Szkoła." },
   { q: "Jak szybko mogę zacząć?", a: "Rejestracja trwa 2 minuty. Dla planu Klasa — dostęp od razu." },
+  { q: "Czy platforma działa na telefonie?", a: "Tak. EduNex działa w każdej przeglądarce — na komputerze, tablecie i telefonie. Uczeń nie potrzebuje aplikacji." },
+  { q: "Jak AI wykrywa ściąganie?", a: "AI analizuje ruchy myszy, wykrywa opuszczanie okna, porównuje odpowiedzi uczniów i wysyła alerty w czasie rzeczywistym." },
+  { q: "Czy mogę przenieść dane z innego systemu?", a: "Tak. Oferujemy bezpłatny import danych z Vulcan, Librusa, CSV i Excel. Nasi specjaliści pomogą w migracji." },
+  { q: "Jakie są wymagania sprzętowe?", a: "Dowolne urządzenie z przeglądarką (Chrome, Edge, Firefox, Opera). Do monitoringu na żywo — stabilne łącze internetowe." },
+  { q: "Czy są szkolenia dla nauczycieli?", a: "Tak. Oferujemy bezpłatne webinary tygodniowe, bazę wiedzy z video poradnikami oraz szkolenia stacjonarne dla rady pedagogicznej." },
 ];
 function FAQSection() {
   const [open, setOpen] = useState<number | null>(0);
@@ -892,7 +908,7 @@ function Footer() {
           </ul>
           <div className="mt-3 text-[10px] text-white/20 font-mono">
             <span className="inline-flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-emerald-400"/>online</span>
-            <span className="ml-2">v6.0</span>
+            <span className="ml-2">v7.0</span>
           </div>
         </div>
       </div>
@@ -903,6 +919,321 @@ function Footer() {
   );
 }
 
-/* ──── SectionHead (reusable) not used — sections are self-contained ──── */
+/* ──── Interactive Quiz Demo ──── */
+function InteractiveDemo() {
+  const [step, setStep] = useState<"start" | "q1" | "q2" | "q3" | "done">("start");
+  const [a1, setA1] = useState<number | null>(null);
+  const [a2, setA2] = useState<number | null>(null);
+  const [a3, setA3] = useState<number | null>(null);
+  const score = (a1 === 1 ? 1 : 0) + (a2 === 0 ? 1 : 0) + (a3 === 2 ? 1 : 0);
+  const restart = () => { setStep("start"); setA1(null); setA2(null); setA3(null); };
+  return (
+    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="reveal text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Demo</div>
+          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Wypróbuj <span className="text-gradient-cyber">egzamin</span> na żywo</h2>
+          <p className="mt-3 text-white/50 text-sm">Zobacz jak działa platforma — rozwiąż krótki quiz z matematyki.</p>
+        </div>
+        <div className="reveal rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
+          {step === "start" && (
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center mb-5 shadow-lg"><Notebook className="w-7 h-7 text-black"/></div>
+              <h3 className="font-display text-xl font-semibold">Matematyka — Klasa 6</h3>
+              <p className="mt-2 text-sm text-white/50">3 pytania · bez limitu czasu</p>
+              <button onClick={() => setStep("q1")} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm bg-white text-black hover:bg-white/90 transition-all shadow-sm">Rozpocznij quiz <Play className="w-4 h-4"/></button>
+            </div>
+          )}
+          {step === "q1" && (
+            <div><div className="flex items-center gap-2 text-xs text-white/40 mb-5"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 1/3</div>
+              <p className="text-base sm:text-lg font-medium text-white/90">Ile wynosi pole kwadratu o boku 5 cm?</p>
+              <div className="mt-4 grid gap-2">{[["25 cm²", 1], ["20 cm²", 0], ["10 cm²", 0], ["30 cm²", 0]].map(([t, i]) => (
+                <button key={t as string} onClick={() => { setA1(i as number); setStep("q2"); }} className="text-left px-4 py-3 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white/70 hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-white transition-all">{t}</button>
+              ))}</div>
+            </div>
+          )}
+          {step === "q2" && (
+            <div><div className="flex items-center gap-2 text-xs text-white/40 mb-5"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 2/3</div>
+              <p className="text-base sm:text-lg font-medium text-white/90">Która liczba jest podzielna przez 3?</p>
+              <div className="mt-4 grid gap-2">{[["124", 0], ["327", 1], ["401", 0], ["550", 0]].map(([t, i]) => (
+                <button key={t as string} onClick={() => { setA2(i as number); setStep("q3"); }} className="text-left px-4 py-3 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white/70 hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-white transition-all">{t}</button>
+              ))}</div>
+            </div>
+          )}
+          {step === "q3" && (
+            <div><div className="flex items-center gap-2 text-xs text-white/40 mb-5"><span className="w-2 h-2 rounded-full bg-cyan-400"/>Pytanie 3/3</div>
+              <p className="text-base sm:text-lg font-medium text-white/90">Jaki jest pierwiastek kwadratowy z 144?</p>
+              <div className="mt-4 grid gap-2">{[["10", 0], ["14", 0], ["12", 1], ["16", 0]].map(([t, i]) => (
+                <button key={t as string} onClick={() => { setA3(i as number); setStep("done"); }} className="text-left px-4 py-3 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white/70 hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-white transition-all">{t}</button>
+              ))}</div>
+            </div>
+          )}
+          {step === "done" && (
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto rounded-2xl grid place-items-center mb-5 shadow-lg ${score === 3 ? "bg-gradient-to-br from-emerald-400 to-teal-500" : "bg-gradient-to-br from-amber-400 to-orange-500"}`}>
+                {score === 3 ? <Award className="w-7 h-7 text-black"/> : <Target className="w-7 h-7 text-black"/>}
+              </div>
+              <h3 className="font-display text-xl font-semibold">{score === 3 ? "Celująco!" : score === 2 ? "Dobrze!" : "Spróbuj jeszcze raz"}</h3>
+              <p className="mt-2 text-sm text-white/50">Twój wynik: {score}/3</p>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                <button onClick={restart} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium border border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.04] transition">Rozwiąż ponownie</button>
+                <Link to="/auth/teacher" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-white text-black hover:bg-white/90 transition shadow-sm">Załóż konto nauczyciela <ArrowRight className="w-4 h-4"/></Link>
+              </div>
+              <div className="mt-5 text-xs text-white/40">W rzeczywistym egzaminie AI sprawdza odpowiedzi otwarte i wykrywa ściąganie.</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── Product Showcase ──── */
+function ProductShowcase() {
+  return (
+    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="reveal text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Platforma</div>
+          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Zobacz jak działa w praktyce</h2>
+        </div>
+        <div className="reveal grid lg:grid-cols-2 gap-8 items-center">
+          <div className="relative">
+            <div className="absolute -inset-4 bg-gradient-to-r from-cyan-400/10 via-violet-400/10 to-fuchsia-400/10 rounded-3xl blur-2xl" />
+            <div className="relative rounded-2xl border border-white/[0.08] bg-[#0a0d18] overflow-hidden shadow-2xl">
+              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06]">
+                <span className="w-3 h-3 rounded-full bg-red-500/70"/><span className="w-3 h-3 rounded-full bg-amber-500/70"/><span className="w-3 h-3 rounded-full bg-emerald-500/70"/>
+                <span className="ml-3 text-[10px] text-white/30 font-mono">Panel nauczyciela · monitoring</span>
+              </div>
+              <div className="p-4 sm:p-6 space-y-3">
+                <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-soft"/><span className="text-xs text-white/60">Na żywo: <span className="text-white font-medium">24 uczniów</span></span></div>
+                  <div className="text-xs text-white/40">Średnia: <span className="text-cyan-300 font-mono">73%</span></div>
+                </div>
+                {[
+                  { n: "Kowalski J.", p: 88, b: "emerald" }, { n: "Nowak A.", p: 72, b: "cyan" },
+                  { n: "Wiśniewska Z.", p: 95, b: "emerald" }, { n: "Kamiński P.", p: 45, b: "rose" },
+                  { n: "Lewandowska M.", p: 68, b: "amber" },
+                ].map((s) => (
+                  <div key={s.n} className="flex items-center gap-3">
+                    <span className="text-xs text-white/50 w-24 truncate">{s.n}</span>
+                    <div className="flex-1 h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className={`h-full rounded-full bg-${s.b}-400/70 transition-all duration-1000`} style={{ width: `${s.p}%` }} />
+                    </div>
+                    <span className={`text-xs font-mono w-8 text-right text-${s.b}-300`}>{s.p}%</span>
+                  </div>
+                ))}
+                <div className="pt-2 text-[10px] text-white/30 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse-soft"/>AI wykrywa nieprawidłowości · auto-zapis co 5s
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h3 className="font-display text-2xl font-semibold">Panel monitoringu <span className="text-gradient-cyber">na żywo</span></h3>
+            <p className="text-sm text-white/50 leading-relaxed">Widzisz postęp każdego ucznia w czasie rzeczywistym. Kolorowe paski pokazują procent ukończenia, a system AI oznacza osoby wymagające uwagi.</p>
+            <ul className="space-y-2 text-sm text-white/60">
+              {[["Postęp na żywo", "Widzisz kto skończył, a kto utknął"], ["Wykrywanie ściągania", "AI analizuje ruchy myszy i ostrzega"], ["Alerty automatyczne", "Powiadomienia o podejrzanych zachowaniach"], ["Kontrola zdalna", "Możesz zatrzymać lub przedłużyć egzamin"]].map(([t, d]) => (
+                <li key={t} className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-400/60 shrink-0 mt-0.5"/><div><span className="text-white/80">{t}</span><span className="text-white/40"> — {d}</span></div></li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── Comparison ──── */
+function Comparison() {
+  const rows = [
+    { l: "Czas przygotowania egzaminu", t: "2–4 godziny", e: "3 minuty" },
+    { l: "Sprawdzanie prac", t: "5–15 godzin", e: "Automatyczne (0.3s)" },
+    { l: "Koszty druku/mies.", t: "200–500 zł", e: "0 zł" },
+    { l: "Ryzyko ściągania", t: "Wysokie", e: "AI wykrywa" },
+    { l: "Dostęp do wyników", t: "1–2 tygodnie", e: "Natychmiast" },
+    { l: "Archiwizacja", t: "Segregator", e: "Chmura · RODO" },
+    { l: "Certyfikaty", t: "Ręcznie", e: "PDF + QR auto" },
+    { l: "Analiza statystyk", t: "Excel ręcznie", e: "Automatyczne wykresy" },
+  ];
+  return (
+    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="reveal text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Porównanie</div>
+          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Tradycyjnie vs <span className="text-gradient-cyber">EduNex</span></h2>
+        </div>
+        <div className="reveal overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                <th className="text-left py-3 pr-4 text-white/40 font-medium">Obszar</th>
+                <th className="text-left py-3 px-4 text-rose-300/60 font-medium">Tradycyjnie</th>
+                <th className="text-left py-3 pl-4 text-cyan-300/80 font-medium">EduNex</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.l} className="border-b border-white/[0.03]">
+                  <td className="py-3 pr-4 text-white/70">{r.l}</td>
+                  <td className="py-3 px-4 text-rose-300/40"><X className="w-3.5 h-3.5 inline mr-1.5"/>{r.t}</td>
+                  <td className="py-3 pl-4 text-cyan-200/80"><CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 text-emerald-400"/>{r.e}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── Trust Bar ──── */
+function TrustBar() {
+  const badges = [
+    { n: "Zgodność z MEN", i: Scale, c: "from-blue-400 to-indigo-500" },
+    { n: "RODO compliant", i: Fingerprint, c: "from-emerald-400 to-teal-500" },
+    { n: "ISO 27001", i: ShieldCheck, c: "from-cyan-400 to-sky-500" },
+    { n: "Szyfrowanie TLS 1.3", i: Lock, c: "from-violet-400 to-fuchsia-500" },
+    { n: "Serwery w UE", i: Globe, c: "from-amber-400 to-orange-500" },
+    { n: "99.98% SLA", i: Activity, c: "from-rose-400 to-pink-500" },
+  ];
+  return (
+    <section className="py-12 border-t border-white/[0.05]">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="reveal text-center mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Zaufanie</div>
+        </div>
+        <div className="reveal grid grid-cols-3 sm:grid-cols-6 gap-3">
+          {badges.map((b) => (
+            <div key={b.n} className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all">
+              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${b.c} grid place-items-center`}><b.i className="w-5 h-5 text-black"/></div>
+              <span className="text-[10px] text-white/50 text-center font-medium leading-tight">{b.n}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── Security Section ──── */
+function SecuritySection() {
+  const items = [
+    { icon: Lock, title: "Szyfrowanie TLS 1.3", desc: "Wszystkie dane przesyłane są z szyfrowaniem klasy bankowej. Certyfikat SSL automatycznie odnawiany.", color: "from-cyan-400 to-blue-500" },
+    { icon: Shield, title: "Ochrona przed atakami", desc: "WAF (Web Application Firewall), ochrona DDoS, rate limiting. Monitorowanie 24/7 przez zespół bezpieczeństwa.", color: "from-violet-400 to-fuchsia-500" },
+    { icon: Fingerprint, title: "RODO — pełna zgodność", desc: "Umowa powierzenia danych, dziennik audytu, prawo do bycia zapomnianym. Eksport danych w 24h.", color: "from-emerald-400 to-teal-500" },
+    { icon: Database, title: "Backupy co 6h", desc: "Automatyczne kopie zapasowe na 3 niezależnych serwerach w różnych lokalizacjach w UE.", color: "from-amber-400 to-orange-500" },
+    { icon: ScanFace, title: "Tryb egzaminacyjny", desc: "Blokada skrótów (Ctrl+C, Alt+Tab), pełny ekran, monitoring aktywności, losowanie pytań.", color: "from-rose-400 to-pink-500" },
+    { icon: Building2, title: "Serwery w Polsce", desc: "Wszystkie dane przechowywane w centrach danych w Warszawie i Krakowie. Poza jurysdykcją CLOUD Act.", color: "from-sky-400 to-indigo-500" },
+    { icon: Users, title: "Kontrola dostępu RBAC", desc: "Role: admin, dyrektor, nauczyciel, uczeń. Dostęp tylko do własnych zasobów. 2FA dla admina.", color: "from-teal-400 to-emerald-500" },
+    { icon: Radio, title: "Monitoring 24/7", desc: "Automatyczne skanowanie podatności, testy penetracyjne co kwartał, SOC zewnętrzny.", color: "from-purple-400 to-violet-500" },
+  ];
+  return (
+    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="reveal text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Bezpieczeństwo</div>
+          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Twoje dane są <span className="text-gradient-cyber">bezpieczne</span></h2>
+          <p className="mt-3 text-white/50 text-sm">Certyfikaty, szyfrowanie i procedury — wszystko, czego wymaga nowoczesna szkoła.</p>
+        </div>
+        <div className="reveal grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {items.map((it) => (
+            <div key={it.title} className="gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-200 hover-bounce">
+              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${it.color} grid place-items-center mb-3`}><it.icon className="w-5 h-5 text-black"/></div>
+              <h3 className="font-display text-sm font-semibold text-white/90">{it.title}</h3>
+              <p className="mt-1.5 text-xs text-white/50 leading-relaxed">{it.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── Integrations ──── */
+function Integrations() {
+  const partners = [
+    { n: "Vulcan", i: Computer, c: "from-blue-400 to-indigo-500" },
+    { n: "Librus", i: Globe2, c: "from-emerald-400 to-teal-500" },
+    { n: "Mobidziennik", i: Smartphone, c: "from-cyan-400 to-sky-500" },
+    { n: "Office 365", i: LayoutDashboard, c: "from-orange-400 to-red-500" },
+    { n: "Google Workspace", i: Search, c: "from-amber-400 to-yellow-500" },
+    { n: "API REST", i: GitBranch, c: "from-violet-400 to-fuchsia-500" },
+  ];
+  return (
+    <section className="py-16 border-t border-white/[0.05]">
+      <div className="max-w-7xl mx-auto px-4 text-center">
+        <div className="reveal">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Integracje</div>
+          <h2 className="mt-4 font-display text-2xl sm:text-3xl font-semibold tracking-tight">Łączy się z Twoimi <span className="text-gradient-cyber">systemami</span></h2>
+          <p className="mt-2 text-sm text-white/50">Współpracujemy z najpopularniejszymi dziennikami i narzędziami w polskich szkołach.</p>
+        </div>
+        <div className="reveal mt-8 grid grid-cols-3 sm:grid-cols-6 gap-3">
+          {partners.map((p) => (
+            <div key={p.n} className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-cyan-400/20 transition-all">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${p.c} grid place-items-center shadow-sm`}><p.i className="w-6 h-6 text-black"/></div>
+              <span className="text-xs text-white/60 font-medium">{p.n}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── Blog Preview ──── */
+function BlogPreview() {
+  const posts = [
+    { t: "Jak AI zmienia egzaminy w polskich szkołach", d: "Sztuczna inteligencja automatyzuje ocenianie i wykrywa ściąganie. Sprawdź, co zmieniło się w 2025 roku.", tag: "AI", time: "5 min czytania" },
+    { t: "RODO w szkole — poradnik dla dyrektora", d: "Wszystko, co musisz wiedzieć o ochronie danych uczniowskich. Umowy, zgody, procedury krok po kroku.", tag: "RODO", time: "8 min czytania" },
+    { t: "Egzaminy online — jak przygotować szkołę", d: "Od wyboru platformy po pierwszy test. Praktyczny przewodnik dla nauczycieli i administratorów.", tag: "Poradnik", time: "6 min czytania" },
+  ];
+  return (
+    <section className="py-20 sm:py-28 border-t border-white/[0.05]">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="reveal text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-[10px] uppercase tracking-[0.15em] text-white/50 font-mono">Blog</div>
+          <h2 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight">Wiedza i <span className="text-gradient-cyber">aktualności</span></h2>
+          <p className="mt-3 text-white/50 text-sm">Porady, aktualności i best practices dla nowoczesnej szkoły.</p>
+        </div>
+        <div className="reveal grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {posts.map((p) => (
+            <div key={p.t} className="gradient-border-card rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all duration-200 hover-bounce cursor-pointer">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-400/10 text-cyan-300">{p.tag}</span>
+                <span className="text-[10px] text-white/30">{p.time}</span>
+              </div>
+              <h3 className="font-display text-sm font-semibold text-white/90">{p.t}</h3>
+              <p className="mt-2 text-xs text-white/50 leading-relaxed">{p.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── Mobile App CTA ──── */
+function MobileApp() {
+  return (
+    <section className="py-16 border-t border-white/[0.05]">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="reveal rounded-2xl border border-white/[0.06] bg-gradient-to-br from-cyan-950/30 via-violet-950/20 to-fuchsia-950/20 p-8 sm:p-12 text-center">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center mb-5 shadow-lg">
+            <SmartphoneNfc className="w-7 h-7 text-black"/>
+          </div>
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight">EduNex w <span className="text-gradient-cyber">Twojej kieszeni</span></h2>
+          <p className="mt-3 text-sm text-white/50 max-w-md mx-auto">Uczniowie wchodzą PIN-em z dowolnego telefonu. Nauczyciele zarządzają egzaminami z tabletu. Zero instalacji.</p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-white/[0.08] bg-white/[0.03] text-sm text-white/50"><Smartphone className="w-4 h-4"/>Android · wkrótce</div>
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-white/[0.08] bg-white/[0.03] text-sm text-white/50"><Monitor className="w-4 h-4"/>PWA · dostępne</div>
+            <Link to="/auth/student" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-white text-black hover:bg-white/90 transition shadow-sm">Wypróbuj w przeglądarce <ArrowRight className="w-4 h-4"/></Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 

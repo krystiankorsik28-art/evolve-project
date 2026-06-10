@@ -11,6 +11,14 @@
       "type": "local",
       "command": ["node", "C:\\Users\\Wychowanek.St8\\Downloads\\evolve-project-shine-main\\evolve-project-shine-main\\computer-control\\dist\\index.js"],
       "enabled": true
+    },
+    "touchpoint": {
+      "type": "local",
+      "command": ["C:\\Users\\Wychowanek.St8\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\touchpoint-mcp.exe"],
+      "enabled": true,
+      "env": {
+        "TOUCHPOINT_MODE": "no-vision"
+      }
     }
   }
 }

@@ -347,17 +347,19 @@ function SplashScreen({ onDone }: { onDone: () => void }) {
 
 const SOCIAL_EVENTS = [
   { n: "Zofia Wiśniewska", a: "zakończyła egzamin", s: "92%", g: "emerald" },
-  { n: "III LO w Gdyni", a: "dodała pytania", s: "+bank", g: "cyan" },
-  { n: "Jakub Kamiński", a: "otrzymał certyfikat", s: "matematyka", g: "amber" },
-  { n: "V LO Kraków", a: "rozpoczęła sprawdzian", s: "28 uczniów", g: "violet" },
-  { n: "Hanna Lewandowska", a: "poprawiła wynik", s: "+14 pkt", g: "emerald" },
-  { n: "ZSE Poznań", a: "zaimportowała uczniów", s: "200 z CSV", g: "cyan" },
-  { n: "Maja Szymańska", a: "rozwiązała quiz", s: "100%", g: "emerald" },
-  { n: "SP nr 5", a: "dodała klasę", s: "3B", g: "violet" },
-  { n: "II LO Warszawa", a: "aktywowała monitoring", s: "AI włączone", g: "cyan" },
-  { n: "Paweł Górski", a: "dodał sprawdzian", s: "chemia", g: "amber" },
-  { n: "XIV LO Staszic", a: "przeprowadził egzamin", s: "32 uczniów", g: "emerald" },
-  { n: "Ewa Kwiatkowska", a: "otrzymała certyfikat", s: "język polski", g: "violet" },
+  { n: "III LO w Gdyni", a: "dodała 40 pytań z biologii do banku", s: "gotowe", g: "cyan" },
+  { n: "Jakub K.", a: "otrzymał certyfikat z", s: "matematyki", g: "amber" },
+  { n: "V LO Kraków", a: "rozpoczęła sprawdzian —", s: "28 uczniów", g: "violet" },
+  { n: "Hanna Lewandowska", a: "poprawiła wynik o", s: "+14 pkt", g: "emerald" },
+  { n: "ZSE Poznań", a: "przeniósł 3 klasy z Librusa", s: "200 uczniów", g: "cyan" },
+  { n: "Maja S.", a: "zdobyła certyfikat —", s: "100%", g: "emerald" },
+  { n: "SP Nr 5", a: "dodała klasę", s: "3B", g: "violet" },
+  { n: "II LO Warszawa", a: "włączyła monitoring AI —", s: "działa", g: "cyan" },
+  { n: "Paweł Górski", a: "właśnie ułożył sprawdzian z", s: "chemii", g: "amber" },
+  { n: "XIV LO", a: "przeprowadził egzamin próbny —", s: "32 osoby", g: "emerald" },
+  { n: "Ewa Kwiatkowska", a: "otrzymała certyfikat z", s: "polskiego", g: "violet" },
+  { n: "SP Nr 32", a: "dodała 80 uczniów —", s: "załatwione", g: "cyan" },
+  { n: "III LO Gdynia", a: "przeprowadziło 6 egzaminów dziś", s: "aktywni", g: "emerald" },
 ];
 function SocialProof() {
   const [items, setItems] = useState<{ n: string; a: string; s: string; g: string; id: number }[]>([]);
@@ -366,24 +368,24 @@ function SocialProof() {
     const show = () => {
       const ev = SOCIAL_EVENTS[Math.floor(Math.random() * SOCIAL_EVENTS.length)];
       const id = ++idRef.current;
-      setItems((prev) => [...prev.slice(-3), { ...ev, id }]);
-      setTimeout(() => setItems((prev) => prev.filter((x) => x.id !== id)), 5000 + Math.random() * 2000);
+      setItems((prev) => [...prev.slice(-2), { ...ev, id }]);
+      setTimeout(() => setItems((prev) => prev.filter((x) => x.id !== id)), 6000 + Math.random() * 6000);
     };
-    show();
+    const t1 = setTimeout(show, 2000 + Math.random() * 4000);
     let timeout: ReturnType<typeof setTimeout>;
-    const sched = () => { timeout = setTimeout(() => { show(); sched(); }, 3500 + Math.random() * 5500); };
+    const sched = () => { timeout = setTimeout(() => { show(); sched(); }, 3000 + Math.random() * 11000); };
     sched();
-    return () => clearTimeout(timeout);
+    return () => { clearTimeout(t1); clearTimeout(timeout); };
   }, []);
   const cm: Record<string, string> = { emerald: "#34d399", cyan: "#22d3ee", amber: "#fbbf24", violet: "#a78bfa" };
   return (
-    <div className="fixed bottom-28 left-6 z-50 flex flex-col gap-2.5 max-lg:hidden">
+    <div className="fixed bottom-28 left-6 z-50 flex flex-col gap-2 max-lg:hidden pointer-events-none">
       {items.map((ev) => (
         <div key={ev.id} className="rounded-2xl bg-black/60 backdrop-blur-2xl px-4 py-3 shadow-2xl max-w-[280px] border border-white/[0.06]"
-          style={{ animation: "notifIn 0.4s cubic-bezier(0.16,1,0.3,1)" }}>
+          style={{ animation: "notifIn 0.45s cubic-bezier(0.16,1,0.3,1)" }}>
           <div className="flex items-center gap-3 text-xs">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: cm[ev.g] ?? "#888", boxShadow: `0 0 8px ${cm[ev.g] ?? "#888"}` }} />
-            <div><span className="font-medium text-white/90">{ev.n}</span><span className="text-white/40"> {ev.a}</span> <span className="text-transparent bg-gradient-to-r from-cyan-200 to-violet-200 bg-clip-text font-mono">{ev.s}</span></div>
+            <div><span className="font-medium text-white/90">{ev.n}</span><span className="text-white/40"> {ev.a}</span> <span className="text-white/60 font-mono"> {ev.s}</span></div>
           </div>
         </div>
       ))}
@@ -493,9 +495,9 @@ function Hero() {
     return () => clearTimeout(t);
   }, [char, idx]);
   return (
-    <section className="relative pt-36 sm:pt-48 pb-28 sm:pb-40 overflow-hidden">
+    <section className="relative pt-28 sm:pt-36 pb-24 sm:pb-32 overflow-hidden">
       <div className="absolute inset-0" style={{
-        background: 'radial-gradient(ellipse at 50% 20%, oklch(0.65 0.15 240 / 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, oklch(0.65 0.15 240 / 0.04) 0%, transparent 50%)'
+        background: 'radial-gradient(ellipse at 50% 20%, oklch(0.65 0.15 240 / 0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, oklch(0.65 0.15 240 / 0.02) 0%, transparent 50%)'
       }} />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center relative">
         <div className="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 mb-10 backdrop-blur-sm">
@@ -1135,17 +1137,14 @@ function TestimonialsFlow() {
   useEffect(() => { const iv = setInterval(() => setIdx((i) => (i + 1) % TESTIMONIALS.length), 5000); return () => clearInterval(iv); }, []);
   return (
     <section id="opinie" className="relative py-28 sm:py-36 overflow-hidden section-premium">
-      <div className="absolute top-1/2 -translate-y-1/2 right-0 parallax-layer" data-depth="6" style={{ animationDuration: "15s" }}>
-        <div className="w-[400px] h-[400px] rounded-full glass-orb floating-2" />
-      </div>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
         <div className="reveal mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Opinie</span>
           <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Co mówią nauczyciele" /></h2>
         </div>
         <div key={idx} className="reveal-scale">
-          <div className="card-premium rounded-2xl p-8 sm:p-10">
-            <div className="text-5xl text-accent/20 font-serif leading-none mb-4">"</div>
+          <div className="rounded-2xl p-8 sm:p-10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.06]">
+            <div className="text-5xl text-accent/30 font-serif leading-none mb-4 italic">"</div>
             <blockquote className="text-white/80 text-base sm:text-lg leading-relaxed">{TESTIMONIALS[idx].t}</blockquote>
             <div className="mt-6 flex items-center justify-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-violet-500 grid place-items-center text-black font-semibold text-sm">{TESTIMONIALS[idx].n[0]}</div>
@@ -1194,19 +1193,19 @@ function PricingFlow() {
           <p className="mt-3 text-white/40 text-sm">Płatność kartą, przelewem lub krypto · bez ukrytych kosztów</p>
         </div>
         <div className="flex items-center justify-center gap-4 mb-10">
-          <span className={`text-sm ${!yr ? "text-white/90 font-medium" : "text-white/40"}`}>Miesięcznie</span>
-          <button onClick={() => setYr((v) => !v)} className={`relative w-14 h-7 rounded-full transition-colors ${yr ? "bg-accent" : "bg-white/20"}`}>
-            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-all duration-300 ${yr ? "translate-x-7" : ""}`} />
+          <span className={`text-sm transition-colors ${!yr ? "text-white/90" : "text-white/40"}`}>Miesięcznie</span>
+          <button onClick={() => setYr((v) => !v)} className={`relative w-14 h-7 rounded-full transition-all ${yr ? "bg-accent shadow-[0_0_12px_oklch(0.65_0.15_240_/_0.3)]" : "bg-white/10 hover:bg-white/20"}`}>
+            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${yr ? "translate-x-7" : ""}`} />
           </button>
-          <span className={`text-sm ${yr ? "text-white/90 font-medium" : "text-white/40"}`}>
-            Rocznie <span className="ml-1.5 text-[10px] font-mono bg-emerald-400/15 text-emerald-300/80 px-2 py-0.5 rounded-full">-20%</span>
+          <span className={`text-sm transition-colors ${yr ? "text-white/90" : "text-white/40"}`}>
+            Rocznie <span className="ml-1.5 text-[10px] font-mono bg-emerald-400/20 text-emerald-300/90 px-2 py-0.5 rounded-full">-20%</span>
           </span>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start max-w-7xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-start max-w-5xl mx-auto">
           {PLANS.map((pl) => {
             const price = yr && !isFree(pl.price) && !isContact(pl.price) ? yp(pl.price) : pl.price;
             return (
-              <div key={pl.name} className={`relative card-premium rounded-2xl p-6 sm:p-8 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 hover-glow tilt-card ${pl.feat ? "border-accent/30 bg-gradient-to-b from-cyan-950/30 to-transparent gradient-border" : ""}`}>
+              <div key={pl.name} className={`relative card-premium rounded-2xl p-6 sm:p-8 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 hover-glow tilt-card ${pl.feat ? "border-accent/30 bg-gradient-to-b from-cyan-950/30 via-cyan-950/10 to-transparent gradient-border" : ""}`}>
                 {pl.feat && (
                   <>
                     <div className="absolute -top-px left-8 right-8 h-[2px] rounded-full bg-gradient-to-r from-accent to-fuchsia-400" />
@@ -1545,7 +1544,7 @@ function FooterFlow() {
             </ul>
             <div className="mt-4 text-[10px] text-white/20 font-mono">
               <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent"/>online</span>
-              <span className="ml-2">v10.0</span>
+              <span className="ml-2">v11.1</span>
             </div>
           </div>
         </div>

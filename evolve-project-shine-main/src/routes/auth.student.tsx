@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { Mail, Lock, Eye, EyeOff, GraduationCap, ArrowRight, CheckCircle2, BookOpen, Users, BarChart3, Shield, User, UserPlus, KeyRound, ChevronLeft, Star, Award, Sparkles, Zap } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, GraduationCap, ArrowRight, CheckCircle2, BookOpen, BarChart3, Shield, UserPlus, KeyRound, ChevronLeft, Star, Award } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -39,16 +38,16 @@ function StudentLogin() {
     setBusy(true);
     await new Promise((r) => setTimeout(r, 800));
     localStorage.setItem("user_role", "student");
-    navigate({ to: "/student/dashboard" });
     setBusy(false);
+    navigate({ to: "/student/dashboard" });
   };
 
   const submitRegister = async () => {
     if (!fname || !lname || !email || !pass) { toast.error("Wypełnij wszystkie pola"); return; }
     setBusy(true);
     await new Promise((r) => setTimeout(r, 800));
-    toast.success("Konto utworzone! Sprawdź email.");
     setBusy(false);
+    toast.success("Konto utworzone! Sprawdź email.");
   };
 
   const handlePinDigit = (i: number, v: string) => {
@@ -57,7 +56,7 @@ function StudentLogin() {
     n[i] = v.slice(-1);
     setPin(n);
     if (v && i < 5) pinRefs.current[i + 1]?.focus();
-    if (n.every((d) => d) && i === 5) { toast.success("Zalogowano PIN-em!"); localStorage.setItem("user_role", "student"); navigate({ to: "/student/dashboard" }); }
+    if (n.every((d) => d)) { toast.success("Zalogowano PIN-em!"); localStorage.setItem("user_role", "student"); navigate({ to: "/student/dashboard" }); }
   };
   const handlePinKey = (i: number, e: React.KeyboardEvent) => {
     if (e.key === "Backspace" && !pin[i] && i > 0) pinRefs.current[i - 1]?.focus();

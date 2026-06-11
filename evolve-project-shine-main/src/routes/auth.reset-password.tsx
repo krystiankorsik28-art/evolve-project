@@ -24,8 +24,8 @@ function ResetPassword() {
     if (pass.length < 8) { toast.error("Hasło musi mieć min. 8 znaków"); return; }
     setBusy(true);
     await new Promise((r) => setTimeout(r, 1000));
-    setDone(true);
     setBusy(false);
+    setDone(true);
     setTimeout(() => navigate({ to: "/auth/teacher" }), 2500);
   };
 

@@ -35,10 +35,11 @@ function AdminLogin() {
     if (!email || !pass) { toast.error("Wypełnij wszystkie pola"); return; }
     setBusy(true);
     await new Promise((r) => setTimeout(r, 600));
-    setStep(2);
-    setCountdown(30);
     setBusy(false);
+    setStep(3);
+    setCountdown(30);
     toast.success("Kod OTP wysłany na email");
+    setTimeout(() => otpRefs.current[0]?.focus(), 100);
   };
 
   const verifyOtp = () => {
@@ -47,8 +48,8 @@ function AdminLogin() {
     setTimeout(() => {
       localStorage.setItem("user_role", "admin");
       toast.success("Zweryfikowano!");
-      navigate({ to: "/admin" });
       setBusy(false);
+      navigate({ to: "/admin" });
     }, 600);
   };
 
@@ -98,16 +99,10 @@ function AdminLogin() {
             <ChevronLeft className="w-3 h-3"/>EduNex
           </Link>
 
-          {/* Step indicator */}
-          <div className="flex items-center justify-center gap-2 mb-8">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  step >= s ? "bg-rose-500/20 text-rose-300 border border-rose-500/30" : "bg-white/[0.04] text-white/30 border border-white/[0.06]"
-                }`}>{step > s ? <CheckCircle2 className="w-4 h-4"/> : s}</div>
-                {s < 3 && <div className={`w-8 h-0.5 transition-all ${step > s ? "bg-rose-500/30" : "bg-white/[0.06]"}`} />}
-              </div>
-            ))}
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className={`w-2 h-2 rounded-full ${step === 1 ? "bg-rose-400" : "bg-rose-400/30"}`} />
+            <div className="w-8 h-0.5 bg-white/[0.06]" />
+            <div className={`w-2 h-2 rounded-full ${step === 3 ? "bg-rose-400" : "bg-white/20"}`} />
           </div>
         </div>
 
@@ -141,25 +136,6 @@ function AdminLogin() {
           </div>
         )}
 
-        {step === 2 && (
-          <div className="text-center" style={{ animation: "fadeSlideIn 0.35s ease-out" }}>
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/10 grid place-items-center mb-4"><Mail className="w-7 h-7 text-rose-300"/></div>
-            <div className="text-sm text-white/70">Kod wysłany na</div>
-            <div className="text-sm font-medium text-white mt-1">{email.replace(/(.{3})(.*)(?=@)/, "$1***")}</div>
-            <button onClick={() => setStep(3)} className="auth-submit mt-8" style={{ background: "linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.6 0.15 0))" }}>
-              Mam kod — weryfikuj
-            </button>
-            <div className="mt-4">
-              {countdown > 0 ? (
-                <span className="text-xs text-white/30">Wyślij ponownie za {countdown}s</span>
-              ) : (
-                <button onClick={sendOtp} className="text-xs text-rose-300/70 hover:text-rose-300">Wyślij ponownie</button>
-              )}
-            </div>
-            <button onClick={() => setStep(1)} className="btn-ghost w-full mt-4 justify-center text-xs"><ChevronLeft className="w-3 h-3"/>Wróć</button>
-          </div>
-        )}
-
         {step === 3 && (
           <div style={{ animation: "fadeSlideIn 0.35s ease-out" }}>
             <div className="text-center mb-6">
@@ -177,7 +153,14 @@ function AdminLogin() {
             <button onClick={verifyOtp} disabled={busy} className="auth-submit" style={{ background: "linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.6 0.15 0))" }}>
               {busy ? "Weryfikacja..." : "Zweryfikuj"}
             </button>
-            <button onClick={() => setStep(2)} className="btn-ghost w-full mt-4 justify-center text-xs"><ChevronLeft className="w-3 h-3"/>Wróć</button>
+            <div className="mt-4 text-center">
+              {countdown > 0 ? (
+                <span className="text-xs text-white/30">Wyślij ponownie za {countdown}s</span>
+              ) : (
+                <button onClick={sendOtp} className="text-xs text-rose-300/70 hover:text-rose-300">Wyślij ponownie</button>
+              )}
+            </div>
+            <button onClick={() => { setStep(1); setOtp(["","","","","",""]); }} className="btn-ghost w-full mt-2 justify-center text-xs"><ChevronLeft className="w-3 h-3"/>Wróć</button>
           </div>
         )}
       </div>

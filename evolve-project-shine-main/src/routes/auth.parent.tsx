@@ -32,16 +32,16 @@ function ParentLogin() {
     setBusy(true);
     await new Promise((r) => setTimeout(r, 800));
     localStorage.setItem("user_role", "parent");
-    navigate({ to: "/student/dashboard" });
     setBusy(false);
+    navigate({ to: "/student/dashboard" });
   };
 
   const submitRegister = async () => {
     if (!fname || !lname || !email || !pass) { toast.error("Wypełnij wszystkie pola"); return; }
     setBusy(true);
     await new Promise((r) => setTimeout(r, 800));
-    toast.success("Konto utworzone! Sprawdź email, aby potwierdzić i dodać dziecko.");
     setBusy(false);
+    toast.success("Konto utworzone! Sprawdź email, aby potwierdzić i dodać dziecko.");
   };
 
   return (

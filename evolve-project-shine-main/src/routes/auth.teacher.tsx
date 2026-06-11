@@ -31,16 +31,16 @@ function TeacherLogin() {
     setBusy(true);
     await new Promise((r) => setTimeout(r, 800));
     localStorage.setItem("user_role", "teacher");
-    navigate({ to: "/teacher" });
     setBusy(false);
+    navigate({ to: "/teacher" });
   };
 
   const submitRegister = async () => {
     if (!fname || !lname || !email || !pass) { toast.error("Wypełnij wszystkie pola"); return; }
     setBusy(true);
     await new Promise((r) => setTimeout(r, 800));
-    toast.success("Konto utworzone! Wymaga zatwierdzenia przez admina.");
     setBusy(false);
+    toast.success("Konto utworzone! Wymaga zatwierdzenia przez admina.");
   };
 
   return (

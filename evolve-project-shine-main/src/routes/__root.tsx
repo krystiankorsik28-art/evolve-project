@@ -74,15 +74,38 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "EduNex — Platforma egzaminacyjna" },
+      { title: "EduNex — bezpieczna platforma egzaminacyjna z AI i monitoringiem" },
       { name: "description", content: "EduNex — bezpieczna platforma egzaminacyjna z AI, monitoringiem i e-dziennikiem." },
       { name: "author", content: "EduNex" },
-      { property: "og:title", content: "EduNex — Platforma egzaminacyjna" },
+      { property: "og:title", content: "EduNex — bezpieczna platforma egzaminacyjna z AI i monitoringiem" },
       { property: "og:description", content: "Bezpieczne egzaminy online z AI i monitoringiem." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      {
+        type: "application/ld+json",
+        content: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "EduNex",
+              url: "https://edunex.pl",
+              logo: "https://edunex.pl/favicon.svg",
+              description: "Bezpieczna platforma egzaminacyjna z AI, monitoringiem i e-dziennikiem.",
+            },
+            {
+              "@type": "WebSite",
+              url: "https://edunex.pl",
+              name: "EduNex",
+              description: "Bezpieczne egzaminy online z AI i monitoringiem.",
+              inLanguage: "pl",
+            },
+          ],
+        }),
+      },
     ],
     links: [
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -103,9 +126,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pl">
       <head>
         <HeadContent />
+        <script defer src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');` }} />
       </head>
       <body>
         {children}

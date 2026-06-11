@@ -495,7 +495,7 @@ function Hero() {
     return () => clearTimeout(t);
   }, [char, idx]);
   return (
-    <section className="relative pt-28 sm:pt-36 pb-24 sm:pb-32 overflow-hidden">
+    <section className="relative min-h-[calc(100dvh-64px)] flex flex-col items-center justify-center pt-24 sm:pt-28 pb-24 sm:pb-32 overflow-hidden">
       <div className="absolute inset-0" style={{
         background: 'radial-gradient(ellipse at 50% 20%, oklch(0.65 0.15 240 / 0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, oklch(0.65 0.15 240 / 0.02) 0%, transparent 50%)'
       }} />

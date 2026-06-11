@@ -1,183 +1,113 @@
-import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import {
-  Lock, Loader2, CheckCircle2, AlertTriangle, ArrowLeft,
-  Eye, EyeOff, ShieldCheck,
-} from "lucide-react";
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Lock, Eye, EyeOff, ShieldCheck, CheckCircle2, AlertTriangle, ArrowLeft, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/auth/reset-password")({
   component: ResetPassword,
-  head: () => ({ meta: [{ title: "Resetowanie hasła | EduNex" }] }),
+  head: () => ({ meta: [{ title: "Reset hasła | EduNex" }] }),
 });
 
-function strength(s: string): { level: number; label: string; cls: string } {
-  if (!s) return { level: 0, label: "", cls: "" };
-  let score = 0;
-  if (s.length >= 8) score++; if (s.length >= 12) score++;
-  if (/[A-Z]/.test(s)) score++; if (/[0-9]/.test(s)) score++;
-  if (/[^A-Za-z0-9]/.test(s)) score++;
-  if (score <= 1) return { level: 1, label: "Słabe", cls: "pw-weak" };
-  if (score === 2) return { level: 2, label: "Średnie", cls: "pw-fair" };
-  if (score <= 3) return { level: 3, label: "Dobre", cls: "pw-good" };
-  return { level: 4, label: "Silne", cls: "pw-strong" };
-}
-
 function ResetPassword() {
-  const navigate = useNavigate();
-  const [password, setPassword] = useState("");
+  const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
 
-  // confetti on success
-  const fireConfetti = () => {
-    const c = document.createElement("canvas");
-    c.className = "fixed inset-0 pointer-events-none z-50";
-    c.style.width = "100vw"; c.style.height = "100vh";
-    document.body.appendChild(c);
-    const ctx = c.getContext("2d")!;
-    c.width = window.innerWidth; c.height = window.innerHeight;
-    const colors = ["#22d3ee","#67e8f9","#34d399","#fbbf24","#f472b6","#818cf8"];
-    const pieces: { x: number; y: number; vx: number; vy: number; w: number; h: number; c: string; r: number }[] = [];
-    for (let i = 0; i < 120; i++) {
-      pieces.push({
-        x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.5,
-        vx: (Math.random() - 0.5) * 6, vy: Math.random() * 3 + 2,
-        w: Math.random() * 8 + 4, h: Math.random() * 4 + 2, c: colors[Math.floor(Math.random() * colors.length)],
-        r: Math.random() * 360,
-      });
-    }
-    let frame = 0;
-    const anim = () => {
-      frame++;
-      ctx.clearRect(0, 0, c.width, c.height);
-      for (const p of pieces) {
-        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.r += 5;
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.r * Math.PI) / 180);
-        ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        ctx.restore();
-      }
-      if (frame < 200) requestAnimationFrame(anim);
-      else c.remove();
-    };
-    anim();
+  const submit = async () => {
+    if (!pass || !confirm) { toast.error("Wypełnij wszystkie pola"); return; }
+    if (pass !== confirm) { toast.error("Hasła nie są zgodne"); return; }
+    if (pass.length < 8) { toast.error("Hasło musi mieć min. 8 znaków"); return; }
+    setBusy(true);
+    await new Promise((r) => setTimeout(r, 1000));
+    setDone(true);
+    setBusy(false);
+    setTimeout(() => navigate({ to: "/auth/teacher" }), 2500);
   };
 
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash || !hash.includes("type=recovery")) {
-      setError("Brak poprawnego tokenu resetowania. Poproś o nowy link.");
-    }
-  }, []);
+  if (done) {
+    return (
+      <div className="min-h-screen auth-bg grid place-items-center">
+        <Toaster theme="dark" />
+        <div className="text-center" style={{ animation: "fadeSlideIn 0.5s ease-out" }}>
+          <div className="w-20 h-20 mx-auto rounded-[28px] bg-emerald-500/10 border border-emerald-500/20 grid place-items-center mb-6">
+            <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+          </div>
+          <h2 className="display-md font-bold text-white">Hasło zmienione</h2>
+          <p className="body-sm mt-2">Za chwilę zostaniesz przekierowany do logowania.</p>
+        </div>
+      </div>
+    );
+  }
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password.length < 6) { toast.error("Hasło musi mieć min. 6 znaków"); return; }
-    if (password !== confirm) { toast.error("Hasła nie są zgodne"); return; }
-    setLoading(true);
-    try {
-      const hash = window.location.hash;
-      const params = new URLSearchParams(hash.replace("#", "?"));
-      const accessToken = params.get("access_token");
-      const refreshToken = params.get("refresh_token");
-      if (accessToken && refreshToken) {
-        await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-      }
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      setDone(true);
-      toast.success("Hasło zmienione pomyślnie!");
-      fireConfetti();
-      setTimeout(() => navigate({ to: "/auth/teacher" }), 2500);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Błąd");
-    } finally { setLoading(false); }
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen auth-bg grid place-items-center">
+        <Toaster theme="dark" />
+        <div className="text-center max-w-sm mx-auto px-4" style={{ animation: "fadeSlideIn 0.5s ease-out" }}>
+          <div className="w-20 h-20 mx-auto rounded-[28px] bg-rose-500/10 border border-rose-500/20 grid place-items-center mb-6">
+            <AlertTriangle className="w-10 h-10 text-rose-400" />
+          </div>
+          <h2 className="display-md font-bold text-white">Token wygasł</h2>
+          <p className="body-sm mt-2">Link resetujący stracił ważność. Zażądaj nowego.</p>
+          <Link to="/auth/teacher" className="auth-submit mt-8 inline-flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, oklch(0.65 0.15 240), oklch(0.6 0.15 220))", width: "auto", padding: "0.75rem 2rem" }}>
+            <ArrowLeft className="w-4 h-4"/>Strona logowania
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#05080f] text-white flex relative overflow-hidden">
+    <div className="min-h-screen auth-bg grid place-items-center">
       <Toaster theme="dark" />
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-15%] left-[-8%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-cyan-500/15 via-violet-500/10 to-transparent blur-[160px] animate-[authFloat_25s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-violet-500/12 to-cyan-400/5 blur-[140px] animate-[authFloat_30s_ease-in-out_infinite_reverse]" />
-      </div>
-      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="w-full max-w-sm">
-          <Link to="/" className="inline-flex items-center gap-2 text-white/40 hover:text-white/80 text-sm mb-8 transition-colors">
-            <ArrowLeft className="w-4 h-4"/>EduNex
+      <div className="max-w-sm w-full mx-auto px-4">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-xs mb-6">
+            <ChevronLeft className="w-3 h-3"/>EduNex
           </Link>
-          {done ? (
-            <div className="animate-[fadeSlideIn_0.4s_ease-out] text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-emerald-500/15 border border-emerald-400/30 grid place-items-center">
-                <CheckCircle2 className="w-8 h-8 text-emerald-300" />
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-accent/10 border border-accent/20 grid place-items-center mb-4">
+            <ShieldCheck className="w-7 h-7 text-accent" />
+          </div>
+          <h2 className="display-md font-bold text-white">Ustaw nowe hasło</h2>
+          <p className="body-sm mt-1">Minimum 8 znaków, duża i mała litera, cyfra.</p>
+        </div>
+
+        <div style={{ animation: "fadeSlideIn 0.35s ease-out" }}>
+          <div className="space-y-4">
+            <div>
+              <label className="auth-label">Nowe hasło</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <input type={showPass ? "text" : "password"} value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••••" className="auth-input pl-10 pr-10" />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"><Eye className="w-4 h-4"/></button>
               </div>
-              <h1 className="text-2xl font-display font-bold mb-2">Hasło zmienione</h1>
-              <p className="text-white/50 text-sm">Za chwilę zostaniesz przekierowany do logowania.</p>
-            </div>
-          ) : error ? (
-            <div className="animate-[fadeSlideIn_0.4s_ease-out] text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-red-500/15 border border-red-400/30 grid place-items-center">
-                <AlertTriangle className="w-8 h-8 text-red-300" />
-              </div>
-              <h1 className="text-2xl font-display font-bold mb-2">Niepoprawny link</h1>
-              <p className="text-white/50 text-sm mb-6">{error}</p>
-              <Link to="/auth/teacher" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm">
-                ← Strona logowania
-              </Link>
-            </div>
-          ) : (
-            <div className="animate-[fadeSlideIn_0.4s_ease-out]">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center shadow-lg shadow-cyan-400/20">
-                  <ShieldCheck className="w-6 h-6 text-slate-900" />
-                </div>
-                <div>
-                  <div className="text-[10px] tracking-[0.25em] text-cyan-300/70 uppercase font-mono">EduNex</div>
-                  <h1 className="text-xl font-display">Nowe hasło</h1>
-                </div>
-              </div>
-              <p className="text-white/40 text-sm mb-6">Ustaw nowe hasło do swojego konta.</p>
-              <form onSubmit={onSubmit} className="space-y-4">
-                <label className="block">
-                  <div className="text-[11px] font-medium text-white/40 mb-1.5 tracking-wide">Nowe hasło</div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••" className="w-full h-11 pl-10 pr-10 bg-white/[0.04] border border-white/[0.08] rounded-xl outline-none text-white text-sm placeholder:text-white/20 focus:border-cyan-400/40 focus:bg-white/[0.06]" />
-                    <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
-                      {showPw ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
-                    </button>
+              {pass && (
+                <div className="mt-2">
+                  <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-500 ${pass.length < 6 ? "pw-weak" : pass.length < 10 ? "pw-fair" : pass.length < 14 ? "pw-good" : "pw-strong"}`} />
                   </div>
-                  {password && (
-                    <div className="mt-2">
-                      <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
-                        <div className={`h-full rounded-full transition-all duration-300 ${strength(password).cls}`} />
-                      </div>
-                      <div className="flex justify-between text-[10px] text-white/30 mt-0.5">
-                        <span>{strength(password).label}</span>
-                        <span>{password === confirm ? "✓ Hasła zgodne" : ""}</span>
-                      </div>
-                    </div>
-                  )}
-                </label>
-                <label className="block">
-                  <div className="text-[11px] font-medium text-white/40 mb-1.5 tracking-wide">Potwierdź hasło</div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <input type={showPw ? "text" : "password"} value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} placeholder="••••••" className="w-full h-11 pl-10 bg-white/[0.04] border border-white/[0.08] rounded-xl outline-none text-white text-sm placeholder:text-white/20 focus:border-cyan-400/40 focus:bg-white/[0.06]" />
-                  </div>
-                </label>
-                <button className="relative w-full h-11 rounded-xl bg-gradient-to-r from-cyan-400 to-violet-500 hover:from-cyan-300 hover:to-violet-400 text-slate-900 font-medium text-sm transition-all disabled:opacity-40 inline-flex items-center justify-center gap-2 shadow-lg shadow-cyan-400/20" disabled={loading}>
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Lock className="w-4 h-4"/>}
-                  {loading ? "Zapisywanie..." : "Zmień hasło"}
-                </button>
-              </form>
+                  <div className="text-[10px] text-white/30 mt-1">{pass.length < 6 ? "Słabe" : pass.length < 10 ? "Średnie" : pass.length < 14 ? "Dobre" : "Mocne"}</div>
+                </div>
+              )}
             </div>
-          )}
+            <div>
+              <label className="auth-label">Potwierdź hasło</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <input type={showPass ? "text" : "password"} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" className={`auth-input pl-10 pr-10 ${confirm && pass !== confirm ? "error" : ""}`} />
+              </div>
+              {confirm && pass !== confirm && <div className="text-[10px] text-rose-300/70 mt-1">Hasła nie są zgodne</div>}
+              {confirm && pass === confirm && <div className="text-[10px] text-emerald-300/70 mt-1">Hasła zgodne</div>}
+            </div>
+          </div>
+          <button onClick={submit} disabled={busy} className="auth-submit mt-6">
+            {busy ? "Zmieniam..." : "Zmień hasło"}
+          </button>
         </div>
       </div>
     </div>

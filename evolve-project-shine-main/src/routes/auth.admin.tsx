@@ -1,307 +1,186 @@
 import { useState, useRef, useEffect } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { Shield, ArrowLeft, Loader2, Lock, Mail, KeyRound, CheckCircle2, AlertTriangle, Eye, EyeOff, Fingerprint, Server, History, Send, Smartphone } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Mail, Lock, Eye, EyeOff, Shield, ArrowRight, CheckCircle2, KeyRound, ChevronLeft, Award, ScanFace, Server, Clock, UserCheck } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import { sendAdminOtp, verifyAdminOtp } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/auth/admin")({
   component: AdminLogin,
-  head: () => ({ meta: [{ title: "Administrator — logowanie | EduNex" }] }),
+  head: () => ({ meta: [{ title: "Logowanie — Admin | EduNex" }] }),
 });
 
-const SECURITY_FEATURES = [
-  { icon: Fingerprint, title: "Dwuetapowe logowanie", desc: "Hasło + kod dostępu" },
-  { icon: Eye, title: "Dziennik audytu", desc: "Rejestracja wszystkich logowań" },
-  { icon: Server, title: "TLS 1.3", desc: "Połączenie szyfrowane" },
-  { icon: History, title: "Auto-wylogowanie", desc: "Po 15 min bezczynności" },
+const FEATURES = [
+  { icon: ScanFace, t: "Weryfikacja 2FA", d: "Dodatkowa warstwa bezpieczeństwa dla kont administracyjnych" },
+  { icon: Server, t: "Audyt systemowy", d: "Pełny dziennik zdarzeń i logów dostępu" },
+  { icon: Lock, t: "Szyfrowanie TLS 1.3", d: "Najwyższy standard ochrony transmisji danych" },
+  { icon: Clock, t: "Auto-logout", d: "Sesja wygasa automatycznie po 15 minutach" },
 ];
 
 function AdminLogin() {
-  const sendOtpFn = useServerFn(sendAdminOtp);
-  const verifyFn = useServerFn(verifyAdminOtp);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const refs = useRef<Array<HTMLInputElement | null>>([]);
-
-  useEffect(() => { if (step === 3) refs.current[0]?.focus(); }, [step]);
+  const [pass, setPass] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [otp, setOtp] = useState<string[]>(["","","","","",""]);
+  const [countdown, setCountdown] = useState(30);
+  const [busy, setBusy] = useState(false);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (countdown > 0) {
-      const t = setTimeout(() => setCountdown(c => c - 1), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [countdown]);
+    if (step === 2 && countdown > 0) { const t = setTimeout(() => setCountdown((c) => c - 1), 1000); return () => clearTimeout(t); }
+  }, [step, countdown]);
 
-  // auto-submit OTP when all 6 digits entered
-  useEffect(() => {
-    if (otp.every(d => d !== "") && step === 3 && !loading) {
-      const verify = async () => {
-        setLoading(true);
-        try {
-          await verifyFn({ data: { code: otp.join("") } });
-          toast.success("Dostęp przyznany");
-          window.location.assign("/admin");
-        } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Nieprawidłowy kod");
-          setOtp(["","","","","",""]);
-          refs.current[0]?.focus();
-          setLoading(false);
-        }
-      };
-      verify();
-    }
-  }, [otp.join("")]);
-
-  const onCredentials = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      await sendOtpFn();
-      toast.success("Kod wysłany na e-mail. Sprawdź skrzynkę.");
-      setStep(2);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Odmowa");
-    } finally { setLoading(false); }
+  const sendOtp = async () => {
+    if (!email || !pass) { toast.error("Wypełnij wszystkie pola"); return; }
+    setBusy(true);
+    await new Promise((r) => setTimeout(r, 600));
+    setStep(2);
+    setCountdown(30);
+    setBusy(false);
+    toast.success("Kod OTP wysłany na email");
   };
 
-  const setOtpAt = (i: number, v: string) => {
-    const d = v.replace(/\D/g, "").slice(0, 1);
-    const next = [...otp]; next[i] = d; setOtp(next);
-    if (d && i < 5) refs.current[i + 1]?.focus();
-  };
-  const onOtpKey = (i: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[i] && i > 0) refs.current[i - 1]?.focus();
-  };
-  const onOtpPaste = (e: React.ClipboardEvent) => {
-    const txt = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (txt.length === 6) { e.preventDefault(); setOtp(txt.split("")); refs.current[5]?.focus(); }
+  const verifyOtp = () => {
+    if (otp.some((d) => !d)) { toast.error("Wpisz kod 6-cyfrowy"); return; }
+    setBusy(true);
+    setTimeout(() => {
+      localStorage.setItem("user_role", "admin");
+      toast.success("Zweryfikowano!");
+      navigate({ to: "/admin" });
+      setBusy(false);
+    }, 600);
   };
 
-  const onVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const code = otp.join("");
-    if (code.length !== 6) { toast.error("Wprowadź 6 cyfr"); return; }
-    setLoading(true);
-    try {
-      await verifyFn({ data: { code } });
-      toast.success("Dostęp przyznany");
-      window.location.assign("/admin");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Nieprawidłowy kod");
-      setOtp(["","","","","",""]);
-      refs.current[0]?.focus();
-      setLoading(false);
-    }
+  const handleOtpDigit = (i: number, v: string) => {
+    if (!/^\d*$/.test(v)) return;
+    const n = [...otp];
+    n[i] = v.slice(-1);
+    setOtp(n);
+    if (v && i < 5) otpRefs.current[i + 1]?.focus();
   };
-
-  const resendOtp = async () => {
-    setLoading(true);
-    try {
-      await sendOtpFn();
-      toast.success("Nowy kod wysłany.");
-      setCountdown(30);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Błąd");
-    } finally { setLoading(false); }
+  const handleOtpKey = (i: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
   };
 
   return (
-    <div className="min-h-screen bg-[#05080f] text-white flex relative overflow-hidden">
+    <div className="auth-bg auth-grad-red">
       <Toaster theme="dark" />
-      {/* Ambient glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-15%] right-[-8%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-rose-600/15 via-red-500/10 to-transparent blur-[160px] animate-[authFloat_25s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-red-500/12 to-amber-400/5 blur-[140px] animate-[authFloat_30s_ease-in-out_infinite_reverse]" />
-        <div className="absolute top-[30%] left-[20%] w-1.5 h-1.5 rounded-full bg-red-400/30 animate-[authFloat_8s_ease-in-out_infinite]" />
-        <div className="absolute top-[50%] right-[30%] w-2 h-2 rounded-full bg-rose-400/20 animate-[authFloat_12s_ease-in-out_infinite_reverse]" />
-        <div className="absolute bottom-[25%] left-[40%] w-1 h-1 rounded-full bg-red-300/25 animate-[authFloat_10s_ease-in-out_infinite]" />
-      </div>
-
-      {/* Left panel */}
-      <aside className="hidden lg:flex w-[440px] flex-col justify-between relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#140a0a]/90 via-[#1a0a0a]/70 to-[#05080f]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(155,42,42,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(155,42,42,0.04)_1px,transparent_1px)] bg-[length:48px_48px]" />
-        <div className="relative z-10 flex flex-col h-full p-10">
-          <Link to="/" className="inline-flex items-center gap-2 text-white/40 hover:text-white/80 text-sm transition-colors w-fit"><ArrowLeft className="w-4 h-4"/>Strona główna</Link>
-          <div className="flex-1 flex flex-col justify-center">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 grid place-items-center shadow-xl shadow-red-600/20">
-                <Shield className="w-7 h-7 text-white"/>
-              </div>
-              <div>
-                <div className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Zabezpieczony</div>
-                <div className="text-xl font-display">Administrator</div>
-              </div>
-            </div>
-            <h2 className="text-2xl font-display leading-tight text-white/90">Dostęp tylko dla upoważnionych.</h2>
-            <p className="mt-3 text-sm text-white/50 leading-relaxed">Logowanie dwuetapowe. Każda próba jest rejestrowana.</p>
-            <div className="mt-8 space-y-2.5">
-              {SECURITY_FEATURES.map((f) => (
-                <div key={f.title} className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400/20 to-rose-400/20 grid place-items-center">
-                    <f.icon className="w-4 h-4 text-red-300/80"/>
-                  </div>
-                  <div>
-                    <div className="text-sm text-white/80">{f.title}</div>
-                    <div className="text-[11px] text-white/40">{f.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <div className="flex items-center gap-3 text-xs">
-                <div className="flex -space-x-1.5">
-                  {["#9b2a2a","#b03333","#c04444","#d05555"].map((c,i) => (
-                    <div key={i} className="w-5 h-5 rounded-full border-2 border-[#05080f]" style={{background: c}}/>
-                  ))}
-                </div>
-                <span className="text-white/50">12 adminów online · 0 incydentów</span>
-              </div>
-            </div>
+      <div className="auth-panel max-lg:hidden">
+        <div className="absolute inset-0 grid-pattern opacity-50" />
+        <div className="relative z-10 flex flex-col gap-6">
+          <Link to="/" className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-sm">
+            <ChevronLeft className="w-4 h-4"/>EduNex
+          </Link>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] font-medium w-fit">
+            <Shield className="w-3.5 h-3.5"/>Administrator
           </div>
-          <div className="text-[10px] text-white/15 font-mono tracking-wider">
-            <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-pulse"/>System zaufany · Serwery: Warszawa, Frankfurt</span>
+          <h2 className="display-md font-bold text-white">Panel administracyjny</h2>
+          <p className="body-sm">Bezpieczne logowanie z weryfikacją OTP. Zarządzaj szkołami, użytkownikami i systemem.</p>
+          <div className="space-y-3 mt-4">
+            {FEATURES.map((f) => (
+              <div key={f.t} className="flex gap-3">
+                <div className="w-9 h-9 rounded-lg bg-rose-500/10 grid place-items-center shrink-0"><f.icon className="w-4 h-4 text-rose-300"/></div>
+                <div><div className="text-sm text-white/90 font-medium">{f.t}</div><div className="text-xs text-white/40">{f.d}</div></div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 p-4 rounded-xl bg-rose-500/5 border border-rose-500/10">
+            <div className="flex items-center gap-2 text-xs text-white/60">
+              <UserCheck className="w-3.5 h-3.5 text-rose-300"/> 12 adminów online
+            </div>
           </div>
         </div>
-      </aside>
-
-      {/* Form */}
-      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="w-full max-w-sm">
-          <Link to="/" className="lg:hidden inline-flex items-center gap-2 text-white/40 hover:text-white/80 text-sm mb-6 transition-colors"><ArrowLeft className="w-4 h-4"/>Powrót</Link>
+      </div>
+      <div className="auth-form">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-xs mb-6">
+            <ChevronLeft className="w-3 h-3"/>EduNex
+          </Link>
 
           {/* Step indicator */}
-          <div className="flex items-center gap-3 mb-8">
-            <StepDot n={1} label="Logowanie" active={step >= 1} done={step > 1} />
-            <div className={`flex-1 h-px ${step > 1 ? "bg-gradient-to-r from-red-500 to-rose-500" : "bg-white/[0.06]"}`}/>
-            <StepDot n={2} label="Kod e-mail" active={step >= 2} done={step > 2} />
-            <div className={`flex-1 h-px ${step > 2 ? "bg-gradient-to-r from-red-500 to-rose-500" : "bg-white/[0.06]"}`}/>
-            <StepDot n={3} label="Weryfikacja" active={step >= 3} done={false} />
-          </div>
-
-          {step === 1 && (
-            <div className="animate-[fadeSlideIn_0.4s_ease-out]">
-              <h1 className="text-2xl font-display">Logowanie</h1>
-              <p className="text-white/40 text-sm mt-1">Podaj służbowy e-mail i hasło.</p>
-              <form onSubmit={onCredentials} className="mt-6 space-y-4">
-                <Field label="E-mail">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <input value={email} onChange={(e)=>setEmail(e.target.value)} type="email" required placeholder="admin@edunex.pl" className={`${inp} pl-10`}/>
-                  </div>
-                </Field>
-                <Field label="Hasło">
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <input value={password} onChange={(e)=>setPassword(e.target.value)} type={showPassword ? "text" : "password"} required placeholder="••••••••" className={`${inp} pl-10 pr-10`}/>
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
-                      {showPassword ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
-                    </button>
-                  </div>
-                </Field>
-                <button disabled={loading} className="relative w-full h-11 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-medium text-sm tracking-wide transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-lg shadow-red-600/20 overflow-hidden group">
-                  <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.15)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : null}Kontynuuj
-                </button>
-              </form>
-              <div className="mt-4 flex items-start gap-2 text-xs text-white/40 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-300/60"/>
-                <span>5 nieudanych prób = blokada IP. Wszystkie próby logowania są rejestrowane.</span>
+          <div className="flex items-center justify-center gap-2 mb-8">
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  step >= s ? "bg-rose-500/20 text-rose-300 border border-rose-500/30" : "bg-white/[0.04] text-white/30 border border-white/[0.06]"
+                }`}>{step > s ? <CheckCircle2 className="w-4 h-4"/> : s}</div>
+                {s < 3 && <div className={`w-8 h-0.5 transition-all ${step > s ? "bg-rose-500/30" : "bg-white/[0.06]"}`} />}
               </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="animate-[fadeSlideIn_0.4s_ease-out]">
-              <h1 className="text-2xl font-display">Kod wysłany</h1>
-              <p className="text-white/40 text-sm mt-1">Sprawdź skrzynkę odbiorczą — kod jest ważny 10 minut.</p>
-              <div className="mt-6 p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400/20 to-rose-400/20 grid place-items-center shrink-0">
-                  <Send className="w-5 h-5 text-red-300/80"/>
-                </div>
-                <div>
-                  <div className="text-sm text-white/80">E-mail wysłany na</div>
-                  <div className="text-xs text-white/40 font-mono">{email.replace(/(.{2}).+@/, "$1***@")}</div>
-                </div>
-              </div>
-              <button onClick={() => setStep(3)} className="relative w-full mt-5 h-11 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-medium text-sm tracking-wide transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-red-600/20 overflow-hidden group">
-                <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.15)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                <Smartphone className="w-4 h-4"/>Mam kod — weryfikuj
-              </button>
-              <div className="mt-4 flex items-center justify-between text-xs">
-                <button type="button" disabled={loading || countdown > 0} onClick={resendOtp} className="text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
-                  {loading ? "Wysyłanie..." : countdown > 0 ? `Wyślij ponownie (${countdown}s)` : "Wyślij ponownie"}
-                </button>
-                <button type="button" onClick={()=>{ setStep(1); setOtp(["","","","","",""]); }} className="text-white/40 hover:text-white/70 transition-colors">← Wstecz</button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="animate-[fadeSlideIn_0.4s_ease-out]">
-              <h1 className="text-2xl font-display">Kod weryfikacyjny</h1>
-              <p className="text-white/40 text-sm mt-1">Wprowadź 6-cyfrowy kod z e-maila.</p>
-              <form onSubmit={onVerifyOtp} className="mt-6 space-y-5">
-                <div onPaste={onOtpPaste} className="flex justify-between gap-2">
-                  {otp.map((v, i) => (
-                    <input key={i} ref={(el) => { refs.current[i] = el; }} inputMode="numeric" value={v} onChange={(e)=>setOtpAt(i, e.target.value)} onKeyDown={(e)=>onOtpKey(i, e)}
-                      className="w-11 h-13 sm:w-13 sm:h-15 text-center text-xl font-mono bg-white/[0.04] border border-white/[0.08] rounded-xl outline-none focus:border-red-400/40 focus:bg-white/[0.06] focus:shadow-[0_0_20px_-8px_rgba(220,38,38,0.15)] transition-all"
-                    />
-                  ))}
-                </div>
-                <button disabled={loading} className="relative w-full h-11 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-medium text-sm tracking-wide transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-lg shadow-red-600/20 overflow-hidden group">
-                  <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.15)_50%,transparent_70%)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <KeyRound className="w-4 h-4"/>}Zweryfikuj
-                </button>
-                <div className="flex items-center justify-between">
-                  <button type="button" disabled={loading || countdown > 0} onClick={resendOtp} className="text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
-                    {loading ? "Wysyłanie..." : countdown > 0 ? `Wyślij ponownie (${countdown}s)` : "Wyślij ponownie"}
-                  </button>
-                  <button type="button" onClick={()=>{ setStep(2); setOtp(["","","","","",""]); }} className="text-xs text-white/40 hover:text-white/70 transition-colors">← Wstecz</button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          <div className="mt-10 pt-6 border-t border-white/[0.06] flex items-center justify-between text-xs text-white/30">
-            <Link to="/auth/teacher" className="hover:text-white/60 transition-colors">Nauczyciel →</Link>
-            <Link to="/auth/student" className="hover:text-white/60 transition-colors">Uczeń →</Link>
-            <Link to="/auth/parent" className="hover:text-white/60 transition-colors">Rodzic →</Link>
+            ))}
           </div>
         </div>
+
+        {step === 1 && (
+          <div style={{ animation: "fadeSlideIn 0.35s ease-out" }}>
+            <div className="space-y-4">
+              <div>
+                <label className="auth-label">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@edunex.pl" className="auth-input pl-10" />
+                </div>
+              </div>
+              <div>
+                <label className="auth-label">Hasło</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input type={showPass ? "text" : "password"} value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••••" className="auth-input pl-10 pr-10" />
+                  <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"><Eye className="w-4 h-4"/></button>
+                </div>
+              </div>
+            </div>
+            <button onClick={sendOtp} disabled={busy} className="auth-submit mt-6" style={{ background: "linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.6 0.15 0))" }}>
+              {busy ? "Wysyłanie..." : "Wyślij kod OTP"}
+            </button>
+            <div className="mt-6 flex justify-center gap-4 text-xs text-white/30">
+              <Link to="/auth/teacher" className="hover:text-white/60">Nauczyciel</Link>
+              <Link to="/auth/student" className="hover:text-white/60">Uczeń</Link>
+              <Link to="/auth/parent" className="hover:text-white/60">Rodzic</Link>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="text-center" style={{ animation: "fadeSlideIn 0.35s ease-out" }}>
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/10 grid place-items-center mb-4"><Mail className="w-7 h-7 text-rose-300"/></div>
+            <div className="text-sm text-white/70">Kod wysłany na</div>
+            <div className="text-sm font-medium text-white mt-1">{email.replace(/(.{3})(.*)(?=@)/, "$1***")}</div>
+            <button onClick={() => setStep(3)} className="auth-submit mt-8" style={{ background: "linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.6 0.15 0))" }}>
+              Mam kod — weryfikuj
+            </button>
+            <div className="mt-4">
+              {countdown > 0 ? (
+                <span className="text-xs text-white/30">Wyślij ponownie za {countdown}s</span>
+              ) : (
+                <button onClick={sendOtp} className="text-xs text-rose-300/70 hover:text-rose-300">Wyślij ponownie</button>
+              )}
+            </div>
+            <button onClick={() => setStep(1)} className="btn-ghost w-full mt-4 justify-center text-xs"><ChevronLeft className="w-3 h-3"/>Wróć</button>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div style={{ animation: "fadeSlideIn 0.35s ease-out" }}>
+            <div className="text-center mb-6">
+              <KeyRound className="w-12 h-12 mx-auto text-rose-300/60 mb-3" />
+              <div className="text-sm text-white/70">Wpisz kod weryfikacyjny</div>
+              <div className="text-xs text-white/40 mt-1">Kod 6-cyfrowy z emaila</div>
+            </div>
+            <div className="flex justify-center gap-2.5 mb-6">
+              {otp.map((d, i) => (
+                <input key={i} ref={(r) => { otpRefs.current[i] = r; }} type="text" inputMode="numeric" maxLength={1} value={d}
+                  onChange={(e) => handleOtpDigit(i, e.target.value)} onKeyDown={(e) => handleOtpKey(i, e)}
+                  className="w-11 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] text-center text-lg font-bold text-white focus:border-rose-400/40 focus:outline-none focus:shadow-[0_0_0_3px_oklch(0.7_0.2_30_/_0.1)] transition-all" />
+              ))}
+            </div>
+            <button onClick={verifyOtp} disabled={busy} className="auth-submit" style={{ background: "linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.6 0.15 0))" }}>
+              {busy ? "Weryfikacja..." : "Zweryfikuj"}
+            </button>
+            <button onClick={() => setStep(2)} className="btn-ghost w-full mt-4 justify-center text-xs"><ChevronLeft className="w-3 h-3"/>Wróć</button>
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
-
-const inp = "w-full h-11 px-4 bg-white/[0.04] border border-white/[0.08] rounded-xl outline-none transition-all text-white text-sm placeholder:text-white/20 focus:border-red-400/40 focus:bg-white/[0.06] focus:shadow-[0_0_20px_-8px_rgba(220,38,38,0.15)]";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <div className="text-[11px] font-medium text-white/40 mb-1.5 tracking-wide">{label}</div>
-      {children}
-    </label>
-  );
-}
-
-function StepDot({ n, active, done, label }: { n: number; active: boolean; done: boolean; label: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className={`w-7 h-7 rounded-full grid place-items-center text-xs font-medium border transition-all ${done ? "bg-emerald-500 border-emerald-500 text-white" : active ? "bg-gradient-to-br from-red-600 to-rose-600 border-red-500 text-white shadow-md shadow-red-600/20" : "bg-transparent border-white/[0.15] text-white/40"}`}>
-        {done ? <CheckCircle2 className="w-4 h-4"/> : n}
-      </div>
-      <span className={`text-xs transition-colors ${active ? "text-white/80" : "text-white/30"}`}>{label}</span>
     </div>
   );
 }

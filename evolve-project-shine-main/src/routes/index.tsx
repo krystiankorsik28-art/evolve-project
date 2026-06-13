@@ -1438,39 +1438,73 @@ function PricingFlow() {
           <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Wybierz swój plan" /></h2>
           <p className="mt-3 text-white/40 text-sm">Płatność kartą, przelewem lub krypto · bez ukrytych kosztów</p>
         </div>
-        <div className="flex items-center justify-center gap-4 mb-10">
-          <span className={`text-sm transition-colors ${!yr ? "text-white/90" : "text-white/40"}`}>Miesięcznie</span>
-          <button onClick={() => setYr((v) => !v)} className={`relative w-14 h-7 rounded-full transition-all ${yr ? "bg-accent shadow-[0_0_12px_oklch(0.65_0.15_240_/_0.3)]" : "bg-white/10 hover:bg-white/20"}`}>
+        <div className="reveal flex items-center justify-center gap-4 mb-12">
+          <span className={`text-sm font-medium transition-colors ${!yr ? "text-white" : "text-white/40"}`}>Miesięcznie</span>
+          <button onClick={() => setYr((v) => !v)} className={`relative w-14 h-7 rounded-full transition-all ${yr ? "bg-accent shadow-[0_0_16px_oklch(0.65_0.15_240_/_0.4)]" : "bg-white/15 hover:bg-white/25"}`} role="switch" aria-checked={yr}>
             <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${yr ? "translate-x-7" : ""}`} />
           </button>
-          <span className={`text-sm transition-colors ${yr ? "text-white/90" : "text-white/40"}`}>
-            Rocznie <span className="ml-1.5 text-[10px] font-mono bg-emerald-400/20 text-emerald-300/90 px-2 py-0.5 rounded-full">-20%</span>
+          <span className={`text-sm font-medium transition-colors ${yr ? "text-white" : "text-white/40"}`}>
+            Rocznie <span className="ml-1.5 text-[10px] font-semibold bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full">-20%</span>
           </span>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start max-w-5xl mx-auto">
-          {PLANS.map((pl) => {
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-start max-w-5xl mx-auto">
+          {PLANS.slice(0, 3).map((pl) => {
+            const price = yr && !isFree(pl.price) && !isContact(pl.price) ? yp(pl.price) : pl.price;
+            const isFeatured = pl.feat;
+            return (
+              <div key={pl.name} className={`relative rounded-2xl p-7 sm:p-8 flex flex-col h-full transition-all duration-300 ${isFeatured ? "bg-gradient-to-b from-white/[0.1] to-white/[0.03] border border-accent/40 shadow-[0_0_60px_-16px_oklch(0.65_0.15_240_/_0.3)] hover:-translate-y-1.5" : "bg-white/[0.06] border border-white/[0.1] hover:border-white/25 hover:bg-white/[0.09] hover:-translate-y-1"}`}>
+                {isFeatured && (
+                  <>
+                    <div className="absolute -inset-[1px] rounded-2xl pointer-events-none" style={{ background: "linear-gradient(135deg, oklch(0.65 0.15 240 / 0.3), transparent 40%, transparent 60%, oklch(0.65 0.15 240 / 0.3))", zIndex: -1 }} />
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-accent to-fuchsia-500 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-accent/30"><Star className="w-2.5 h-2.5 fill-white" />Popularny</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-semibold text-white/70">{pl.name}</h3>
+                </div>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className={`text-5xl sm:text-6xl font-bold tracking-tight ${isFeatured ? "text-accent" : "text-white"}`}>{price}</span>
+                  <span className="text-sm text-white/40 font-medium">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
+                </div>
+                {yr && !isFree(pl.price) && !isContact(pl.price) && (
+                  <div className="mt-1 text-xs text-emerald-400/80 font-medium">{pl.price} zł/mies przy płatności rocznej</div>
+                )}
+                <div className="mt-6 border-t border-white/[0.06] pt-5">
+                  <ul className="space-y-3.5 text-sm flex-1">
+                    {pl.lines.map((l) => (
+                      <li key={l} className="flex gap-3 items-start"><CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${isFeatured ? "text-accent" : "text-white/30"}`} /><span className={isFeatured ? "text-white/85" : "text-white/60"}>{l}</span></li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-8">
+                  {isFree(pl.price) && <button onClick={() => navigate({ to: "/auth/teacher" })} className="w-full py-3 rounded-xl text-sm font-semibold bg-white text-black hover:bg-white/90 transition-all shadow-lg shadow-white/10 magnetic-btn">Rozpocznij za darmo</button>}
+                  {!isFree(pl.price) && !isContact(pl.price) && <NexaPayCheckout planName={pl.name} amount={yr ? yp(pl.price) + " zł" : pl.price + " zł"} amountUsd={String(Math.round(parseInt(pl.price) / 4))} />}
+                  {isContact(pl.price) && <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="w-full py-3 rounded-xl text-sm font-semibold border border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all magnetic-btn">Poproś o wycenę</button>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="reveal mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+          {PLANS.slice(3).map((pl) => {
             const price = yr && !isFree(pl.price) && !isContact(pl.price) ? yp(pl.price) : pl.price;
             return (
-              <div key={pl.name} className={`relative rounded-2xl p-6 sm:p-8 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 ${pl.feat ? "bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-accent/30 shadow-[0_0_40px_-12px_oklch(0.65_0.15_240_/_0.2)]" : "bg-white/[0.05] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07]"} tilt-card`}>
-                {pl.feat && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-accent to-fuchsia-500 text-white text-[10px] font-semibold uppercase tracking-wider shadow-lg"><Star className="w-2.5 h-2.5 fill-white"/>Popularny</span>
-                  </div>
-                )}
-                <h3 className="text-lg font-bold">{pl.name}</h3>
-                <div className="flex items-baseline gap-1 mt-3">
-                  <span className={`text-5xl font-bold tracking-tight ${pl.feat ? "text-accent" : "text-white"}`}>{price}</span>
-                  <span className="text-sm text-white/40">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
+              <div key={pl.name} className="rounded-xl p-5 bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.06] transition-all duration-300 flex flex-col">
+                <h3 className="text-sm font-semibold text-white/70">{pl.name}</h3>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-white">{price}</span>
+                  <span className="text-xs text-white/40">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
                 </div>
-                <ul className="mt-6 space-y-3 text-sm flex-1">
+                <ul className="mt-3 space-y-2 text-xs flex-1">
                   {pl.lines.map((l) => (
-                    <li key={l} className="flex gap-3"><CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${pl.feat ? "text-accent" : "text-white/30"}`} /><span className={pl.feat ? "text-white/80" : "text-white/60"}>{l}</span></li>
+                    <li key={l} className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0 text-white/25" /><span className="text-white/55">{l}</span></li>
                   ))}
                 </ul>
-                <div className="mt-8">
-                  {isFree(pl.price) && <button onClick={() => navigate({ to: "/auth/teacher" })} className="w-full py-3 rounded-full text-sm font-semibold border border-white/20 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all magnetic-btn">Rozpocznij za darmo</button>}
-                  {!isFree(pl.price) && !isContact(pl.price) && <NexaPayCheckout planName={pl.name} amount={yr ? yp(pl.price) + " zł" : pl.price + " zł"} amountUsd={String(Math.round(parseInt(pl.price) / 4))} />}
-                  {isContact(pl.price) && <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="w-full py-3 rounded-full text-sm font-semibold border border-white/20 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all magnetic-btn">Poproś o wycenę</button>}
+                <div className="mt-auto pt-4">
+                  {!isContact(pl.price) && <NexaPayCheckout planName={pl.name} amount={yr ? yp(pl.price) + " zł" : pl.price + " zł"} amountUsd={String(Math.round(parseInt(pl.price) / 4))} />}
+                  {isContact(pl.price) && <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="w-full py-2.5 rounded-xl text-xs font-semibold border border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all magnetic-btn">Poproś o wycenę</button>}
                 </div>
               </div>
             );

@@ -162,7 +162,7 @@ function ParticleBg() {
     animId = requestAnimationFrame(draw);
     return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
   }, []);
-  return <canvas ref={ref} id="particle-canvas" />;
+  return <canvas ref={ref} id="particle-canvas" className="fixed inset-0 pointer-events-none" />;
 }
 
 function Landing() {
@@ -1390,7 +1390,7 @@ function TestimonialsFlow() {
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Opinie</span>
           <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Co mówią nauczyciele" /></h2>
         </div>
-        <div key={idx} className="reveal-scale">
+        <div key={idx} style={{ animation: "testimonialFade 0.5s cubic-bezier(0.16,1,0.3,1)" }}>
           <div className="rounded-2xl p-8 sm:p-10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.06]">
             <div className="text-5xl text-accent/30 font-serif leading-none mb-4 italic">"</div>
             <blockquote className="text-white/80 text-base sm:text-lg leading-relaxed">{TESTIMONIALS[idx].t}</blockquote>
@@ -1409,6 +1409,7 @@ function TestimonialsFlow() {
           ))}
         </div>
       </div>
+      <style>{`@keyframes testimonialFade { from { opacity:0; transform:translateY(16px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }`}</style>
     </section>
   );
 }
@@ -1431,9 +1432,6 @@ function PricingFlow() {
   const isFree = (p: string) => p === "0";
   return (
     <section id="cennik" className="relative py-28 sm:py-36 overflow-hidden section-premium">
-      <div className="absolute -left-40 top-1/2 parallax-layer" data-depth="7" style={{ animationDuration: "12s" }}>
-        <div className="w-[400px] h-[400px] rounded-full glass-orb floating-3" />
-      </div>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="reveal text-center mb-14">
           <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Cennik</span>
@@ -1449,33 +1447,30 @@ function PricingFlow() {
             Rocznie <span className="ml-1.5 text-[10px] font-mono bg-emerald-400/20 text-emerald-300/90 px-2 py-0.5 rounded-full">-20%</span>
           </span>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-start max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start max-w-5xl mx-auto">
           {PLANS.map((pl) => {
             const price = yr && !isFree(pl.price) && !isContact(pl.price) ? yp(pl.price) : pl.price;
             return (
-              <div key={pl.name} className={`relative card-premium rounded-2xl p-6 sm:p-8 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 hover-glow tilt-card ${pl.feat ? "border-accent/30 bg-gradient-to-b from-cyan-950/30 via-cyan-950/10 to-transparent gradient-border" : ""}`}>
+              <div key={pl.name} className={`relative rounded-2xl p-6 sm:p-8 flex flex-col h-full transition-all duration-300 hover:-translate-y-1 ${pl.feat ? "bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-accent/30 shadow-[0_0_40px_-12px_oklch(0.65_0.15_240_/_0.2)]" : "bg-white/[0.05] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07]"} tilt-card`}>
                 {pl.feat && (
-                  <>
-                    <div className="absolute -top-px left-8 right-8 h-[2px] rounded-full bg-gradient-to-r from-accent to-fuchsia-400" />
-                    <div className="absolute -top-3 right-6">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-accent/10 text-accent text-[9px] font-semibold uppercase tracking-wider border border-accent/20 backdrop-blur-sm"><Star className="w-2.5 h-2.5"/>Popularny</span>
-                    </div>
-                  </>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-accent to-fuchsia-500 text-white text-[10px] font-semibold uppercase tracking-wider shadow-lg"><Star className="w-2.5 h-2.5 fill-white"/>Popularny</span>
+                  </div>
                 )}
                 <h3 className="text-lg font-bold">{pl.name}</h3>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className={`text-4xl font-bold ${pl.feat ? "text-accent" : "text-white"}`}>{price}</span>
-                  <span className="text-xs text-white/40">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
+                <div className="flex items-baseline gap-1 mt-3">
+                  <span className={`text-5xl font-bold tracking-tight ${pl.feat ? "text-accent" : "text-white"}`}>{price}</span>
+                  <span className="text-sm text-white/40">{yr && pl.sub === "/mies" ? "/rok" : pl.sub}</span>
                 </div>
-                <ul className="mt-5 space-y-2 text-xs flex-1">
+                <ul className="mt-6 space-y-3 text-sm flex-1">
                   {pl.lines.map((l) => (
-                    <li key={l} className="flex gap-2.5"><CheckCircle2 className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${pl.feat ? "text-accent/80" : "text-white/30"}`} /><span className={pl.feat ? "text-white/80" : "text-white/50"}>{l}</span></li>
+                    <li key={l} className="flex gap-3"><CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${pl.feat ? "text-accent" : "text-white/30"}`} /><span className={pl.feat ? "text-white/80" : "text-white/60"}>{l}</span></li>
                   ))}
                 </ul>
-                <div className="mt-6">
-                  {isFree(pl.price) && <button onClick={() => navigate({ to: "/auth/teacher" })} className="w-full py-3 rounded-full text-sm font-medium border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.04] transition-all magnetic-btn">Rozpocznij za darmo</button>}
+                <div className="mt-8">
+                  {isFree(pl.price) && <button onClick={() => navigate({ to: "/auth/teacher" })} className="w-full py-3 rounded-full text-sm font-semibold border border-white/20 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all magnetic-btn">Rozpocznij za darmo</button>}
                   {!isFree(pl.price) && !isContact(pl.price) && <NexaPayCheckout planName={pl.name} amount={yr ? yp(pl.price) + " zł" : pl.price + " zł"} amountUsd={String(Math.round(parseInt(pl.price) / 4))} />}
-                  {isContact(pl.price) && <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="w-full py-3 rounded-full text-sm font-medium border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.04] transition-all magnetic-btn">Poproś o wycenę</button>}
+                  {isContact(pl.price) && <button onClick={() => document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" })} className="w-full py-3 rounded-full text-sm font-semibold border border-white/20 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all magnetic-btn">Poproś o wycenę</button>}
                 </div>
               </div>
             );

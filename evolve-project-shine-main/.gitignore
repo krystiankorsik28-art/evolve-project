@@ -16,6 +16,9 @@ dist-ssr
 .nitro
 *.local
 
+# Vite timestamp files
+vite.config.timestamp_*
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars

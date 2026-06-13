@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   GraduationCap, Users, Shield, ArrowRight, ArrowUpRight, CheckCircle2, BookOpen,
   Mail, Phone, MapPin, Send, Loader2, Menu, X, FileText, ClipboardList,
-  Library, BarChart3, Lock, Calendar, Sparkles, Zap, Globe2, Activity, ShieldCheck, ChevronUp,
+  Library, BarChart3, Lock, Calendar, Sparkles, Zap, Globe2, Activity,   ShieldCheck, ChevronUp, Code2, Presentation,
   BrainCircuit, Bot, Database, Smartphone, Wifi, Cloud, Download, Upload,
   Timer, Clock, Award, Medal, Star, Trophy, TrendingUp, Target, Eye,
   Search, Filter, LayoutDashboard, Share2, Github,
@@ -220,31 +220,6 @@ function Landing() {
     return () => window.removeEventListener("mousemove", f);
   }, []);
 
-  /* ──── Custom Cursor ──── */
-  const cursorRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) return;
-    const f = (e: MouseEvent) => {
-      if (!cursorRef.current) return;
-      cursorRef.current.style.left = `${e.clientX}px`;
-      cursorRef.current.style.top = `${e.clientY}px`;
-    };
-    const addHover = () => cursorRef.current?.classList.add("hovering");
-    const rmHover = () => cursorRef.current?.classList.remove("hovering");
-    window.addEventListener("mousemove", f, { passive: true });
-    document.querySelectorAll("a, button, input, textarea, [role=button]").forEach(el => {
-      el.addEventListener("mouseenter", addHover);
-      el.addEventListener("mouseleave", rmHover);
-    });
-    return () => {
-      window.removeEventListener("mousemove", f);
-      document.querySelectorAll("a, button, input, textarea, [role=button]").forEach(el => {
-        el.removeEventListener("mouseenter", addHover);
-        el.removeEventListener("mouseleave", rmHover);
-      });
-    };
-  }, [loaded]);
-
   /* ──── Magnetic Buttons ──── */
   useEffect(() => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
@@ -301,6 +276,8 @@ function Landing() {
           <ForWhomFlow />
           <ComparisonShowcase />
           <AchievementsFlow />
+          <AIPlatformFlow />
+          <AiDemoShowcase />
           <SecurityFlow />
           <TestimonialsFlow />
           <PricingFlow />
@@ -551,14 +528,16 @@ function CountUp({ target, suffix }: { target: number; suffix: string }) {
   }, [started]);
   useEffect(() => {
     if (!started) return;
+    let frame: number;
     const t0 = performance.now();
     const step = (now: number) => {
       const pct = Math.min((now - t0) / 2000, 1);
       const e = 1 - Math.pow(1 - pct, 3);
       setVal(target > 1000 ? Math.round(e * target) : parseFloat((e * target).toFixed(1)));
-      if (pct < 1) requestAnimationFrame(step);
+      if (pct < 1) frame = requestAnimationFrame(step);
     };
-    requestAnimationFrame(step);
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
   }, [started, target]);
   return <div ref={ref} className="tabular-nums font-bold">{val.toLocaleString()}{suffix}</div>;
 }
@@ -824,7 +803,7 @@ function DemoShowcase() {
                   {qData.opts.map(([t, isC]) => {
                     const selected = correct !== null;
                     const isThis = selected && isC;
-                    const isWrong = selected && correct === false && (t as string) === qData.opts.find((o) => !o[1])?.[0];
+                    const isWrong = selected && correct === false && isC === false;
                     return (
                       <button key={t as string} disabled={selected}
                         onClick={() => pick(isC as boolean)}
@@ -1042,6 +1021,87 @@ function AchievementsFlow() {
               <div className="text-xs text-white/40 mt-1.5 font-medium">{a.label}</div>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── AI PLATFORM SHOWCASE ──── */
+function AIPlatformFlow() {
+  const capabilities = [
+    { icon: BrainCircuit, title: "AI Tutor", desc: "24/7 asystent do nauki matematyki, języków, programowania", active: true },
+    { icon: FileText, title: "AI Generator", desc: "Generuj pytania egzaminacyjne z tematu, zdjęcia lub ilustracji", active: true },
+    { icon: Sparkles, title: "AI Ocenianie", desc: "Automatyczna ocena wypracowań i odpowiedzi otwartych", active: true },
+    { icon: Code2, title: "Code Mentor", desc: "Nauka programowania z interaktywnym asystentem kodu", active: true },
+    { icon: BarChart3, title: "Progress Analyzer", desc: "Analiza postępów z predykcją wyników AI", active: true },
+    { icon: ShieldCheck, title: "Plagiarism Detector", desc: "Wykrywanie plagiatów i AI-generated content", active: false },
+    { icon: BookOpen, title: "Course Generator", desc: "Automatyczne tworzenie kursów z dowolnego tematu", active: false },
+    { icon: Presentation, title: "Presentation Maker", desc: "Generowanie prezentacji z AI w kilka sekund", active: false },
+  ];
+
+  return (
+    <section className="relative py-28 sm:py-36 overflow-hidden section-premium">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center max-w-3xl mx-auto mb-16">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Platforma AI</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">
+            <TextReveal text="Potęga sztucznej inteligencji w edukacji" />
+          </h2>
+          <p className="mt-3 text-white/40 text-sm max-w-2xl mx-auto">
+            EduNex wykorzystuje najnowsze modele AI do automatyzacji nauczania, oceniania i personalizacji ścieżek edukacyjnych.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {capabilities.map((c, i) => (
+            <div key={c.title} className={`reveal card-premium rounded-2xl p-5 hover:-translate-y-1 stagger-item transition-all ${!c.active ? 'opacity-50' : ''}`}
+              style={{ animationDelay: `${i * 0.05}s` }}>
+              <div className={`w-10 h-10 rounded-xl grid place-items-center mb-4 ${c.active ? 'bg-gradient-to-br from-accent to-violet-500' : 'bg-white/[0.04]'}`}>
+                <c.icon className={`w-5 h-5 ${c.active ? 'text-black' : 'text-white/30'}`} />
+              </div>
+              <h3 className="text-sm font-semibold text-white">{c.title}</h3>
+              <p className="text-xs text-white/40 mt-1.5 leading-relaxed">{c.desc}</p>
+              <div className="mt-3 flex items-center gap-1.5">
+                {c.active ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-[10px] text-emerald-300/70 font-medium">Dostępne</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400/50" />
+                    <span className="text-[10px] text-amber-300/50 font-medium">Wkrótce</span>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="reveal-scale mt-12 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-2">
+                {[Bot, BrainCircuit, Zap].map((Icon, i) => (
+                  <div key={i} className={`w-9 h-9 rounded-full border-2 border-[oklch(0.06_0.03_270)] grid place-items-center ${i === 0 ? 'bg-accent/20 text-accent' : i === 1 ? 'bg-violet-500/20 text-violet-300' : 'bg-amber-500/20 text-amber-300'}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="text-sm font-medium text-white/80">Modele AI: Gemini 3.5 Flash · GPT-4o · Claude 3.5</div>
+                <div className="text-xs text-white/30 mt-0.5">Własny gateway AI z automatycznym routingiem i fallbackiem</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-white/40">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>99.9% uptime</span>
+              <span className="w-1 h-1 rounded-full bg-white/20" />
+              <Zap className="w-3.5 h-3.5 text-accent" />
+              <span>&lt;200ms latency</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1676,7 +1736,7 @@ function StickyCta() {
 /* ──── FOOTER ──── */
 function FooterFlow() {
   const [showTop, setShowTop] = useState(false);
-  useEffect(() => { const f = () => setShowTop(window.scrollY > 400); window.addEventListener("scroll", f); return () => window.removeEventListener("scroll", f); }, []);
+  useEffect(() => { const f = () => setShowTop(window.scrollY > 400); window.addEventListener("scroll", f, { passive: true }); return () => window.removeEventListener("scroll", f); }, []);
   return (
     <footer className="relative border-t border-white/[0.06] pt-16 pb-8 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent" />

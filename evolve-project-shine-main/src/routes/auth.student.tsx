@@ -3,6 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Mail, Lock, Eye, EyeOff, GraduationCap, ArrowRight, CheckCircle2, BookOpen, BarChart3, Shield, UserPlus, KeyRound, ChevronLeft, Star, Award } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { SocialLogin } from "@/components/auth/SocialLogin";
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 export const Route = createFileRoute("/auth/student")({
   component: StudentLogin,
@@ -63,6 +65,7 @@ function StudentLogin() {
   };
 
   return (
+    <AuthProvider>
     <div className="auth-bg">
       <Toaster theme="dark" />
       <div className="auth-panel max-lg:hidden">
@@ -135,6 +138,9 @@ function StudentLogin() {
             <button onClick={submitLogin} disabled={busy} className="auth-submit mt-6">
               {busy ? "Logowanie..." : "Zaloguj się"}
             </button>
+            <div className="mt-6">
+              <SocialLogin mode="login" />
+            </div>
             <div className="mt-6 flex justify-center gap-4 text-xs text-white/30">
               <Link to="/auth/teacher" className="hover:text-white/60">Nauczyciel</Link>
               <Link to="/auth/admin" className="hover:text-white/60">Admin</Link>
@@ -226,5 +232,6 @@ function StudentLogin() {
         )}
       </div>
     </div>
+    </AuthProvider>
   );
 }

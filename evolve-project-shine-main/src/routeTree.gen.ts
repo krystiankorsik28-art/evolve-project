@@ -18,6 +18,7 @@ import { Route as AuthTeacherRouteImport } from './routes/auth.teacher'
 import { Route as AuthStudentRouteImport } from './routes/auth.student'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthParentRouteImport } from './routes/auth.parent'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthAdminRouteImport } from './routes/auth.admin'
 import { Route as ApiAiTutorStreamRouteImport } from './routes/api/ai-tutor-stream'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated.teacher'
@@ -69,6 +70,11 @@ const AuthParentRoute = AuthParentRouteImport.update({
   path: '/auth/parent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthAdminRoute = AuthAdminRouteImport.update({
   id: '/auth/admin',
   path: '/auth/admin',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/teacher': typeof AuthenticatedTeacherRoute
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
   '/auth/admin': typeof AuthAdminRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/parent': typeof AuthParentRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/student': typeof AuthStudentRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/teacher': typeof AuthenticatedTeacherRoute
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
   '/auth/admin': typeof AuthAdminRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/parent': typeof AuthParentRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/student': typeof AuthStudentRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/api/ai-tutor-stream': typeof ApiAiTutorStreamRoute
   '/auth/admin': typeof AuthAdminRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/parent': typeof AuthParentRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/student': typeof AuthStudentRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/api/ai-tutor-stream'
     | '/auth/admin'
+    | '/auth/callback'
     | '/auth/parent'
     | '/auth/reset-password'
     | '/auth/student'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/api/ai-tutor-stream'
     | '/auth/admin'
+    | '/auth/callback'
     | '/auth/parent'
     | '/auth/reset-password'
     | '/auth/student'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/_authenticated/teacher'
     | '/api/ai-tutor-stream'
     | '/auth/admin'
+    | '/auth/callback'
     | '/auth/parent'
     | '/auth/reset-password'
     | '/auth/student'
@@ -208,6 +220,7 @@ export interface RootRouteChildren {
   DokumentyRoute: typeof DokumentyRoute
   ApiAiTutorStreamRoute: typeof ApiAiTutorStreamRoute
   AuthAdminRoute: typeof AuthAdminRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   AuthParentRoute: typeof AuthParentRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthStudentRoute: typeof AuthStudentRoute
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthParentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/admin': {
       id: '/auth/admin'
       path: '/auth/admin'
@@ -348,6 +368,7 @@ const rootRouteChildren: RootRouteChildren = {
   DokumentyRoute: DokumentyRoute,
   ApiAiTutorStreamRoute: ApiAiTutorStreamRoute,
   AuthAdminRoute: AuthAdminRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   AuthParentRoute: AuthParentRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthStudentRoute: AuthStudentRoute,

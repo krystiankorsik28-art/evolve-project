@@ -3,6 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Mail, Lock, Eye, EyeOff, Heart, ArrowRight, CheckCircle2, Bell, LineChart, Shield, Smartphone, User, UserPlus, ChevronLeft, Award, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { SocialLogin } from "@/components/auth/SocialLogin";
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 export const Route = createFileRoute("/auth/parent")({
   component: ParentLogin,
@@ -45,6 +47,7 @@ function ParentLogin() {
   };
 
   return (
+    <AuthProvider>
     <div className="auth-bg auth-grad-emerald">
       <Toaster theme="dark" />
       <div className="auth-panel max-lg:hidden">
@@ -116,6 +119,9 @@ function ParentLogin() {
             <button onClick={submitLogin} disabled={busy} className="auth-submit mt-6" style={{ background: "linear-gradient(135deg, oklch(0.7 0.18 160), oklch(0.75 0.18 70))" }}>
               {busy ? "Logowanie..." : "Zaloguj się"}
             </button>
+            <div className="mt-6">
+              <SocialLogin mode="login" />
+            </div>
             <div className="mt-6 flex justify-center gap-4 text-xs text-white/30">
               <Link to="/auth/teacher" className="hover:text-white/60">Nauczyciel</Link>
               <Link to="/auth/student" className="hover:text-white/60">Uczeń</Link>
@@ -162,5 +168,6 @@ function ParentLogin() {
         )}
       </div>
     </div>
+    </AuthProvider>
   );
 }

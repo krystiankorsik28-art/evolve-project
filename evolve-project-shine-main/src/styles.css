@@ -43,8 +43,11 @@
   --border: oklch(0.15 0.03 260);
   --ring: oklch(0.65 0.15 240);
   --accent: oklch(0.65 0.15 240);
+  --accent-foreground: oklch(1 0 0);
   --surface: oklch(0.09 0.03 260);
+  --surface-elevated: oklch(0.12 0.03 260);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nav-height: 64px;
 }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }
@@ -551,3 +554,77 @@ html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 .light .card-glass { background: oklch(0.06 0.04 264 / 0.03); backdrop-filter: blur(20px); border-color: oklch(0.06 0.04 264 / 0.06); }
 .light .card-featured { background: linear-gradient(135deg, oklch(0.55 0.15 240 / 0.06), oklch(0.55 0.15 240 / 0.02)); border-color: oklch(0.55 0.15 240 / 0.15); }
 .light .spotlight { display: none; }
+
+/* ──── Scroll Reveal Variants ──── */
+.reveal-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+.reveal-up.revealed { opacity: 1; transform: translateY(0); }
+
+/* ──── Glass Morphism ──── */
+.glass-panel { background: oklch(0.98 0 0 / 0.03); backdrop-filter: blur(24px); border: 1px solid oklch(0.98 0 0 / 0.06); }
+.glass-panel-strong { background: oklch(0.06 0.04 260 / 0.7); backdrop-filter: blur(32px); border: 1px solid oklch(0.98 0 0 / 0.08); }
+
+/* ──── Tab Animations ──── */
+.tab-fade { animation: tabFadeIn 0.25s ease-out; }
+@keyframes tabFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ──── Button Premium ──── */
+.btn-premium { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 2rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; background: linear-gradient(135deg, oklch(0.65 0.15 240), oklch(0.7 0.15 250)); color: white; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); box-shadow: 0 4px 20px oklch(0.65 0.15 240 / 0.3); }
+.btn-premium:hover { transform: translateY(-2px); box-shadow: 0 8px 32px oklch(0.65 0.15 240 / 0.4); }
+.btn-premium:active { transform: translateY(0); }
+
+.btn-premium-ghost { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; color: oklch(0.98 0 0 / 0.6); border: 1px solid oklch(0.98 0 0 / 0.08); transition: all 0.2s; background: transparent; }
+.btn-premium-ghost:hover { color: oklch(0.98 0 0); background: oklch(0.98 0 0 / 0.04); border-color: oklch(0.98 0 0 / 0.15); }
+
+/* ──── Skeleton Loading ──── */
+.skeleton-shimmer { background: linear-gradient(90deg, oklch(0.12 0.03 260) 25%, oklch(0.15 0.03 260) 50%, oklch(0.12 0.03 260) 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+@keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ──── Badge ──── */
+.badge-premium { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ──── Progress Steps ──── */
+.progress-step { display: flex; align-items: center; gap: 0.5rem; }
+.progress-step .step-circle { width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; font-size: 0.75rem; font-weight: 600; border: 2px solid var(--border); color: var(--muted-foreground); transition: all 0.3s; }
+.progress-step.active .step-circle { border-color: var(--accent); background: oklch(0.65 0.15 240 / 0.15); color: var(--accent); }
+.progress-step.completed .step-circle { border-color: oklch(0.7 0.18 160); background: oklch(0.7 0.18 160 / 0.15); color: oklch(0.7 0.18 160); }
+
+/* ──── KPI Card ──── */
+.kpi-card { padding: 1.25rem; border-radius: 1rem; background: var(--surface); border: 1px solid var(--border); transition: all 0.3s cubic-bezier(0.16,1,0.3,1); }
+.kpi-card:hover { border-color: oklch(0.65 0.15 240 / 0.15); transform: translateY(-1px); box-shadow: 0 4px 20px oklch(0 0 0 / 0.15); }
+
+/* ──── Notification Dot ──── */
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; background: oklch(0.7 0.2 30); position: relative; }
+.notif-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: oklch(0.7 0.2 30 / 0.3); animation: notifPulse 2s ease-out infinite; }
+@keyframes notifPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+
+/* ──── Status Indicator ──── */
+.status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.status-dot.online { background: oklch(0.7 0.18 160); box-shadow: 0 0 6px oklch(0.7 0.18 160 / 0.5); }
+.status-dot.offline { background: oklch(0.45 0.04 260); }
+.status-dot.away { background: oklch(0.75 0.18 70); }
+
+/* ──── Tooltip Premium ──── */
+.tooltip-premium { position: relative; }
+.tooltip-premium::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) scale(0.95); padding: 0.4rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; background: oklch(0.15 0.04 260); color: oklch(0.98 0 0); white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.2s; border: 1px solid oklch(0.98 0 0 / 0.06); }
+.tooltip-premium:hover::after { opacity: 1; transform: translateX(-50%) scale(1); }
+
+/* ──── Divider Premium ──── */
+.divider-premium { display: flex; align-items: center; gap: 1rem; }
+.divider-premium::before, .divider-premium::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+/* ──── Code Block ──── */
+.code-block { background: oklch(0.04 0.02 260); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.6; overflow-x: auto; }
+
+/* ──── Avatar Stack ──── */
+.avatar-stack { display: flex; }
+.avatar-stack > * { border: 2px solid var(--background); margin-left: -0.5rem; }
+.avatar-stack > *:first-child { margin-left: 0; }
+
+/* ──── Light Mode Additions ──── */
+.light { --accent-foreground: oklch(1 0 0); --surface-elevated: oklch(0.98 0.01 260); }
+.light .glass-panel { background: oklch(1 0 0 / 0.6); border-color: oklch(0.85 0.02 260); }
+.light .glass-panel-strong { background: oklch(0.97 0.01 260 / 0.85); }
+.light .code-block { background: oklch(0.94 0.01 260); }
+.light .skeleton-shimmer { background: linear-gradient(90deg, oklch(0.88 0.02 260) 25%, oklch(0.92 0.02 260) 50%, oklch(0.88 0.02 260) 75%); }
+.light .kpi-card { background: oklch(1 0 0); border-color: oklch(0.85 0.02 260); }
+.light .kpi-card:hover { border-color: oklch(0.55 0.15 240 / 0.2); }

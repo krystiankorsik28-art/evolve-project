@@ -28,8 +28,8 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "EduNex — Państwowa platforma egzaminacyjna" },
-      { name: "description", content: "Oficjalna platforma egzaminacyjna dla polskich szkół. Egzaminy, sprawdziany i certyfikowane testy zgodne z podstawą programową MEN." },
+      { title: "EduNex — Globalna platforma edukacyjna nowej generacji z AI" },
+      { name: "description", content: "EduNex — globalna platforma edukacyjna nowej generacji. Egzaminy online, AI Tutor, kursy, certyfikacja i zarządzanie szkołami. Dla uczniów, nauczycieli, szkół i firm na całym świecie." },
     ],
   }),
 });
@@ -301,11 +301,12 @@ function Landing() {
           <ForWhomFlow />
           <ComparisonShowcase />
           <AchievementsFlow />
-          <TrustBar />
           <SecurityFlow />
           <TestimonialsFlow />
           <PricingFlow />
           <FAQFlow />
+          <GlobalEnterpriseFlow />
+          <InvestorFlow />
           <BlogFlow />
           <MobileCtaFlow />
           <NewsletterFlow />
@@ -409,7 +410,7 @@ function CookieBanner() {
 }
 
 const NAV_LINKS = [
-  ["#funkcje", "Funkcje"], ["#cennik", "Cennik"], ["#opinie", "Opinie"], ["#kontakt", "Kontakt"],
+  ["#funkcje", "Funkcje"], ["#ai-demo", "AI Demo"], ["#cennik", "Cennik"], ["#opinie", "Opinie"], ["#kontakt", "Kontakt"],
 ];
 function NavBar() {
   const [open, setOpen] = useState(false);
@@ -468,8 +469,8 @@ function NavBar() {
         {open && (
           <div className="lg:hidden pb-4 flex flex-col gap-1 text-sm relative z-50"
             style={{ animation: "notifIn 0.3s cubic-bezier(0.16,1,0.3,1)" }}>
-            {["Funkcje", "Cennik", "Opinie", "Kontakt"].map((l, i) => (
-              <a key={l} onClick={() => setOpen(false)} href={`#${["funkcje","cennik","opinie","kontakt"][i]}`} className="px-4 py-3 rounded-xl hover:bg-white/[0.04] text-white/70">{l}</a>
+            {["Funkcje", "AI Demo", "Cennik", "Opinie", "Kontakt"].map((l, i) => (
+              <a key={l} onClick={() => setOpen(false)} href={`#${["funkcje","ai-demo","cennik","opinie","kontakt"][i]}`} className="px-4 py-3 rounded-xl hover:bg-white/[0.04] text-white/70">{l}</a>
             ))}
             <div className="h-px bg-white/[0.06] my-1"/>
             <Link onClick={() => setOpen(false)} to="/auth/student" className="px-4 py-3 rounded-xl hover:bg-white/[0.04] text-white/70">Uczeń</Link>
@@ -482,34 +483,34 @@ function NavBar() {
 }
 
 function Hero() {
-  const headlines = ["w jednym miejscu.", "bez instalacji.", "zgodnie z MEN.", "z monitoringiem AI.", "dla każdej szkoły."];
+  const headlines = ["w jednym miejscu.", "z AI.", "dla każdego.", "na całym świecie.", "bez instalacji."];
   const [text, setText] = useState("");
   const [idx, setIdx] = useState(0);
   const [char, setChar] = useState(0);
   useEffect(() => {
     if (char < headlines[idx].length) {
-      const t = setTimeout(() => { setText(headlines[idx].slice(0, char + 1)); setChar((c) => c + 1); }, 45);
+      const t = setTimeout(() => { setText(headlines[idx].slice(0, char + 1)); setChar((c) => c + 1); }, 50);
       return () => clearTimeout(t);
     }
     const t = setTimeout(() => { setIdx((i) => (i + 1) % headlines.length); setChar(0); setText(""); }, 2800);
     return () => clearTimeout(t);
   }, [char, idx]);
   return (
-    <section className="relative min-h-[calc(100dvh-64px)] flex flex-col items-center justify-center pt-24 sm:pt-28 pb-24 sm:pb-32 overflow-hidden">
+    <section className="relative min-h-screen pt-20 pb-24 sm:pb-32 overflow-hidden">
       <div className="absolute inset-0" style={{
         background: 'radial-gradient(ellipse at 50% 20%, oklch(0.65 0.15 240 / 0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, oklch(0.65 0.15 240 / 0.02) 0%, transparent 50%)'
       }} />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center relative">
         <div className="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-xs text-white/60 mb-10 backdrop-blur-sm">
           <span className="pulse-dot"><span className="w-1.5 h-1.5 rounded-full bg-accent block" /></span>
-          Platforma zatwierdzona przez MEN
+          Globalna platforma edukacyjna nowej generacji
         </div>
         <h1 className="hero-premium text-white mb-6 leading-[0.95]">
-          <span>Egzaminy</span><br />
-          <span className="text-accent">bez tarcia.</span>
+          <span>Edukacja</span><br />
+          <span className="text-accent">wzmacniana AI.</span>
         </h1>
         <p className="body-premium max-w-2xl mx-auto min-h-[1.8em]">
-          Certyfikowana platforma egzaminacyjna. Twórz sprawdziany, zarządzaj klasami i monitoruj wyniki — <span className="text-white/70">{text}<span className="type-cursor" /></span>
+          Platforma edukacyjna nowej generacji. AI Tutor, egzaminy online, kursy, certyfikacja i zarządzanie — <span className="text-white/70">{text}<span className="type-cursor" /></span>
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link to="/auth/teacher" onClick={(e) => { burstConfetti(e); addRipple(e); }}
@@ -522,7 +523,7 @@ function Hero() {
         </div>
         <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-white/40">
           {[
-            ["Zgodność z MEN", ShieldCheck], ["Serwery w UE", Globe2], ["RODO", Lock], ["99.98% uptime", Activity], ["Wsparcie 24/7", Zap],
+            ["AI Tutor & AI Teacher", BrainCircuit], ["Multi-językowość", Globe2], ["Enterprise Security", Lock], ["99.98% uptime", Activity], ["Global CDN", Zap],
           ].map(([t, I]) => (
             <span key={t as string} className="inline-flex items-center gap-1.5"><I className="w-3.5 h-3.5 text-primary/50"/>{t as string}</span>
           ))}
@@ -1047,32 +1048,219 @@ function AchievementsFlow() {
   );
 }
 
-/* ──── TRUST BAR ──── */
-function TrustBar() {
-  const badges = [
-    { n: "Zgodność z MEN", icon: Scale, c: "from-accent to-blue-500" },
-    { n: "RODO compliant", icon: Shield, c: "from-violet-400 to-fuchsia-500" },
-    { n: "ISO 27001", icon: ShieldCheck, c: "from-emerald-400 to-teal-500" },
-    { n: "TLS 1.3", icon: Lock, c: "from-amber-400 to-orange-500" },
-    { n: "Serwery UE", icon: Globe, c: "from-sky-400 to-indigo-500" },
-    { n: "SLA 99.98%", icon: Activity, c: "from-teal-400 to-emerald-500" },
+/* ──── INTERACTIVE AI DEMO ──── */
+function AiDemoShowcase() {
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([
+    { role: "ai", content: "Cześć! Jestem AI Tutor EduNex. Mogę pomóc w nauce matematyki, języków, programowania i nie tylko. O co chcesz zapytać?" }
+  ]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  const DEMO_RESPONSES: Record<string, string> = {
+    matematyka: "Funkcja kwadratowa to f(x) = ax² + bx + c, gdzie a ≠ 0. Jej wykresem jest parabola. Wierzchołek ma współrzędne W(p, q), gdzie p = -b/(2a), q = -Δ/(4a). Δ = b² - 4ac nazywamy wyróżnikiem. Chcesz przećwiczyć na przykładzie?",
+    angielski: "Sure! 'Present Perfect' używamy gdy mówimy o przeszłych wydarzeniach mających wpływ na teraźniejszość. Struktura: have/has + past participle. Przykład: 'I have visited Paris.' W przeciwieństwie do Past Simple, tu ważny jest efekt, nie czas wykonania.",
+    programowanie: "W Pythonie list comprehension to elegancki sposób tworzenia list: [x**2 for x in range(10) if x % 2 == 0] zwróci kwadraty parzystych liczb od 0 do 9. To szybsze i czytelniejsze niż tradycyjna pętla for.",
+    domyślne: "Świetne pytanie! Na platformie EduNex możesz korzystać z AI do generowania kursów, testów, analizy postępów i personalizowanych planów nauki. AI Code Mentor pomoże Ci w programowaniu, a AI Teacher w przygotowaniu materiałów.",
+  };
+
+  const handleSend = () => {
+    const q = input.trim().toLowerCase();
+    if (!q || busy) return;
+    setMessages(prev => [...prev, { role: "user", content: input.trim() }]);
+    setInput("");
+    setBusy(true);
+    setTimeout(() => {
+      const answer = Object.entries(DEMO_RESPONSES).find(([key]) => q.includes(key))?.[1] || DEMO_RESPONSES.domyślne;
+      setMessages(prev => [...prev, { role: "ai", content: answer }]);
+      setBusy(false);
+    }, 1200);
+  };
+
+  useEffect(() => {
+    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  }, [messages]);
+
+  return (
+    <section id="ai-demo" className="relative py-28 sm:py-36 overflow-hidden section-premium">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">AI Demo</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Porozmawiaj z AI Tuturem" /></h2>
+          <p className="mt-3 text-white/40 text-sm">Zadaj pytanie o matematykę, języki, programowanie — AI odpowiada w czasie rzeczywistym.</p>
+        </div>
+        <div className="reveal-scale max-w-2xl mx-auto">
+          <div className="card-premium rounded-2xl overflow-hidden border border-white/[0.08]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-violet-500 grid place-items-center">
+                  <BrainCircuit className="w-4 h-4 text-black" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white/90">AI Tutor</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="status-dot online" />
+                    <span className="text-[10px] text-white/30">Online · EduNex AI</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] text-white/30">
+                <Sparkles className="w-3 h-3 text-accent" />Powered by Gemini
+              </div>
+            </div>
+            <div ref={chatRef} className="h-72 overflow-y-auto p-5 space-y-4 scroll-smooth">
+              {messages.map((m, i) => (
+                <div key={i} className={`flex gap-3 ${m.role === "user" ? "justify-end" : ""}`} style={{ animation: "chatFade 0.3s ease-out" }}>
+                  {m.role === "ai" && (
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-violet-500 grid place-items-center shrink-0 mt-0.5">
+                      <BrainCircuit className="w-3.5 h-3.5 text-black" />
+                    </div>
+                  )}
+                  <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                    m.role === "user"
+                      ? "bg-accent/15 text-white/90 rounded-tr-md"
+                      : "bg-white/[0.04] border border-white/[0.06] text-white/70 rounded-tl-md"
+                  }`}>
+                    {m.content}
+                  </div>
+                  {m.role === "user" && (
+                    <div className="w-7 h-7 rounded-lg bg-white/[0.06] grid place-items-center shrink-0 mt-0.5">
+                      <span className="text-[10px] text-white/50 font-medium">U</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {busy && (
+                <div className="flex gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-violet-500 grid place-items-center shrink-0">
+                    <BrainCircuit className="w-3.5 h-3.5 text-black" />
+                  </div>
+                  <div className="px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
+                    <div className="flex gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2 p-3 border-t border-white/[0.06] bg-white/[0.01]">
+              <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSend()} placeholder="Zapytaj AI o matematykę, angielski, programowanie..." className="flex-1 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-accent/30 transition-all" />
+              <button onClick={handleSend} disabled={busy || !input.trim()} className="p-2.5 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-30 transition-all">
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-center gap-4 text-[10px] text-white/30">
+            <span>Zapytaj o: <button onClick={() => setInput("matematyka")} className="text-accent/70 hover:text-accent underline underline-offset-2">matematykę</button></span>
+            <span><button onClick={() => setInput("angielski")} className="text-accent/70 hover:text-accent underline underline-offset-2">angielski</button></span>
+            <span><button onClick={() => setInput("programowanie")} className="text-accent/70 hover:text-accent underline underline-offset-2">programowanie</button></span>
+          </div>
+        </div>
+      </div>
+      <style>{`@keyframes chatFade { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }`}</style>
+    </section>
+  );
+}
+
+/* ──── GLOBAL & ENTERPRISE ──── */
+function GlobalEnterpriseFlow() {
+  const regions = [
+    { flag: "🇪🇺", name: "Europa", desc: "Serwery w UE, pełna zgodność z RODO i GDPR", count: "12 krajów" },
+    { flag: "🇺🇸", name: "Ameryka Pn.", desc: "CDN w USA i Kanadzie, wsparcie EST timezone", count: "3 kraje" },
+    { flag: "🇬🇧", name: "Wielka Brytania", desc: "Zgodność z UK GDPR, dedykowany serwer w Londynie", count: "UK" },
+    { flag: "🌍", name: "Global", desc: "Global CDN, 30+ języków, multi-walutowość", count: "40+ krajów" },
   ];
   return (
-    <section className="relative py-20 overflow-hidden">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-        <div className="reveal">
-          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm mb-6">Certyfikaty i zgodności</span>
-          <div className="flex flex-wrap justify-center gap-3">
-            {badges.map((b) => (
-              <div key={b.n} className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all">
-                <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${b.c} grid place-items-center`}>
-                  <b.icon className="w-4 h-4 text-black" />
-                </div>
-                <span className="text-xs text-white/60 font-medium">{b.n}</span>
+    <section className="relative py-28 sm:py-36 overflow-hidden section-premium">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 backdrop-blur-sm">Globalna platforma</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Edukacja bez granic" /></h2>
+          <p className="mt-3 text-white/40 text-sm">Działamy na całym świecie — z lokalną zgodnością i globalnym zasięgiem.</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+          {regions.map((r) => (
+            <div key={r.name} className="reveal card-premium rounded-2xl p-6 text-center hover:-translate-y-1 stagger-item">
+              <div className="text-4xl mb-3">{r.flag}</div>
+              <h3 className="font-semibold text-sm text-white/90">{r.name}</h3>
+              <p className="mt-1 text-xs text-white/50">{r.desc}</p>
+              <div className="mt-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/10 text-accent text-[10px] font-medium">{r.count}</div>
+            </div>
+          ))}
+        </div>
+        <div className="reveal-scale">
+          <div className="relative rounded-3xl bg-gradient-to-br from-accent/5 via-violet-950/20 to-fuchsia-950/20 border border-white/[0.06] p-10 sm:p-14 text-center overflow-hidden">
+            <div className="absolute -top-40 -left-40 w-[400px] h-[400px] rounded-full glass-orb floating-2 opacity-30" />
+            <div className="relative">
+              <Building2 className="w-12 h-12 text-accent mx-auto mb-4" />
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Dla firm i <span className="shimmer">organizacji</span></h2>
+              <p className="mt-3 text-white/40 text-sm max-w-2xl mx-auto">Enterprise-grade platforma dla korporacji, uczelni, jednostek rządowych i organizacji międzynarodowych. SSO, SLA 99.99%, dedykowany support, prywatne instancje.</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50"><ShieldCheck className="w-4 h-4 text-accent"/>SSO & SAML</div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50"><Database className="w-4 h-4 text-accent"/>Private Cloud</div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50"><Users className="w-4 h-4 text-accent"/>Do 100k użytkowników</div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/50"><Globe className="w-4 h-4 text-accent"/>Multi-region</div>
               </div>
-            ))}
+            </div>
           </div>
-          <p className="mt-4 text-[10px] text-white/30 tracking-wider uppercase">Audytowany · Certyfikowany · Zgodny z przepisami</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ──── INVESTOR SECTION ──── */
+function InvestorFlow() {
+  const metrics = [
+    { label: "Active Users", value: "36k+", change: "+180% YoY" },
+    { label: "Schools Onboarded", value: "128+", change: "+94% YoY" },
+    { label: "Monthly Exams", value: "25k+", change: "+210% YoY" },
+    { label: "Revenue Growth", value: "3.2x", change: "ARR 2025" },
+  ];
+  return (
+    <section className="relative py-28 sm:py-36 overflow-hidden section-premium">
+      <div className="absolute -right-40 top-1/3 parallax-layer opacity-20" data-depth="8">
+        <div className="w-[500px] h-[500px] rounded-full glass-orb floating-1" />
+      </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="reveal text-center mb-14">
+          <span className="section-label inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-300/80 backdrop-blur-sm">Dla inwestorów</span>
+          <h2 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight"><TextReveal text="Inwestuj w przyszłość edukacji" /></h2>
+          <p className="mt-3 text-white/40 text-sm max-w-lg mx-auto">EduNex to jeden z najszybciej rozwijających się edTechów w Europie Środkowo-Wschodniej.</p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {metrics.map((m) => (
+            <div key={m.label} className="reveal card-premium rounded-2xl p-6 text-center hover:-translate-y-1 stagger-item">
+              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">{m.value}</div>
+              <div className="text-xs text-white/40 mt-1">{m.label}</div>
+              <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-emerald-300/80 font-mono">
+                <TrendingUp className="w-3 h-3" />{m.change}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="reveal-scale max-w-2xl mx-auto">
+          <div className="card-premium rounded-2xl p-8">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 grid place-items-center shrink-0">
+                <Handshake className="w-6 h-6 text-black" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white/90">Dołącz do naszej misji</h3>
+                <p className="mt-2 text-sm text-white/50 leading-relaxed">Budujemy globalną platformę edukacyjną AI nowej generacji. Szukamy partnerów strategicznych i inwestorów, którzy podzielają naszą wizję demokratyzacji edukacji na świecie.</p>
+                <div className="mt-4 flex flex-wrap gap-4 text-xs">
+                  <div className="flex items-center gap-2 text-white/40"><Scale className="w-3.5 h-3.5 text-accent"/>Series A — Q4 2026</div>
+                  <div className="flex items-center gap-2 text-white/40"><Users className="w-3.5 h-3.5 text-accent"/>Zespół: 24 osoby</div>
+                  <div className="flex items-center gap-2 text-white/40"><Globe className="w-3.5 h-3.5 text-accent"/>TAM: $15B+</div>
+                </div>
+                <a href="#kontakt" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-amber-400/10 border border-amber-400/20 text-amber-300/80 hover:bg-amber-400/20 transition-all">
+                  Skontaktuj się z nami <ArrowUpRight className="w-3.5 h-3.5"/>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -3,6 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Mail, Lock, Eye, EyeOff, Shield, ArrowRight, CheckCircle2, KeyRound, ChevronLeft, Award, ScanFace, Server, Clock, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { SocialLogin } from "@/components/auth/SocialLogin";
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 export const Route = createFileRoute("/auth/admin")({
   component: AdminLogin,
@@ -65,6 +67,7 @@ function AdminLogin() {
   };
 
   return (
+    <AuthProvider>
     <div className="auth-bg auth-grad-red">
       <Toaster theme="dark" />
       <div className="auth-panel max-lg:hidden">
@@ -128,6 +131,9 @@ function AdminLogin() {
             <button onClick={sendOtp} disabled={busy} className="auth-submit mt-6" style={{ background: "linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.6 0.15 0))" }}>
               {busy ? "Wysyłanie..." : "Wyślij kod OTP"}
             </button>
+            <div className="mt-6">
+              <SocialLogin mode="login" />
+            </div>
             <div className="mt-6 flex justify-center gap-4 text-xs text-white/30">
               <Link to="/auth/teacher" className="hover:text-white/60">Nauczyciel</Link>
               <Link to="/auth/student" className="hover:text-white/60">Uczeń</Link>
@@ -165,5 +171,6 @@ function AdminLogin() {
         )}
       </div>
     </div>
+    </AuthProvider>
   );
 }

@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { BarChart3, Trophy, BookOpen, MessagesSquare, Settings, Upload, Trash2, Loader2, Download, Plus, MessageCircle, Send, ChevronDown, ChevronLeft, ChevronRight, Check, Sparkles, X, BookText, GraduationCap, FlaskConical, Atom, Leaf, Globe, History, Monitor, Languages } from "lucide-react";
+import { BarChart3, Trophy, BookOpen, MessagesSquare, Settings, Upload, Trash2, Loader2, Download, Plus, MessageCircle, Send, ChevronDown, ChevronLeft, ChevronRight, Check, Sparkles, X, BookText, GraduationCap, FlaskConical, Atom, Leaf, Globe, History, Monitor, Languages, ShieldCheck, Fingerprint, Building2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Modal, Field, inputCls } from "./Egzaminy";
 import { confirmDialog } from "@/components/ConfirmDialog";
+import { AuthProvider } from "@/lib/auth/auth-context";
+import { Setup2FA } from "@/components/auth/Setup2FA";
+import { SessionManager } from "@/components/auth/SessionManager";
+import { DeviceManager } from "@/components/auth/DeviceManager";
+import { PasskeyAuth } from "@/components/auth/PasskeyAuth";
+import { OrganizationManager } from "@/components/auth/OrganizationManager";
 
 /* ===================== ANALITYKA ===================== */
 export function Analityka() {
@@ -444,6 +450,7 @@ export function Ustawienia() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [busy, setBusy] = useState(false);
   const [pwd, setPwd] = useState("");
+  const [tab, setTab] = useState<"profile" | "security" | "sessions" | "devices" | "orgs">("profile");
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -471,33 +478,67 @@ export function Ustawienia() {
     toast.success("Hasło zmienione"); setPwd("");
   };
   if (!profile) return <div className="py-12 text-center text-white/40"><Loader2 className="w-5 h-5 animate-spin inline"/></div>;
+
+  const SETTINGS_TABS = [
+    { id: "profile" as const, label: "Profil", icon: Settings },
+    { id: "security" as const, label: "Bezpieczeństwo", icon: ShieldCheck },
+    { id: "sessions" as const, label: "Sesje", icon: Globe },
+    { id: "devices" as const, label: "Urządzenia", icon: Monitor },
+    { id: "orgs" as const, label: "Organizacje", icon: Users },
+  ];
+
   return (
-    <div className="space-y-5 max-w-2xl">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-        <h3 className="font-display font-bold text-white mb-4 inline-flex items-center gap-2"><Settings className="w-4 h-4 text-cyan-300"/>Profil</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Imię"><input value={profile.first_name ?? ""} onChange={(e)=>setProfile({...profile, first_name: e.target.value})} className={inputCls}/></Field>
-          <Field label="Nazwisko"><input value={profile.last_name ?? ""} onChange={(e)=>setProfile({...profile, last_name: e.target.value})} className={inputCls}/></Field>
-        </div>
-        <Field label="Wyświetlana nazwa"><input value={profile.display_name ?? ""} onChange={(e)=>setProfile({...profile, display_name: e.target.value})} className={inputCls}/></Field>
-        <Field label="Telefon"><input value={profile.phone ?? ""} onChange={(e)=>setProfile({...profile, phone: e.target.value})} className={inputCls}/></Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Język"><select value={profile.language} onChange={(e)=>setProfile({...profile, language: e.target.value})} className={inputCls}>
-            <option value="pl" className="bg-slate-900">Polski</option>
-            <option value="en" className="bg-slate-900">English</option>
-          </select></Field>
-          <Field label="2FA"><label className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg cursor-pointer">
-            <input type="checkbox" checked={profile.two_factor_enabled} onChange={(e)=>setProfile({...profile, two_factor_enabled: e.target.checked})} className="accent-cyan-400"/>
-            <span className="text-white/70 text-sm">{profile.two_factor_enabled?"Włączone":"Wyłączone"}</span>
-          </label></Field>
-        </div>
-        <button disabled={busy} onClick={save} className="mt-2 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm disabled:opacity-50">{busy?"...":"Zapisz profil"}</button>
+    <div className="space-y-5 max-w-3xl">
+      <div className="flex items-center gap-1 bg-white/[0.03] border border-white/[0.06] rounded-xl p-1 w-fit flex-wrap">
+        {SETTINGS_TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+              ${tab === t.id ? 'bg-accent/15 text-accent' : 'text-white/40 hover:text-white/60'}`}>
+            <t.icon className="w-3.5 h-3.5" />{t.label}
+          </button>
+        ))}
       </div>
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-        <h3 className="font-display font-bold text-white mb-4">Zmiana hasła</h3>
-        <Field label="Nowe hasło"><input type="password" value={pwd} onChange={(e)=>setPwd(e.target.value)} className={inputCls}/></Field>
-        <button onClick={changePassword} className="px-4 py-2 rounded-lg bg-violet-500 hover:bg-violet-400 text-white font-semibold text-sm">Zmień hasło</button>
-      </div>
+
+      {tab === "profile" && (
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <h3 className="font-display font-bold text-white mb-4 inline-flex items-center gap-2"><Settings className="w-4 h-4 text-cyan-300"/>Profil</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Imię"><input value={profile.first_name ?? ""} onChange={(e)=>setProfile({...profile, first_name: e.target.value})} className={inputCls}/></Field>
+              <Field label="Nazwisko"><input value={profile.last_name ?? ""} onChange={(e)=>setProfile({...profile, last_name: e.target.value})} className={inputCls}/></Field>
+            </div>
+            <Field label="Wyświetlana nazwa"><input value={profile.display_name ?? ""} onChange={(e)=>setProfile({...profile, display_name: e.target.value})} className={inputCls}/></Field>
+            <Field label="Telefon"><input value={profile.phone ?? ""} onChange={(e)=>setProfile({...profile, phone: e.target.value})} className={inputCls}/></Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Język"><select value={profile.language} onChange={(e)=>setProfile({...profile, language: e.target.value})} className={inputCls}>
+                <option value="pl" className="bg-slate-900">Polski</option>
+                <option value="en" className="bg-slate-900">English</option>
+                <option value="de" className="bg-slate-900">Deutsch</option>
+                <option value="fr" className="bg-slate-900">Français</option>
+                <option value="es" className="bg-slate-900">Español</option>
+                <option value="uk" className="bg-slate-900">Українська</option>
+              </select></Field>
+            </div>
+            <button disabled={busy} onClick={save} className="mt-2 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold text-sm disabled:opacity-50">{busy?"...":"Zapisz profil"}</button>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <h3 className="font-display font-bold text-white mb-4">Zmiana hasła</h3>
+            <Field label="Nowe hasło"><input type="password" value={pwd} onChange={(e)=>setPwd(e.target.value)} className={inputCls}/></Field>
+            <button onClick={changePassword} className="px-4 py-2 rounded-lg bg-violet-500 hover:bg-violet-400 text-white font-semibold text-sm">Zmień hasło</button>
+          </div>
+        </div>
+      )}
+
+      {tab === "security" && (
+        <div className="space-y-5">
+          <Setup2FA />
+          <PasskeyAuth />
+        </div>
+      )}
+
+      {tab === "sessions" && <SessionManager />}
+      {tab === "devices" && <DeviceManager />}
+      {tab === "orgs" && <OrganizationManager />}
     </div>
   );
 }

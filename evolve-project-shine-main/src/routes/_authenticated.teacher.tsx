@@ -8,7 +8,7 @@ import {
   Image as ImageIcon, Wand2, ChevronRight, CalendarClock, Command,
   TrendingUp, TrendingDown, Zap, ArrowUpRight, CheckCircle2, Clock,
   PanelLeftClose, PanelLeft, Rocket, ShieldCheck, Megaphone, MessageCircle, Database,
-  ScrollText, Award, ExternalLink, Globe,
+  ScrollText, Award, ExternalLink, Globe, Code2, Presentation,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -31,6 +31,13 @@ import { Eksport } from "@/components/teacher/Eksport";
 import { EDziennik } from "@/components/teacher/EDziennik";
 import { AiOcen } from "@/components/teacher/AiOcen";
 import { Sprawdziany } from "@/components/teacher/Sprawdziany";
+import { AuthProvider } from "@/lib/auth/auth-context";
+import { AICodeMentor } from "@/components/ai/AICodeMentor";
+import { AICourseGenerator } from "@/components/ai/AICourseGenerator";
+import { AIPresentationGenerator } from "@/components/ai/AIPresentationGenerator";
+import { AIPlagiarismDetector } from "@/components/ai/AIPlagiarismDetector";
+import { AIProgressAnalyzer } from "@/components/ai/AIProgressAnalyzer";
+import { AIMaterialRecommender } from "@/components/ai/AIMaterialRecommender";
 
 export const Route = createFileRoute("/_authenticated/teacher")({
   component: TeacherPanel,
@@ -417,7 +424,7 @@ function TeacherPanel() {
             {tab === "ranking" && <Ranking />}
             {tab === "materialy" && <Materialy go={setTab as (tab: string) => void} />}
             {tab === "forum" && <Forum />}
-            {tab === "ustawienia" && <Ustawienia />}
+            {tab === "ustawienia" && <AuthProvider><Ustawienia /></AuthProvider>}
             {tab === "ogloszenia" && <Ogloszenia />}
             {tab === "wiadomosci" && <Wiadomosci />}
             {tab === "edziennik" && <EDziennik />}
@@ -772,27 +779,58 @@ type AiQ = {
   points: number;
 };
 
+const AI_SUB_TABS = [
+  { id: "generator", label: "AI Generator", icon: Sparkles },
+  { id: "codementor", label: "AI Code Mentor", icon: Code2 },
+  { id: "coursegen", label: "AI Course Generator", icon: BookOpen },
+  { id: "presentation", label: "AI Presentation", icon: Presentation },
+  { id: "plagiarism", label: "Plagiarism Detector", icon: ShieldCheck },
+  { id: "progress", label: "AI Progress Analyzer", icon: BarChart3 },
+  { id: "materials", label: "AI Material Recommender", icon: BookOpen },
+];
+
 function AISection() {
+  const [aiTab, setAiTab] = useState("generator");
   const [mode, setMode] = useState<"photo" | "topic" | "image">("topic");
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/10 via-cyan-500/5 to-emerald-500/10 p-6">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center"><Sparkles className="w-5 h-5 text-slate-900"/></div>
-          <div>
-            <h2 className="text-xl font-display font-bold text-white">AI Generator</h2>
-            <p className="text-xs text-white/50">Gemini · pytania ze zdjęcia, z tematu, lub ilustracje do pytań — z zapisem do banku lub bezpośrednio do egzaminu.</p>
+      <div className="flex flex-wrap items-center gap-2 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-1.5">
+        {AI_SUB_TABS.map(t => (
+          <button key={t.id} onClick={() => setAiTab(t.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all
+              ${aiTab === t.id ? 'bg-accent/15 text-accent border border-accent/20 shadow-sm' : 'text-white/40 hover:text-white/70 border border-transparent'}`}>
+            <t.icon className="w-3.5 h-3.5" />{t.label}
+          </button>
+        ))}
+      </div>
+
+      {aiTab === "generator" && (
+        <>
+          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/10 via-cyan-500/5 to-emerald-500/10 p-6">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 grid place-items-center"><Sparkles className="w-5 h-5 text-slate-900"/></div>
+              <div>
+                <h2 className="text-xl font-display font-bold text-white">AI Generator</h2>
+                <p className="text-xs text-white/50">Gemini · pytania ze zdjęcia, z tematu, lub ilustracje do pytań — z zapisem do banku lub bezpośrednio do egzaminu.</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="flex gap-2 flex-wrap">
-        <TabBtn active={mode==="topic"} onClick={()=>setMode("topic")} icon={Brain} label="Z tematu"/>
-        <TabBtn active={mode==="photo"} onClick={()=>setMode("photo")} icon={Camera} label="Ze zdjęcia"/>
-        <TabBtn active={mode==="image"} onClick={()=>setMode("image")} icon={ImageIcon} label="Ilustracja"/>
-      </div>
-      {mode === "topic" && <AIGenerate />}
-      {mode === "photo" && <AIPhoto />}
-      {mode === "image" && <AIImage />}
+          <div className="flex gap-2 flex-wrap">
+            <TabBtn active={mode==="topic"} onClick={()=>setMode("topic")} icon={Brain} label="Z tematu"/>
+            <TabBtn active={mode==="photo"} onClick={()=>setMode("photo")} icon={Camera} label="Ze zdjęcia"/>
+            <TabBtn active={mode==="image"} onClick={()=>setMode("image")} icon={ImageIcon} label="Ilustracja"/>
+          </div>
+          {mode === "topic" && <AIGenerate />}
+          {mode === "photo" && <AIPhoto />}
+          {mode === "image" && <AIImage />}
+        </>
+      )}
+      {aiTab === "codementor" && <AICodeMentor />}
+      {aiTab === "coursegen" && <AICourseGenerator />}
+      {aiTab === "presentation" && <AIPresentationGenerator />}
+      {aiTab === "plagiarism" && <AIPlagiarismDetector />}
+      {aiTab === "progress" && <AIProgressAnalyzer />}
+      {aiTab === "materials" && <AIMaterialRecommender />}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 import appCss from "../styles.css?url";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ThemeProvider } from "@/lib/theme";
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 function NotFoundComponent() {
   return (
@@ -146,8 +147,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <Outlet />
-        <ConfirmDialog />
+        <AuthProvider>
+          <Outlet />
+          <ConfirmDialog />
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
